@@ -85,9 +85,9 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
         placing_plane = placing_planes[i]
 
         # apply z calibration specific to placing station
-        picking_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
+        placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
-        entry_exit_place_plane = _get_offset_plane(picking_plane, entry_exit_offset)
+        entry_exit_place_plane = _get_offset_plane(placing_plane, entry_exit_offset)
 
         script += _default_movel(entry_exit_place_plane)
         script += _default_movel(placing_plane)
