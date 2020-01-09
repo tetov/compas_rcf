@@ -57,6 +57,8 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
 
     # Start general clay fabrication process ###
     for i, picking_plane in enumerate(picking_planes):
+        if i > len(placing_planes) - 1:
+            break
 
         # apply z calibration specific to picking station
         picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
