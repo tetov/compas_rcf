@@ -53,7 +53,7 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
 
     # Send Robot to an initial known configuration ###
     pos = [m.radians(202), m.radians(-85), m.radians(87), m.radians(-92), m.radians(-89), m.radians(24)]
-    script += ur_standard.move_j(pos, 0.1, 0.1)
+    script += ur_standard.move_j(pos, 0.15, 0.15)
 
     # Start general clay fabrication process ###
     for i, picking_plane in enumerate(picking_planes):
@@ -68,7 +68,7 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
 
         if picking_rotation > 0:
             rotated_picking_plane = picking_plane.Clone()
-            rotated_picking_plane.Rotate(m.radians(picking_rotation), rg.Vector3d(0, 0, 1))
+            rotated_picking_plane.Rotate(m.radians(picking_rotation), picking_plane.Normal)
 
         script += _default_movel(entry_exit_pick_plane)
         script += _default_movel(picking_plane)
