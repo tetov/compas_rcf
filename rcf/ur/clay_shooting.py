@@ -3,6 +3,7 @@ import math as m
 
 import Rhino.Geometry as rg
 
+from rcf import utils
 from rcf.ur import ur_standard, comm
 
 # UR movement
@@ -49,7 +50,7 @@ def _picking_moves(plane, entry_exit_offset, rotation):
     return script
 
 
-def _shooting_moves(plane, entry_exit_offset, sleep=.2):
+def _shooting_moves(plane, entry_exit_offset, push_conf, sleep=.2):
     script = ""
 
     entry_exit_plane = _get_offset_plane(plane, entry_exit_offset)
@@ -60,15 +61,17 @@ def _shooting_moves(plane, entry_exit_offset, sleep=.2):
     script += ur_standard.set_digital_out(ACTUATOR_IO, True)
     script += ur_standard.sleep(sleep)
 
-    script += _default_movel(entry_exit_plane)
+    if push_conf['pushing']:
+        script += _temp_push_moves(plane, push_conf)
 
-    script += _temp_push_moves(plane, entry_exit_offset)
+    script += _default_movel(entry_exit_plane)
 
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     return script
 
 
+"""
 def _push_moves(plane, transformations, entry_exit_offset):
     script = ""
     entry_exit_plane = _get_offset_plane(plane, entry_exit_offset)
@@ -89,15 +92,24 @@ def _push_moves(plane, transformations, entry_exit_offset):
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     return script
+"""
 
-def _temp_push_moves(plane, entry_exit_offset):
+
+def _temp_push_moves(plane, push_conf):
+
+    n = push_conf['n_pushes']
+    dist = push_conf['push_offsets']
+    angle_step = push_conf['angle_steps']
+    rot_axis = push_conf['push_rotation_axis']
+
     script = ""
 
-    for i in range(3):
+    for i in range(n):
         p_plane = plane.Clone()
-        p_plane.Translate(rg.Vector3d(0, 0, entry_exit_offset/2))
+        trans_vector = plane.Normal * -dist
+        p_plane.Translate(trans_vector)
+        p_plane.Rotate(m.radians(i + 1 * angle_step), rot_axis, plane.Origin)
 
-        p_plane.Rotate(m.radians(10*i+1), rg.Vector3d.ZAxis, plane.Origin)
         script += _default_movel(p_plane)
 
     return script
@@ -118,15 +130,16 @@ def _safe_travel_plane_moves(planes, reverse=False):
 def clay_shooting(picking_planes,
                   placing_planes,
                   safe_travel_planes,
+                  dry_run=False,
+                  push_conf=None,
                   tool_rotation=0,
                   picking_rotation=0,
                   tool_height_correction=0,
                   z_calib_picking=0,
                   z_calib_placing=0,
-                  entry_exit_offset=-40,
-                  push_transformations=None):
-    reload(comm)
-    reload(ur_standard)
+                  entry_exit_offset=-40):
+    reload(comm)  # noqa E0602
+    reload(ur_standard)  # noqa E0602
 
     # debug setup
     # debug = []
@@ -146,29 +159,31 @@ def clay_shooting(picking_planes,
     if not isinstance(safe_travel_planes, list):
         safe_travel_planes = [safe_travel_planes]
 
-    if push_transformations is not None:
-        if len(push_transformations) != len(placing_planes):
-            raise Exception('Mismatched length between list of placing planes and list of pushing transformations')
-        execute_push_moves = True
-    else:
-        execute_push_moves = False
+    for key, value in push_conf.iteritems():
+        if value is None:
+            continue
+        if not (len(value) == len(picking_planes) or len(value) == 1):
+            raise Exception('Mismatched between {} list and placing_plane list'.format(key))
 
-    j = 0
     instructions = []
     for i, placing_plane in enumerate(placing_planes):
         instruction = []
 
+        picking_plane = utils.list_elem_w_index_wrap(picking_planes, i)
+        instruction.append(picking_plane)
+
         instruction.append(placing_plane)
 
-        if execute_push_moves and push_transformations[i] is not None and push_transformations[i] != [None]:
-            instruction.append(None)
-            instruction.append(push_transformations[i])
-        else:
-            # if out of picking planes start at the first one again
-            j += 1
-            j = j % len(picking_planes)
-            instruction.append(picking_planes[j])
-            instruction.append(None)
+        plane_push_conf = {}
+
+        for key, value in push_conf.iteritems():
+            if value is not None:
+                list_elem = utils.list_elem_w_index_wrap(value, i)
+                plane_push_conf.update({key: list_elem})
+            else:
+                plane_push_conf.update({key: None})
+
+        instruction.append(plane_push_conf)
 
         instructions.append(instruction)
 
@@ -178,10 +193,10 @@ def clay_shooting(picking_planes,
 
     # Start general clay fabrication process ###
     for instruction in instructions:
-        placing_plane, picking_plane, push_Ts = instruction
+        picking_plane, placing_plane, push_conf = instruction
 
         # Pick clay
-        if picking_plane is not None:
+        if not dry_run:
             # apply z calibration specific to picking station
             picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
 
@@ -194,10 +209,7 @@ def clay_shooting(picking_planes,
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
-        if push_Ts is not None:
-            script += _push_moves(placing_plane, push_Ts, entry_exit_offset)
-        else:
-            script += _shooting_moves(placing_plane, entry_exit_offset)
+        script += _shooting_moves(placing_plane, entry_exit_offset, push_conf)
 
         # Move to safe travel plane   ###
         script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)

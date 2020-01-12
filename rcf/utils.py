@@ -46,3 +46,7 @@ def shift_list(seq, shift=1):
     https://stackoverflow.com/a/29498813
     """
     return seq[-shift:] + seq[:-shift]
+
+
+def list_elem_w_index_wrap(l, i):
+    return l[i % len(l)]
