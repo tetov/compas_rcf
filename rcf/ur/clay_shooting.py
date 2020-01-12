@@ -92,8 +92,6 @@ def _push_moves(plane, transformations, entry_exit_offset):
 
 def _temp_push_moves(plane, entry_exit_offset):
     script = ""
-    push_planes = []
-
 
     for i in range(3):
         p_plane = plane.Clone()
