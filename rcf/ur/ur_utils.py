@@ -3,9 +3,9 @@ This module contains utility functions:
     1) Transformation functions
     2) Useful geometry functions e.g. Intersections
 """
+import math
 
 import Rhino.Geometry as rg
-import math
 
 # ----- Coordinate System conversions -----
 
@@ -242,3 +242,27 @@ def check_arguments(function):
         return function(*args)
 
     return decorated
+
+"""
+
+def visualize_ur_script(script):
+    viz_planes = []
+
+    movel_matcher = re.compile(r'^\s*movel\(p\[(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.)\]', re.M)
+    matches = re.findall(movel_matcher, script)
+
+
+    for match in matches:
+        ptX, ptY, ptZ, rX, rY, rZ = match
+
+        pt = rg.Point3d(float(ptX)*1000, float(ptY)*1000, float(ptZ)*1000)
+
+
+    rg.Plane.Rotate(
+    R = rg.Transform.RotationZYZ(float(rX), float(rY), float(rZ))
+    plane.Transform(R)
+
+
+    viz_planes.append(plane)
+
+"""
