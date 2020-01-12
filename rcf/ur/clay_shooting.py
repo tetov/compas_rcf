@@ -62,6 +62,8 @@ def _shooting_moves(plane, entry_exit_offset, sleep=.2):
 
     script += _default_movel(entry_exit_plane)
 
+    script += _temp_push_moves(plane, entry_exit_offset)
+
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     return script
@@ -85,6 +87,20 @@ def _push_moves(plane, transformations, entry_exit_offset):
         script += _default_movel(p)
 
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
+
+    return script
+
+def _temp_push_moves(plane, entry_exit_offset):
+    script = ""
+    push_planes = []
+
+
+    for i in range(3):
+        p_plane = plane.Clone()
+        p_plane.Translate(rg.Vector3d(0, 0, entry_exit_offset/2))
+
+        p_plane.Rotate(m.radians(10*i+1), rg.Vector3d.ZAxis, plane.Origin)
+        script += _default_movel(p_plane)
 
     return script
 
