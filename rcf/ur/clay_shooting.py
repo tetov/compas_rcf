@@ -4,7 +4,7 @@ import math as m
 import Rhino.Geometry as rg
 
 from rcf import utils
-from rcf.ur import ur_standard, comm
+from rcf.ur import ur_standard, comm, ur_utils
 
 # UR movement
 ROBOT_L_SPEED = 0.2  # m/s
@@ -233,4 +233,4 @@ def clay_shooting(picking_planes,
     script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
     # Concatenate script ###
-    return comm.concatenate_script(script)
+    return comm.concatenate_script(script), ur_utils.visualize_ur_script(script)
