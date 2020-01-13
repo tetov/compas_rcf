@@ -7,8 +7,10 @@ from rcf import utils
 from rcf.ur import ur_standard, comm
 
 # UR movement
-ROBOT_SPEED = 0.2  # m/s
+ROBOT_L_SPEED = 0.2  # m/s
 ROBOT_ACCEL = 0.2  # m/s2
+ROBOT_SAFE_J_SPEED = .15
+ROBOT_J_SPEED = .4
 BLEND_RADIUS = 0.02  # m
 
 # Tool related variables
@@ -29,7 +31,7 @@ def _get_offset_plane(rob_plane, distance):
 
 
 def _default_movel(plane):
-    return ur_standard.move_l(plane, ROBOT_ACCEL, ROBOT_ACCEL)
+    return ur_standard.move_l(plane, ROBOT_L_SPEED, ROBOT_ACCEL)
 
 
 def _picking_moves(plane, entry_exit_offset, rotation):
@@ -150,9 +152,13 @@ def clay_shooting(picking_planes,
 
     # set tcp
     tool_height = TOOL_HEIGHT + tool_height_correction
-    script += ur_standard.set_tcp_by_angles(0, 0, tool_height, 0.0, 0.0, m.pi + m.radians(tool_rotation))
+    script += ur_standard.set_tcp_by_angles(0, 0, tool_height, 0.0, 0.0, m.radians(tool_rotation))
     # Ensure actuator is retracted ###
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
+
+    # Send Robot to an initial known configuration ###
+    safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
+    script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
     # setup instructions
 
@@ -187,9 +193,6 @@ def clay_shooting(picking_planes,
 
         instructions.append(instruction)
 
-    # Send Robot to an initial known configuration ###
-    pos = [m.radians(202), m.radians(-85), m.radians(87), m.radians(-92), m.radians(-89), m.radians(24)]
-    script += ur_standard.move_j(pos, 0.15, 0.15)
 
     # Start general clay fabrication process ###
     for instruction in instructions:
@@ -203,7 +206,7 @@ def clay_shooting(picking_planes,
             script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation)
 
             # Move to safe travel plane   ###
-            script += _safe_travel_plane_moves(safe_travel_planes)
+            script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
 
         # Placing bullet
         # apply z calibration specific to placing station
@@ -212,11 +215,10 @@ def clay_shooting(picking_planes,
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf)
 
         # Move to safe travel plane   ###
-        script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
+        script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
 
     # Send Robot to a final known configuration ###
-    pos = [m.radians(180), m.radians(-108), m.radians(105), m.radians(-87), m.radians(-88), m.radians(-29)]
-    script += ur_standard.move_j(pos, 0.1, 0.1)
+    script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
     # Concatenate script ###
     return comm.concatenate_script(script)
