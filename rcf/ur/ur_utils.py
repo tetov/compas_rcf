@@ -3,10 +3,13 @@ This module contains utility functions:
     1) Transformation functions
     2) Useful geometry functions e.g. Intersections
 """
+
 import math
 import re
 
+
 import Rhino.Geometry as rg
+import math
 
 from compas.geometry import Plane, Point, Rotation
 
@@ -245,7 +248,6 @@ def check_arguments(function):
         return function(*args)
 
     return decorated
-
 
 def visualize_ur_script(script):
     viz_planes = []

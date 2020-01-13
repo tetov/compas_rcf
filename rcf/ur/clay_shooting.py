@@ -13,10 +13,10 @@ ROBOT_SAFE_J_SPEED = .15
 ROBOT_J_SPEED = .4
 BLEND_RADIUS_PUSHING = .003  # m
 
-# Tool related variables
+# Tool related variables      ###
 TOOL_HEIGHT = 192  # mm
 
-# Process related variables
+# Process related variables   ###
 ACTUATOR_IO = 4
 
 
@@ -170,6 +170,7 @@ def clay_shooting(picking_planes,
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     # Send Robot to an initial known configuration ###
+
     safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
     script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
@@ -193,44 +194,46 @@ def clay_shooting(picking_planes,
 
         instruction.append(placing_plane)
 
-        plane_push_conf = {}
+    script += ur_standard.move_j(safe_pos, 0.15, 0.15)
 
-        for key, value in push_conf.iteritems():
-            if value is not None:
-                list_elem = utils.list_elem_w_index_wrap(value, i)
-                plane_push_conf.update({key: list_elem})
-            else:
-                plane_push_conf.update({key: None})
+    # Start general clay fabrication process ###
+    for i, picking_plane in enumerate(picking_planes):
+        if i > len(placing_planes) - 1:
+            break
 
-        instruction.append(plane_push_conf)
+        # apply z calibration specific to picking station
+        picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
 
-        instructions.append(instruction)
+        # Pick clay                   ###
+        entry_exit_pick_plane = _get_offset_plane(picking_plane, entry_exit_offset)
+
 
     # Start general clay fabrication process ###
     for instruction in instructions:
         picking_plane, placing_plane, push_conf = instruction
 
-        # Pick clay
-        if not dry_run:
-            # apply z calibration specific to picking station
-            picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
 
-            script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
+        # Move to safe travel plane   ###
+        # TODO: Allow for list of safe planes
+        #script += _default_movel(safe_travel_plane)
+        script += ur_standard.move_j(safe_pos, 0.5, 0.5)
 
-            # Move to safe travel plane   ###
-            script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
+        script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
 
-        # Placing bullet
+        # Move to safe travel plane   ###
+        script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
+
+
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
+
 
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
 
         # Move to safe travel plane   ###
         script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
 
-    # Send Robot to a final known configuration ###
-    script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
+        # Send Robot to a final known configuration ###
+        script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
-    # Concatenate script ###
     return comm.concatenate_script(script), ur_utils.visualize_ur_script(script)
