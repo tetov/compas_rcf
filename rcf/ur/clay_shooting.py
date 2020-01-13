@@ -156,8 +156,6 @@ def clay_shooting(picking_planes,
 
     # setup instructions
 
-    print(len(push_conf['push_rotation_axis']))
-
     for key, value in push_conf.iteritems():
         if value is None:
             continue
