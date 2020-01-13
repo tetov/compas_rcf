@@ -7,9 +7,7 @@ This module contains utility functions:
 import math
 import re
 
-
 import Rhino.Geometry as rg
-import math
 
 from compas.geometry import Plane, Point, Rotation
 
@@ -249,6 +247,7 @@ def check_arguments(function):
 
     return decorated
 
+
 def visualize_ur_script(script):
     viz_planes = []
 
@@ -257,15 +256,12 @@ def visualize_ur_script(script):
     for line in script.splitlines():
         mo = re.search(movel_matcher, line)
         if mo:
-            print(mo.groups())
             ptX, ptY, ptZ, rX, rY, rZ = mo.groups()
 
             pt = Point(float(ptX) * 1000, float(ptY) * 1000, float(ptZ) * 1000)
             plane = Plane(pt, [0, 0, -1])
             R = Rotation.from_axis_angle_vector([float(rX), float(rY), float(rZ)], pt)
             plane.transform(R)
-            print(plane.point)
-            print(plane.normal)
 
             viz_planes.append(rg.Plane(rg.Point3d(pt.x, pt.y, pt.z), rg.Vector3d(plane.normal.x, plane.normal.y, plane.normal.z)))
 

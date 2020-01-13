@@ -69,7 +69,7 @@ def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, s
     script += ur_standard.sleep(sleep)
 
     if push_conf['pushing']:
-        script += _temp_push_moves(plane, push_conf, vertical_offset_bool)
+        script += _push_moves(plane, push_conf, vertical_offset_bool)
 
     script += _default_movel(entry_exit_plane)
 
@@ -78,31 +78,7 @@ def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, s
     return script
 
 
-"""
-def _push_moves(plane, transformations, entry_exit_offset):
-    script = ""
-    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset)
-
-    push_planes = []
-    for T in transformations:
-        plane.Transform(T)
-        push_planes.append(plane.Clone())
-
-    script += ur_standard.set_digital_out(ACTUATOR_IO, True)
-
-    script += _default_movel(entry_exit_plane)
-    script += _default_movel(plane)
-
-    for p in push_planes:
-        script += _default_movel(p)
-
-    script += ur_standard.set_digital_out(ACTUATOR_IO, False)
-
-    return script
-"""
-
-
-def _temp_push_moves(plane, push_conf, vertical_offset_bool):
+def _push_moves(plane, push_conf, vertical_offset_bool):
 
     n = push_conf['n_pushes']
     dist = push_conf['push_offsets']
@@ -145,7 +121,7 @@ def clay_shooting(picking_planes,
                   placing_planes,
                   safe_travel_planes,
                   dry_run=False,
-                  push_conf=None,
+                  push_conf={'pushing': [False]},
                   tool_rotation=0,
                   picking_rotation=0,
                   tool_height_correction=0,
@@ -153,12 +129,9 @@ def clay_shooting(picking_planes,
                   z_calib_placing=0,
                   entry_exit_offset=-40,
                   vertical_offset_bool=False):
+
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
-
-    # debug setup
-    # debug = []
-    # viz_planes = []
 
     # Create a script object      ###
     script = ""
@@ -176,9 +149,6 @@ def clay_shooting(picking_planes,
 
     # setup instructions
 
-    if not isinstance(safe_travel_planes, list):
-        safe_travel_planes = [safe_travel_planes]
-
     for key, value in push_conf.iteritems():
         if value is None:
             continue
@@ -194,46 +164,42 @@ def clay_shooting(picking_planes,
 
         instruction.append(placing_plane)
 
-    script += ur_standard.move_j(safe_pos, 0.15, 0.15)
+        plane_push_conf = {}
 
-    # Start general clay fabrication process ###
-    for i, picking_plane in enumerate(picking_planes):
-        if i > len(placing_planes) - 1:
-            break
+        for key, value in push_conf.iteritems():
+            if value is not None:
+                list_elem = utils.list_elem_w_index_wrap(value, i)
+                plane_push_conf.update({key: list_elem})
+            else:
+                plane_push_conf.update({key: None})
 
-        # apply z calibration specific to picking station
-        picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
+        instruction.append(plane_push_conf)
 
-        # Pick clay                   ###
-        entry_exit_pick_plane = _get_offset_plane(picking_plane, entry_exit_offset)
-
+        instructions.append(instruction)
 
     # Start general clay fabrication process ###
     for instruction in instructions:
         picking_plane, placing_plane, push_conf = instruction
 
+        # Pick clay
+        if not dry_run:
+            # apply z calibration specific to picking station
+            picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
 
-        # Move to safe travel plane   ###
-        # TODO: Allow for list of safe planes
-        #script += _default_movel(safe_travel_plane)
-        script += ur_standard.move_j(safe_pos, 0.5, 0.5)
+            script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
 
-        script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
-
-        # Move to safe travel plane   ###
-        script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
-
+            # Move to safe travel plane   ###
+            script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
 
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
-
 
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
 
         # Move to safe travel plane   ###
         script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
 
-        # Send Robot to a final known configuration ###
-        script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
+    # Send Robot to a final known configuration ###
+    script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
     return comm.concatenate_script(script), ur_utils.visualize_ur_script(script)
