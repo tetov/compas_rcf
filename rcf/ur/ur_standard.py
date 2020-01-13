@@ -176,7 +176,6 @@ def move_j(joints, accel, vel):
 
 def move_j_pose(plane_to, vel, blend_radius):
 
-    import utils
     _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
     _axis_angle = utils.matrix_to_axis_angle(_matrix)
     # Create pose data

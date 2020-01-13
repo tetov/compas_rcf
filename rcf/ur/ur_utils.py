@@ -251,12 +251,12 @@ def check_arguments(function):
 def visualize_ur_script(script):
     viz_planes = []
 
-    movel_matcher = re.compile(r'^\s*movel\(p\[(-?\d+\.\d+),(-?\d+\.\d+),(-?\d+\.\d+),(-?\d+\.\d.+),(-?\d+\.\d.+),(-?\d+\.\d+).*$')
+    movel_matcher = re.compile(r'^\s*movel\(p\[((-?\d+\.\d+,?){6}).*$')
 
     for line in script.splitlines():
         mo = re.search(movel_matcher, line)
         if mo:
-            ptX, ptY, ptZ, rX, rY, rZ = mo.groups()
+            ptX, ptY, ptZ, rX, rY, rZ = mo.group(1).split(',')
 
             pt = Point(float(ptX) * 1000, float(ptY) * 1000, float(ptZ) * 1000)
             plane = Plane(pt, [0, 0, -1])

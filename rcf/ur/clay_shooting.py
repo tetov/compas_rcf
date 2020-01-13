@@ -161,8 +161,8 @@ def clay_shooting(picking_planes,
             continue
         if len(value) == len(placing_planes) or len(value) == 1:
             continue
-        else:
-            raise Exception('Mismatched between {} list and placing_plane list'.format(key))
+
+        raise Exception('Mismatched between {} list and placing_plane list'.format(key))
 
     instructions = []
     for i, placing_plane in enumerate(placing_planes):
