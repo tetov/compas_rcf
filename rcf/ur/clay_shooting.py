@@ -47,13 +47,15 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
 
     # set tcp
     tool_height = TOOL_HEIGHT + tool_height_correction
-    script += ur_standard.set_tcp_by_angles(0, 0, tool_height, 0.0, 0.0, m.pi + m.radians(tool_rotation))
+    script += ur_standard.set_tcp_by_angles(0, 0, tool_height, 0.0, 0.0, m.radians(tool_rotation))
     # Ensure actuator is retracted ###
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     # Send Robot to an initial known configuration ###
-    pos = [m.radians(202), m.radians(-85), m.radians(87), m.radians(-92), m.radians(-89), m.radians(24)]
-    script += ur_standard.move_j(pos, 0.15, 0.15)
+    # pos = [m.radians(202), m.radians(-85), m.radians(87), m.radians(-92), m.radians(-89), m.radians(24)]
+    safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
+
+    script += ur_standard.move_j(safe_pos, 0.15, 0.15)
 
     # Start general clay fabrication process ###
     for i, picking_plane in enumerate(picking_planes):
@@ -78,7 +80,8 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
 
         # Move to safe travel plane   ###
         # TODO: Allow for list of safe planes
-        script += _default_movel(safe_travel_plane)
+        #script += _default_movel(safe_travel_plane)
+        script += ur_standard.move_j(safe_pos, 0.5, 0.5)
 
         # Place clay                  ###
 
@@ -98,11 +101,12 @@ def clay_shooting(picking_planes, placing_planes, safe_travel_plane,
 
         # Move to safe travel plane   ###
         # TODO: Allow for list of safe planes
-        script += _default_movel(safe_travel_plane)
+        # script += _default_movel(safe_travel_plane)
+        script += ur_standard.move_j(safe_pos, 0.4, ROBOT_ACCEL )
 
     # Send Robot to a final known configuration ###
     pos = [m.radians(180), m.radians(-108), m.radians(105), m.radians(-87), m.radians(-88), m.radians(-29)]
-    script += ur_standard.move_j(pos, 0.1, 0.1)
+    script += ur_standard.move_j(pos, 0.5, 0.5)
 
     # Concatenate script ###
     return comm.concatenate_script(script)
