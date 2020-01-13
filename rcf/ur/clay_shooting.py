@@ -20,13 +20,18 @@ TOOL_HEIGHT = 192  # mm
 ACTUATOR_IO = 4
 
 
-def _get_offset_plane(rob_plane, distance):
+def _get_offset_plane(initial_plane, dist, vertical_offset_bool):
     """
     generates an offset plane.
     archetypical use: generate entry or exit planes for robotic processes.
     """
-    plane = rob_plane.Clone()
-    plane.Translate(rob_plane.Normal * distance)
+    if vertical_offset_bool:
+        direction = rg.Vector3d.ZAxis
+    else:
+        direction = initial_plane.Normal
+
+    plane = initial_plane.Clone()
+    plane.Translate(direction * dist)
     return plane
 
 
@@ -34,10 +39,10 @@ def _default_movel(plane):
     return ur_standard.move_l(plane, ROBOT_L_SPEED, ROBOT_ACCEL)
 
 
-def _picking_moves(plane, entry_exit_offset, rotation):
+def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
     script = ""
 
-    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset)
+    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
 
     if rotation > 0:
         rotated_plane = plane.Clone()
@@ -52,10 +57,10 @@ def _picking_moves(plane, entry_exit_offset, rotation):
     return script
 
 
-def _shooting_moves(plane, entry_exit_offset, push_conf, sleep=.2):
+def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, sleep=.2):
     script = ""
 
-    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset)
+    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
 
     script += _default_movel(entry_exit_plane)
     script += _default_movel(plane)
@@ -64,7 +69,7 @@ def _shooting_moves(plane, entry_exit_offset, push_conf, sleep=.2):
     script += ur_standard.sleep(sleep)
 
     if push_conf['pushing']:
-        script += _temp_push_moves(plane, push_conf)
+        script += _temp_push_moves(plane, push_conf, vertical_offset_bool)
 
     script += _default_movel(entry_exit_plane)
 
@@ -97,7 +102,7 @@ def _push_moves(plane, transformations, entry_exit_offset):
 """
 
 
-def _temp_push_moves(plane, push_conf):
+def _temp_push_moves(plane, push_conf, vertical_offset_bool):
 
     n = push_conf['n_pushes']
     dist = push_conf['push_offsets']
@@ -106,13 +111,20 @@ def _temp_push_moves(plane, push_conf):
 
     script = ""
 
-    for i in range(n):
-        p_plane = plane.Clone()
-        trans_vector = plane.Normal * -dist
-        p_plane.Translate(trans_vector)
-        p_plane.Rotate(m.radians(i + 1 * angle_step), rot_axis, plane.Origin)
+    offset_plane = plane.Clone()
+    if vertical_offset_bool:
+        direction = rg.Vector3d.ZAxis
+    else:
+        direction = plane.Normal
 
-        script += _default_movel(p_plane)
+    offset_plane.Translate(direction * -dist)
+
+    for i in range(n):
+        rot_plane = offset_plane.Clone()
+
+        rot_plane.Rotate(m.radians(i + 1 * angle_step), rot_axis, plane.Origin)
+
+        script += _default_movel(rot_plane)
 
     return script
 
@@ -139,7 +151,8 @@ def clay_shooting(picking_planes,
                   tool_height_correction=0,
                   z_calib_picking=0,
                   z_calib_placing=0,
-                  entry_exit_offset=-40):
+                  entry_exit_offset=-40,
+                  vertical_offset_bool=False):
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
 
@@ -193,7 +206,6 @@ def clay_shooting(picking_planes,
 
         instructions.append(instruction)
 
-
     # Start general clay fabrication process ###
     for instruction in instructions:
         picking_plane, placing_plane, push_conf = instruction
@@ -203,7 +215,7 @@ def clay_shooting(picking_planes,
             # apply z calibration specific to picking station
             picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
 
-            script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation)
+            script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
 
             # Move to safe travel plane   ###
             script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
@@ -212,7 +224,7 @@ def clay_shooting(picking_planes,
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
-        script += _shooting_moves(placing_plane, entry_exit_offset, push_conf)
+        script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
 
         # Move to safe travel plane   ###
         script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
