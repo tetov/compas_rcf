@@ -11,7 +11,7 @@ ROBOT_L_SPEED = 0.2  # m/s
 ROBOT_ACCEL = 0.2  # m/s2
 ROBOT_SAFE_J_SPEED = .15
 ROBOT_J_SPEED = .4
-BLEND_RADIUS = 0.02  # m
+BLEND_RADIUS_PUSHING = .003  # m
 
 # Tool related variables
 TOOL_HEIGHT = 192  # mm
@@ -26,7 +26,7 @@ def _get_offset_plane(initial_plane, dist, vertical_offset_bool):
     archetypical use: generate entry or exit planes for robotic processes.
     """
     if vertical_offset_bool:
-        direction = rg.Vector3d.ZAxis
+        direction = rg.Vector3d(0, 0, -1)
     else:
         direction = initial_plane.Normal
 
@@ -35,8 +35,8 @@ def _get_offset_plane(initial_plane, dist, vertical_offset_bool):
     return plane
 
 
-def _default_movel(plane):
-    return ur_standard.move_l(plane, ROBOT_L_SPEED, ROBOT_ACCEL)
+def _default_movel(plane, blend_radius=0):
+    return ur_standard.move_l(plane, ROBOT_L_SPEED, ROBOT_ACCEL, blend_radius=blend_radius)
 
 
 def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
@@ -113,7 +113,7 @@ def _temp_push_moves(plane, push_conf, vertical_offset_bool):
 
     offset_plane = plane.Clone()
     if vertical_offset_bool:
-        direction = rg.Vector3d.ZAxis
+        direction = rg.Vector3d(0, 0, -1)
     else:
         direction = plane.Normal
 
@@ -124,7 +124,7 @@ def _temp_push_moves(plane, push_conf, vertical_offset_bool):
 
         rot_plane.Rotate(m.radians(i + 1 * angle_step), rot_axis, plane.Origin)
 
-        script += _default_movel(rot_plane)
+        script += _default_movel(rot_plane, blend_radius=BLEND_RADIUS_PUSHING)
 
     return script
 

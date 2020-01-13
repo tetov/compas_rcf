@@ -128,7 +128,7 @@ def matrix_to_euler(m):
 # ----- Matrix related helper functions
 
 
-def dh_matrix((d, theta, a, alpha)):
+def dh_matrix(d, theta, a, alpha):
     """
     This function creates the Denavit Hartenberg transformation matrix between adjacent frames
 
@@ -242,27 +242,3 @@ def check_arguments(function):
         return function(*args)
 
     return decorated
-
-"""
-
-def visualize_ur_script(script):
-    viz_planes = []
-
-    movel_matcher = re.compile(r'^\s*movel\(p\[(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.*),(\d.*.\d.)\]', re.M)
-    matches = re.findall(movel_matcher, script)
-
-
-    for match in matches:
-        ptX, ptY, ptZ, rX, rY, rZ = match
-
-        pt = rg.Point3d(float(ptX)*1000, float(ptY)*1000, float(ptZ)*1000)
-
-
-    rg.Plane.Rotate(
-    R = rg.Transform.RotationZYZ(float(rX), float(rY), float(rZ))
-    plane.Transform(R)
-
-
-    viz_planes.append(plane)
-
-"""
