@@ -25,14 +25,21 @@ def _get_offset_plane(initial_plane, dist, vertical_offset_bool):
     generates an offset plane.
     archetypical use: generate entry or exit planes for robotic processes.
     """
-    if vertical_offset_bool:
-        direction = rg.Vector3d(0, 0, -1)
-    else:
-        direction = initial_plane.Normal
 
-    plane = initial_plane.Clone()
-    plane.Translate(direction * dist)
-    return plane
+    plane_normal = initial_plane.Normal
+
+    if vertical_offset_bool:
+        directions = [rg.Vector3d(0, 0, -1), plane_normal]
+    else:
+        directions = [plane_normal, plane_normal]
+
+    entry_plane = initial_plane.Clone()
+    exit_plane = initial_plane.Clone()
+
+    entry_plane.Translate(directions[0] * dist)
+    exit_plane.Translate(directions[1] * dist)
+
+    return entry_plane, exit_plane
 
 
 def _default_movel(plane, blend_radius=0):
@@ -42,17 +49,17 @@ def _default_movel(plane, blend_radius=0):
 def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
     script = ""
 
-    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
+    entry_plane, exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
 
     if rotation > 0:
         rotated_plane = plane.Clone()
         rotated_plane.Rotate(m.radians(rotation), plane.Normal)
 
-    script += _default_movel(entry_exit_plane)
+    script += _default_movel(entry_plane)
     script += _default_movel(plane)
     if rotation > 0:
         script += _default_movel(rotated_plane)
-    script += _default_movel(entry_exit_plane)
+    script += _default_movel(exit_plane)
 
     return script
 
@@ -60,9 +67,9 @@ def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
 def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, sleep=.2):
     script = ""
 
-    entry_exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
+    entry_plane, exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
 
-    script += _default_movel(entry_exit_plane)
+    script += _default_movel(entry_plane)
     script += _default_movel(plane)
 
     script += ur_standard.set_digital_out(ACTUATOR_IO, True)
@@ -71,7 +78,7 @@ def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, s
     if push_conf['pushing']:
         script += _push_moves(plane, push_conf, vertical_offset_bool)
 
-    script += _default_movel(entry_exit_plane)
+    script += _default_movel(exit_plane)
 
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
@@ -98,7 +105,7 @@ def _push_moves(plane, push_conf, vertical_offset_bool):
     for i in range(n):
         rot_plane = offset_plane.Clone()
 
-        rot_plane.Rotate(m.radians(i + 1 * angle_step), rot_axis, plane.Origin)
+        rot_plane.Rotate(m.radians((i + 1) * angle_step), rot_axis, plane.Origin)
 
         script += _default_movel(rot_plane, blend_radius=BLEND_RADIUS_PUSHING)
 
@@ -151,7 +158,7 @@ def clay_shooting(picking_planes,
 
     print(len(push_conf['push_rotation_axis']))
 
-    for key, value in push_conf.iteritems():    
+    for key, value in push_conf.iteritems():
         if value is None:
             continue
         if len(value) == len(placing_planes) or len(value) == 1:
