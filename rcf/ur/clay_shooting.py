@@ -10,8 +10,8 @@ from rcf.ur import ur_standard, comm, ur_utils
 ROBOT_L_SPEED = 0.2  # m/s
 ROBOT_ACCEL = 0.2  # m/s2
 ROBOT_SAFE_J_SPEED = .15
-ROBOT_J_SPEED = .4
-BLEND_RADIUS_PUSHING = .003  # m
+ROBOT_J_SPEED = .6
+BLEND_RADIUS_PUSHING = .002  # m
 
 # Tool related variables      ###
 TOOL_HEIGHT = 192  # mm
@@ -149,10 +149,14 @@ def clay_shooting(picking_planes,
 
     # setup instructions
 
-    for key, value in push_conf.iteritems():
+    print(len(push_conf['push_rotation_axis']))
+
+    for key, value in push_conf.iteritems():    
         if value is None:
             continue
-        if not (len(value) == len(picking_planes) or len(value) == 1):
+        if len(value) == len(placing_planes) or len(value) == 1:
+            continue
+        else:
             raise Exception('Mismatched between {} list and placing_plane list'.format(key))
 
     instructions = []
