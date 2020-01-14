@@ -7,14 +7,14 @@ from rcf import utils
 from rcf.ur import ur_standard, comm, ur_utils
 
 # UR movement
-ROBOT_L_SPEED = 0.2  # m/s
-ROBOT_ACCEL = 0.2  # m/s2
+ROBOT_L_SPEED = 0.4  # m/s
+ROBOT_ACCEL = 0.4  # m/s2
 ROBOT_SAFE_J_SPEED = .15
-ROBOT_J_SPEED = .6
+ROBOT_J_SPEED = .8
 BLEND_RADIUS_PUSHING = .002  # m
 
 # Tool related variables      ###
-TOOL_HEIGHT = 192  # mm
+TOOL_HEIGHT = 192  # mm```
 
 # Process related variables   ###
 ACTUATOR_IO = 4
