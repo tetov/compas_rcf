@@ -135,7 +135,8 @@ def clay_shooting(picking_planes,
                   z_calib_picking=0,
                   z_calib_placing=0,
                   entry_exit_offset=-40,
-                  vertical_offset_bool=False):
+                  vertical_offset_bool=False,
+                  viz_planes_bool=False):
 
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
@@ -211,4 +212,9 @@ def clay_shooting(picking_planes,
     # Send Robot to a final known configuration ###
     script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
 
-    return comm.concatenate_script(script), ur_utils.visualize_ur_script(script)
+    if viz_planes_bool:
+        viz_planes = ur_utils.visualize_ur_script(script)
+    else:
+        viz_planes = None
+
+    return comm.concatenate_script(script), viz_planes
