@@ -9,7 +9,7 @@ from rcf.ur import ur_standard, comm, ur_utils
 # UR movement
 ROBOT_L_SPEED = 0.4  # m/s
 ROBOT_ACCEL = 0.4  # m/s2
-ROBOT_SAFE_J_SPEED = .15
+ROBOT_SAFE_SPEED = .15
 ROBOT_J_SPEED = .8
 BLEND_RADIUS_PUSHING = .002  # m
 
@@ -115,11 +115,11 @@ def _push_moves(plane, push_conf, vertical_offset_bool):
 def _safe_travel_plane_moves(planes, reverse=False):
 
     if reverse:
-        planes.reverse()
+        planes = planes[::-1]
 
     script = ""
     for plane in planes:
-        script += _default_movel(plane)
+        script += ur_standard.move_j_pose(plane, ROBOT_SAFE_SPEED, ROBOT_ACCEL)
 
     return script
 
@@ -152,8 +152,8 @@ def clay_shooting(picking_planes,
 
     # Send Robot to an initial known configuration ###
 
-    safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
-    script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
+    # safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
+    script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
 
     # setup instructions
 
@@ -199,7 +199,7 @@ def clay_shooting(picking_planes,
             script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
 
             # Move to safe travel plane   ###
-            script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
+            script += _safe_travel_plane_moves(safe_travel_planes, reverse=False)
 
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
@@ -207,10 +207,7 @@ def clay_shooting(picking_planes,
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
 
         # Move to safe travel plane   ###
-        script += ur_standard.move_j(safe_pos, ROBOT_J_SPEED, ROBOT_ACCEL)
-
-    # Send Robot to a final known configuration ###
-    script += ur_standard.move_j(safe_pos, ROBOT_SAFE_J_SPEED, ROBOT_ACCEL)
+        script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
 
     if viz_planes_bool:
         viz_planes = ur_utils.visualize_ur_script(script)

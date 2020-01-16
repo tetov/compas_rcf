@@ -82,6 +82,13 @@ MAX_ACCEL = 1.5
 MAX_VELOCITY = 2
 
 
+def _format_pose(plane_to, axis_angle):
+    pose_data = (plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, axis_angle[0],
+                 axis_angle[1], axis_angle[2])
+    pose_fmt = "p[" + ",".join(["{:.4f}"] * 6) + "]"
+    return pose_fmt.format(*pose_data)
+
+
 def move_l(plane_to, accel, vel, blend_radius=0):
     """
     Function that returns UR script for linear movement in tool-space.
@@ -101,14 +108,12 @@ def move_l(plane_to, accel, vel, blend_radius=0):
     # Check blend radius is positive
     blend_radius = max(0, blend_radius)
 
-    _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
-    _axis_angle = utils.matrix_to_axis_angle(_matrix)
+    matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
+    axis_angle = utils.matrix_to_axis_angle(matrix)
     # Create pose data
-    _pose = [plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
-    _pose_fmt = "p[" + ("%.4f," * 6)[:-1] + "]"
-    _pose_fmt = _pose_fmt % tuple(_pose)
+    pose = _format_pose(plane_to, axis_angle)
     # Format UR script
-    script = "movel(%s, a = %.2f, v = %.2f, r = %.4f)\n" % (_pose_fmt, accel, vel, blend_radius)
+    script = "movel(%s, a = %.2f, v = %.2f, r = %.4f)\n" % (pose, accel, vel, blend_radius)
     return script
 
 
@@ -128,28 +133,23 @@ def move_l_time(plane_to, time, blend_radius=0):
     # Check blend radius is positive
     blend_radius = max(0, blend_radius)
 
-    _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
-    _axis_angle = utils.matrix_to_axis_angle(_matrix)
+    matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
+    axis_angle = utils.matrix_to_axis_angle(matrix)
     # Create pose data
-    _pose = [plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
-    _pose_fmt = "p[" + ("%.4f," * 6)[:-1] + "]"
-    _pose_fmt = _pose_fmt % tuple(_pose)
+    pose = _format_pose(plane_to, axis_angle)
     # Format UR script
-    script = "movel(%s, a = %.2f, v = %.2f, t = %.2f, r = %.4f)\n" % (_pose_fmt, 1.2, 0.25, time, blend_radius)
+    script = "movel(%s, a = %.2f, v = %.2f, t = %.2f, r = %.4f)\n" % (pose, 1.2, 0.25, time, blend_radius)
     return script
 
 
 def move_l2(plane_to, vel, blend_radius):
 
-    import utils
-    _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
-    _axis_angle = utils.matrix_to_axis_angle(_matrix)
+    matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
+    axis_angle = utils.matrix_to_axis_angle(matrix)
     # Create pose data
-    _pose = [plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
-    _pose_fmt = "p[" + ("%.4f," * 6)[:-1] + "]"
-    _pose_fmt = _pose_fmt % tuple(_pose)
+    pose = _format_pose(plane_to, axis_angle)
     # Format UR script
-    script = "movel(%s, v = %.4f, r= %.4f)\n" % (_pose_fmt, vel, blend_radius)
+    script = "movel(%s, v = %.4f, r= %.4f)\n" % (pose, vel, blend_radius)
     return script
 
 
@@ -176,14 +176,12 @@ def move_j(joints, accel, vel):
 
 def move_j_pose(plane_to, vel, blend_radius):
 
-    _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
-    _axis_angle = utils.matrix_to_axis_angle(_matrix)
+    matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
+    axis_angle = utils.matrix_to_axis_angle(matrix)
     # Create pose data
-    _pose = [plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
-    _pose_fmt = "p[" + ("%.4f," * 6)[:-1] + "]"
-    _pose_fmt = _pose_fmt % tuple(_pose)
+    pose = _format_pose(plane_to, axis_angle)
     # Format UR script
-    script = "movej(%s, v = %.4f, r= %.4f)\n" % (_pose_fmt, vel, blend_radius)
+    script = "movej(%s, v = %.4f, r= %.4f)\n" % (pose, vel, blend_radius)
     return script
 
 
@@ -208,8 +206,13 @@ def move_c(plane_to, point_via, accel, vel):
     _matrix = rg.Transform.PlaneToPlane(plane_to, rg.Plane.WorldXY)
     _axis_angle = utils.matrix_to_axis_angle(_matrix)
     # Create pose data
-    _pose_to = [plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
-    _pose_via = [point_via.X / 1000, point_via.Y / 1000, point_via.Z / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
+    _pose_to = [
+        plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1],
+        _axis_angle[2]
+    ]
+    _pose_via = [
+        point_via.X / 1000, point_via.Y / 1000, point_via.Z / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]
+    ]
 
     _pose_fmt = "p[" + ("%.4f," * 6)[:-1] + "]"
     _pose_to_fmt = _pose_fmt % tuple(_pose_to)
@@ -344,7 +347,10 @@ def get_inverse_kin(var_name, ref_plane):
     _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, ref_plane)
     _axis_angle = utils.matrix_to_axis_angle(_matrix)
     # Create pose data
-    _pose = [plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1], _axis_angle[2]]
+    _pose = [
+        plane_to.OriginX / 1000, plane_to.OriginY / 1000, plane_to.OriginZ / 1000, _axis_angle[0], _axis_angle[1],
+        _axis_angle[2]
+    ]
     _pose_fmt = "p[" + ("%.4f," * 6)[:-1] + "]"
     _pose_fmt = _pose_fmt % tuple(_pose)
     # Format UR script

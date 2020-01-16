@@ -251,7 +251,7 @@ def check_arguments(function):
 def visualize_ur_script(script):
     viz_planes = []
 
-    movel_matcher = re.compile(r'^\s*movel\(p\[((-?\d+\.\d+,?){6}).*$')
+    movel_matcher = re.compile(r'^\s*move[lj]\(p\[((-?\d+\.\d+,?){6}).*$')
 
     for line in script.splitlines():
         mo = re.search(movel_matcher, line)
