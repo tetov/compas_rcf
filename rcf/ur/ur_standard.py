@@ -304,6 +304,10 @@ def popup(message, title):
     return script
 
 
+def UR_log(message):
+    return 'textmsg({})\n'.format(message)
+
+
 def sleep(time):
     """
     Function that returns UR script for sleep()

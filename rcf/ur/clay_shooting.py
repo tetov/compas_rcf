@@ -9,7 +9,7 @@ from rcf.ur import ur_standard, comm, ur_utils
 # UR movement
 ROBOT_L_SPEED = 0.6  # m/s
 ROBOT_ACCEL = 0.8  # m/s2
-ROBOT_SAFE_SPEED = .8      
+ROBOT_SAFE_SPEED = .8
 ROBOT_J_SPEED = .8
 BLEND_RADIUS_PUSHING = .002  # m
 
@@ -136,7 +136,8 @@ def clay_shooting(picking_planes,
                   z_calib_placing=0,
                   entry_exit_offset=-40,
                   vertical_offset_bool=False,
-                  viz_planes_bool=False):
+                  viz_planes_bool=False,
+                  placing_index=0):
 
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
@@ -188,7 +189,7 @@ def clay_shooting(picking_planes,
         instructions.append(instruction)
 
     # Start general clay fabrication process ###
-    for instruction in instructions:
+    for i, instruction in enumerate(instructions):
         picking_plane, placing_plane, push_conf = instruction
 
         # Pick clay
@@ -205,7 +206,7 @@ def clay_shooting(picking_planes,
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
-
+        ur_standard.UR_log('Bullet {} placed.'.format(i + placing_index))
         # Move to safe travel plane   ###
         script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
 
