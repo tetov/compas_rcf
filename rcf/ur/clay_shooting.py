@@ -206,7 +206,7 @@ def clay_shooting(picking_planes,
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
-        ur_standard.UR_log('Bullet {} placed.'.format(i + placing_index))
+        script += ur_standard.UR_log('Bullet {} placed.'.format(i + placing_index))
         # Move to safe travel plane   ###
         script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
 

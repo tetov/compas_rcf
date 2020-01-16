@@ -305,7 +305,7 @@ def popup(message, title):
 
 
 def UR_log(message):
-    return 'textmsg({})\n'.format(message)
+    return 'textmsg(\"{}\")\n'.format(message)
 
 
 def sleep(time):
