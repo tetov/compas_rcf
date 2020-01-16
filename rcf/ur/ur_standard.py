@@ -174,14 +174,14 @@ def move_j(joints, accel, vel):
     return script
 
 
-def move_j_pose(plane_to, vel, blend_radius):
+def move_j_pose(plane_to, accel, vel, blend_radius=0.):
 
     matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, plane_to)
     axis_angle = utils.matrix_to_axis_angle(matrix)
     # Create pose data
     pose = _format_pose(plane_to, axis_angle)
     # Format UR script
-    script = "movej(%s, v = %.4f, r= %.4f)\n" % (pose, vel, blend_radius)
+    script = "movej(%s, a=%.4f, v = %.4f, r=%.4f)\n" % (pose, accel, vel, blend_radius)
     return script
 
 
