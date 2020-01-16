@@ -64,7 +64,7 @@ def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
     return script
 
 
-def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, sleep=.2):
+def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, sleep=.5):
     script = ""
 
     entry_plane, exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
