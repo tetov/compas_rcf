@@ -7,9 +7,9 @@ from rcf import utils
 from rcf.ur import ur_standard, comm, ur_utils
 
 # UR movement
-ROBOT_L_SPEED = 0.4  # m/s
-ROBOT_ACCEL = 0.4  # m/s2
-ROBOT_SAFE_SPEED = .15
+ROBOT_L_SPEED = 0.6  # m/s
+ROBOT_ACCEL = 0.8  # m/s2
+ROBOT_SAFE_SPEED = .8      
 ROBOT_J_SPEED = .8
 BLEND_RADIUS_PUSHING = .002  # m
 
