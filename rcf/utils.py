@@ -116,21 +116,35 @@ def cgline_to_rgline(line):  # type: (cg.Line) -> rg.Line
     return rg.Line(cgpoint_to_rgpoint(line.start), cgpoint_to_rgpoint(line.end))
 
 
-def frame_to_plane(frame):  # type: (cg.Frame) -> rg.Plane
+def cgplane_to_rgplane(cgplane):  # type: (cg.Plane) -> rg.Plane
+    """Convenience function to convert a compas.geometry.Plane object to the
+       corresponding Rhino.Geometry object
+    Parameters
+    ----------
+    compas.geometry.Plane
+        Plane to convert
+    Returns
+    -------
+    Rhino.Geometry.Plane
+        Resulting plane
+    """
+    return rg.Plane(cgpoint_to_rgpoint(cgplane.point), cgvector_to_rgvector(cgplane.normal))
+
+
+def cgframe_to_rgplane(frame):  # type: (cg.Frame) -> rg.Plane
     """Convenience function to convert a compas.geometry.Frame object to a
        Rhino.Geometry.Plane object
-
     Parameters
     ----------
     compas.geometry.Frame
         Frame to convert
-
     Returns
     -------
     Rhino.Geometry.Plane
-        Resulting Plane
+        Resulting plane
     """
-    return rg.Plane(cgpoint_to_rgpoint(frame.point), cgvector_to_rgvector(frame.normal))
+    plane = cg.Plane(frame.point, frame.normal)
+    return cgplane_to_rgplane(plane)
 
 
 #
@@ -189,22 +203,35 @@ def rgline_to_cgline(line):  # type: (rg.Line) -> cg.Line
     return cg.Line(rgpoint_to_cgpoint(line.From), rgpoint_to_cgpoint(line.To))
 
 
-def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
-    """Convenience function to convert Rhino.Geometry.Plane object to a
-       compas.geometry.Frame object
-
+def rgplane_to_cgplane(plane):  # type: (rg.Plane) -> cg.Plane
+    """Convenience function to convert Rhino.Geometry.Plane object to the
+       corresponding compas.geometry object
     Parameters
     ----------
     Rhino.Geometry.Plane
         Plane object to convert
+    Returns
+    -------
+    compas.geometry.Plane
+        Resulting plane object
+    """
+    return cg.Plane(rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.Normal))
 
+
+def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
+    """Convenience function to convert Rhino.Geometry.Plane object to a
+       compas.geometry.Frame object
+    Parameters
+    ----------
+    Rhino.Geometry.Plane
+        Plane object to convert
     Returns
     -------
     compas.geometry.Frame
         Resulting frame object
     """
-    return cg.Frame(rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.XAxis),
-                    rgvector_to_cgvector(plane.YAxis))
+    cgplane = rgplane_to_cgplane(plane)
+    return cg.Frame.from_plane(cgplane)
 
 
 #
@@ -241,7 +268,7 @@ if __name__ == "__main__":
     assert line.Direction == rg.Vector3d(2, 0, -2)
 
     # frame_to_plane
-    plane = frame_to_plane(cg.Frame([1, 3, -1], [1, 1, 2], [0, 1, 1]))
+    plane = cgframe_to_rgplane(cg.Frame([1, 3, -1], [1, 1, 2], [0, 1, 1]))
     assert isinstance(plane.Normal, rg.Vector3d)
 
     # rhino -> compas convenience functions
