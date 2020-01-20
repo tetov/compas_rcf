@@ -93,7 +93,7 @@ def send_script(script_to_send, robot_id, offline_simulation):
     s.close()
 
 
-def get_ip_ur(ur_number, subnet='192.168.10.', offline_simulation=False):
+def get_ip_ur(ur_number, offline_simulation=False):
     """
     Function that gets the ip of the robot
 
@@ -103,11 +103,12 @@ def get_ip_ur(ur_number, subnet='192.168.10.', offline_simulation=False):
     Returns:
         ip: string.
     """
-
+    subnet = '192.168.10.'
     if not offline_simulation:
         ip = subnet + str(ur_number + 9)
     else:
         ip = 'localhost'
+    print(ip)
     return ip
 
 
