@@ -60,7 +60,7 @@ def stop_script():
     return ur_script
 
 
-def send_script(script_to_send, robot_id):
+def send_script(script_to_send, robot_id, offline_simulation):
     """
     Opens a socket to the Robot and sends a script
 
@@ -71,7 +71,7 @@ def send_script(script_to_send, robot_id):
     """
     '''Function that opens a socket connection to the robot'''
     PORT = 30002
-    HOST = get_ip_ur(robot_id)
+    HOST = get_ip_ur(robot_id, offline_simulation)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(2)
@@ -93,7 +93,7 @@ def send_script(script_to_send, robot_id):
     s.close()
 
 
-def get_ip_ur(ur_number):
+def get_ip_ur(ur_number, subnet='192.168.10.', offline_simulation=False):
     """
     Function that gets the ip of the robot
 
@@ -104,10 +104,11 @@ def get_ip_ur(ur_number):
         ip: string.
     """
 
-    # ip = 10 * ur_number + 3
-    ip = ur_number + 9
-    # return '10.0.0.%d'%ip
-    return '192.168.10.%d' % ip
+    if not offline_simulation:
+        ip = subnet + str(ur_number + 9)
+    else:
+        ip = 'localhost'
+    return ip
 
 
 def _get_ip_axis(ur_number):
@@ -152,9 +153,9 @@ def create_ur_script(template, scripts, robot_id):
 # ------ Real time
 
 
-def listen_to_robot(robot_id):
+def listen_to_robot(robot_id, offline_simulation=False)):
     PORT = 30003
-    HOST = get_ip_ur(robot_id)
+    HOST = get_ip_ur(robot_id, offline_simulation)
     # Create dictionary to store data
     chunks = {}
     chunks["target_joints"] = []
