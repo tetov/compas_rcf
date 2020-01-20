@@ -54,8 +54,15 @@ def list_elem_w_index_wrap(l, i):
     return l[i % len(l)]
 
 
+def axis_angle_vector_from_plane_to_plane(plane_to, plane_from=rg.Plane.WorldXY):
+    T = rg.Transform.PlaneToPlane(plane_from, plane_to)
+    M = rgtransform_to_matrix(T)
+    return cg.axis_angle_vector_from_matrix(M)
+
+
 #
-# compas - rhino convenience functions
+# compas_rhino.artists
+# compas to rhino convenience functions
 
 
 def cgpoint_to_rgpoint(pt):  # type: (cg.Point) -> rg.Point3d
@@ -71,11 +78,6 @@ def cgpoint_to_rgpoint(pt):  # type: (cg.Point) -> rg.Point3d
     -------
     Rhino.Geometry.Point3d
         Resulting Point3d object
-
-    >>> point = cgpoint_to_rgpoint(cg.Point(1, 2, 3))
-    >>> point.Z
-    3.0
-
     """
     return rg.Point3d(*pt.data)
 
@@ -93,11 +95,6 @@ def cgvector_to_rgvector(v):  # type: (cg.Vector) -> rg.Vector3d
     -------
     Rhino.Geometry.Vector3d
         Resulting Vector3d object
-
-    >>> vector = cgvector_to_rgvector(cg.Vector(5, 1, 9))
-    >>> vector.Unitize()
-    0.483368244522832,0.0966736489045664,0.870062840141097
-
     """
     return rg.Vector3d(*v.data)
 
@@ -115,11 +112,6 @@ def cgline_to_rgline(line):  # type: (cg.Line) -> rg.Line
     -------
     Rhino.Geometry.Line
         Resulting Line object
-
-    >>> line = cgline_to_rgline(rg.Line([1, 2, 3], [1, 2, 3]))
-    >>> line.Length
-    2.82842712475
-
     """
     return rg.Line(cgpoint_to_rgpoint(line.start), cgpoint_to_rgpoint(line.end))
 
@@ -137,16 +129,12 @@ def frame_to_plane(frame):  # type: (cg.Frame) -> rg.Plane
     -------
     Rhino.Geometry.Plane
         Resulting Plane
-
-    >>> plane = frame_to_plane(cg.Frame([1, 3, -1], [1, 1, 2], [0,1,1]))
-    >>> plane.Normal
-    -0.577350269189626,-0.577350269189626,0.577350269189626
-
     """
     return rg.Plane(cgpoint_to_rgpoint(frame.point), cgvector_to_rgvector(frame.normal))
 
 
 #
+# compas_rhino.constructors
 # rhino -> compas convenience functions
 
 
@@ -163,11 +151,6 @@ def rgpoint_to_cgpoint(pt):  # type: (rg.Point3d) -> cg.Point
     -------
     compas.geometry.Point
         Resulting point object
-
-    >>> pt = rgpoint_to_cgpoint(rg.Point3d(3, 2, 1))
-    >>> pt.data
-    [3.0, 2.0, 1.0]
-
     """
     return cg.Point(pt.X, pt.Y, pt.Z)
 
@@ -185,11 +168,6 @@ def rgvector_to_cgvector(v):  # type: (rg.Point3d) -> cg.Vector
     -------
     compas.geometry.Vector
         Resulting vector object
-
-    >>> v = rgvector_to_cgvector(rg.Vector(3, 2, 1))
-    >>> v.length
-    3.74165738677
-
     """
     return cg.Vector(v.X, v.Y, v.Z)
 
@@ -207,11 +185,6 @@ def rgline_to_cgline(line):  # type: (rg.Line) -> cg.Line
     -------
     compas.geometry.Line
         Resulting line object
-
-    >>> line = rgline_to_cgline(rg.Line(rg.Point3d(3, 2, 1), rg.Vector3d(1, 1, 0), 5.))
-    >>> line.midpoint
-    3.74165738677
-
     """
     return cg.Line(rgpoint_to_cgpoint(line.From), rgpoint_to_cgpoint(line.To))
 
@@ -229,55 +202,70 @@ def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
     -------
     compas.geometry.Frame
         Resulting frame object
-
-    >>> frame = rgplane_to_cgframe(rg.Plane(rg.Point3d(1, 3, 2), rg.Vector3d(2, -1, 1)))
-    >>> frame.quaternion
-    Quaternion(0.713799, 0.462707, 0.285969, 0.441152)
-
     """
     return cg.Frame(rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.XAxis),
                     rgvector_to_cgvector(plane.YAxis))
+
+
+#
+# rg.Transform <-> python matrix (list of lists)
+
+
+def rgtransform_to_matrix(rgM):
+    M = [[rgM.Item[i, j] for j in range(4)] for i in range(4)]
+    return M
+
+
+def matrix_to_rgtransform(M):
+    rgM = rg.Transform()
+    for i, row in enumerate(M):
+        for j, val in enumerate(row):
+            rgM[i, j] = val
+    return rgM
 
 
 if __name__ == "__main__":
 
     # rhino -> compas convenience functions
 
-    # frame_to_plane
-    plane = frame_to_plane(cg.Frame([1, 3, -1], [1, 1, 2], [0, 1, 1]))
-    print(plane.Normal)
-
     # cgpoint_to_rgpoint
     point = cgpoint_to_rgpoint(cg.Point(1, 2, 3))
-    print(point.Z)
-
-    # cgline_to_rgline
-    line = cgline_to_rgline(cg.Line([1, 2, 3], [3, 2, 1]))
-    print(line.Length)
+    assert point.Z == 3.0
 
     # cgvector_to_rgvector
     vector = cgvector_to_rgvector(cg.Vector(5, 1, 9))
-    vector.Unitize()
-    print(vector)
+    assert vector.Unitize() is True
+
+    # cgline_to_rgline
+    line = cgline_to_rgline(cg.Line([1, 2, 3], [3, 2, 1]))
+    assert line.Direction == rg.Vector3d(2, 0, -2)
+
+    # frame_to_plane
+    plane = frame_to_plane(cg.Frame([1, 3, -1], [1, 1, 2], [0, 1, 1]))
+    assert isinstance(plane.Normal, rg.Vector3d)
 
     # rhino -> compas convenience functions
 
     # rgpoint_to_cgpoint
     pt = rgpoint_to_cgpoint(rg.Point3d(3, 2, 1))
-    print(pt.data)
+    assert pt.data == [3.0, 2.0, 1.0]
 
     # rgvector_to_cgvector
     v = rgvector_to_cgvector(rg.Vector3d(3, 2, 1))
-    print(v.length)
+    assert v.length > 3.7 and v.length < 3.8
 
     # rgline_cgline
     line = rgline_to_cgline(rg.Line(rg.Point3d(3, 2, 1), rg.Vector3d(1, 1, 0), 5.))
-    print(line.midpoint)
+    assert isinstance(line.midpoint.z, float)
 
     # rgplane_to_cgframe
     frame = rgplane_to_cgframe(rg.Plane(rg.Point3d(1, 3, 2), rg.Vector3d(2, -1, 1)))
-    print(frame.quaternion)
+    frame.quaternion.__repr__ == 'Quaternion(0.713799, 0.462707, 0.285969, 0.441152)'
 
-    # doctest doesn't in IronPython unless called on command line
-    # import doctest
-    # doctest.testmod()
+    # rgtransform_to_matrix
+    matrix = rg.Transform.ZeroTransformation
+    assert rgtransform_to_matrix(matrix) == [[0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 0., 1.]]
+
+    # matrix_to_rgtransform
+    R = cg.Rotation.from_basis_vectors([1, 2, 0], [2, 1, 3])
+    assert isinstance(matrix_to_rgtransform(R), rg.Transform)

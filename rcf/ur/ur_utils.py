@@ -49,12 +49,13 @@ def matrix_to_axis_angle(m):
     epsilon = 0.01
     epsilon2 = 0.01
 
-    if (math.fabs(m.M01 - m.M10) < epsilon) & (math.fabs(m.M02 - m.M20) < epsilon) & (math.fabs(m.M12 - m.M21) < epsilon):
+    if (math.fabs(m.M01 - m.M10) < epsilon) & (math.fabs(m.M02 - m.M20) < epsilon) & (math.fabs(m.M12 - m.M21) <
+                                                                                      epsilon):
         # singularity found
         # first check for identity matrix which must have +1 for all terms
         # in leading diagonal and zero in other terms
-        if (math.fabs(m.M01 + m.M10) < epsilon2) & (math.fabs(m.M02 + m.M20) < epsilon2) & (math.fabs(m.M12 + m.M21) < epsilon2) & (math.fabs(m.M00 + m.M11 + m.M22 - 3) <
-                                                                                                                                    epsilon2):
+        if (math.fabs(m.M01 + m.M10) < epsilon2) & (math.fabs(m.M02 + m.M20) < epsilon2) & (
+                math.fabs(m.M12 + m.M21) < epsilon2) & (math.fabs(m.M00 + m.M11 + m.M22 - 3) < epsilon2):
             # this singularity is identity matrix so angle = 0   make zero angle, arbitrary axis
             angle = 0
             x = 1
@@ -96,7 +97,8 @@ def matrix_to_axis_angle(m):
                     x = xz / z
                     y = yz / z
     else:
-        s = math.sqrt((m.M21 - m.M12) * (m.M21 - m.M12) + (m.M02 - m.M20) * (m.M02 - m.M20) + (m.M10 - m.M01) * (m.M10 - m.M01))
+        s = math.sqrt((m.M21 - m.M12) * (m.M21 - m.M12) + (m.M02 - m.M20) * (m.M02 - m.M20) + (m.M10 - m.M01) *
+                      (m.M10 - m.M01))
         # used to normalise
         if (math.fabs(s) < 0.001):
             # prevent divide by zero, should not happen if matrix is orthogonal and should be
@@ -146,9 +148,11 @@ def dh_matrix(d, theta, a, alpha):
         m: Denavit Hartenberg transformation matrix
     """
 
-    _matrix = [(math.cos(theta), -math.sin(theta) * math.cos(alpha), math.sin(theta) * math.sin(alpha), a * math.cos(theta)),
-               (math.sin(theta), math.cos(theta) * math.cos(alpha), -math.cos(theta) * math.sin(alpha), a * math.sin(theta)), (0, math.sin(alpha), math.cos(alpha), d),
-               (0, 0, 0, 1)]
+    _matrix = [
+        (math.cos(theta), -math.sin(theta) * math.cos(alpha), math.sin(theta) * math.sin(alpha), a * math.cos(theta)),
+        (math.sin(theta), math.cos(theta) * math.cos(alpha), -math.cos(theta) * math.sin(alpha), a * math.sin(theta)),
+        (0, math.sin(alpha), math.cos(alpha), d), (0, 0, 0, 1)
+    ]
 
     m = rg.Transform()
     for i in range(4):
@@ -263,6 +267,7 @@ def visualize_ur_script(script):
             R = Rotation.from_axis_angle_vector([float(rX), float(rY), float(rZ)], pt)
             plane.transform(R)
 
-            viz_planes.append(rg.Plane(rg.Point3d(pt.x, pt.y, pt.z), rg.Vector3d(plane.normal.x, plane.normal.y, plane.normal.z)))
+            viz_planes.append(
+                rg.Plane(rg.Point3d(pt.x, pt.y, pt.z), rg.Vector3d(plane.normal.x, plane.normal.y, plane.normal.z)))
 
     return viz_planes

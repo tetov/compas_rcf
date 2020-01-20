@@ -147,7 +147,7 @@ def clay_shooting(picking_planes,
 
     # set tcp
     tool_height = TOOL_HEIGHT + tool_height_correction
-    script += ur_standard.set_tcp_by_angles(0, 0, tool_height, 0.0, 0.0, m.radians(tool_rotation))
+    script += ur_standard.set_tcp_by_plane_angles(0, 0, tool_height, 0.0, 0.0, m.radians(tool_rotation))
     # Ensure actuator is retracted ###
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
