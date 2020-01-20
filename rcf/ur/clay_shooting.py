@@ -205,8 +205,8 @@ def clay_shooting(picking_planes,
 
             # Move to safe travel plane   ###
             script += _safe_travel_plane_moves(safe_travel_planes, reverse=False)
-        
-        #script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
+
+        # script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
 
         script += ur_standard.move_j(safe_pos_2, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
 

@@ -153,7 +153,7 @@ def create_ur_script(template, scripts, robot_id):
 # ------ Real time
 
 
-def listen_to_robot(robot_id, offline_simulation=False)):
+def listen_to_robot(robot_id, offline_simulation=False):
     PORT = 30003
     HOST = get_ip_ur(robot_id, offline_simulation)
     # Create dictionary to store data
