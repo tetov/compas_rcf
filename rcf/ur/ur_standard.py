@@ -24,7 +24,7 @@ def set_analog_out(id, signal):
     Returns:
         script: UR script
     """
-    return "set_analog_out({:d},{:d})\n".format(id, signal)
+    return "set_analog_out({:d}, {})\n".format(id, signal)
 
 
 def set_digital_out(id, signal):
@@ -40,7 +40,7 @@ def set_digital_out(id, signal):
     """
 
     # Format UR script
-    return "set_digital_out({:d},{})\n".format(id, signal)
+    return "set_digital_out({:d}, {})\n".format(id, signal)
 
 
 def socket_open(address, port):
@@ -101,12 +101,12 @@ def _format_pose(pt_like, axis_angle):
     else:
         raise TypeError('Could not convert argument to point')
     pose_data = [c / 1000 for c in pt_coords] + axis_angle
-    pose_fmt = "p[" + ",".join(["{:.4f}"] * 6) + "]"
+    pose_fmt = "p[" + ", ".join(["{:.4f}"] * 6) + "]"
     return pose_fmt.format(*pose_data)
 
 
 def _format_joint_positions(joint_values):
-    jpos_fmt = "[" + ",".join(["{:.4f}"] * 6) + "]"
+    jpos_fmt = "[" + ", ".join(["{:.4f}"] * 6) + "]"
     return jpos_fmt.format(joint_values)
 
 
@@ -201,7 +201,7 @@ def move_j_pose(plane_to, accel, vel, blend_radius=0.):
     pose = _format_pose(plane_to, axis_angle_vector)
 
     # Return UR script
-    return "movej(%s, a=%.2f, v = %.2f, r=%.2f)\n" % (pose, accel, vel, blend_radius)
+    return "movej({}, a = {:.2f}, v = {:.2f}, r = {:.2f})\n".format(pose, accel, vel, blend_radius)
 
 
 def move_c(plane_to, point_via, accel, vel):
