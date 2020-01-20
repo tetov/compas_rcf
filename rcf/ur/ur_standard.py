@@ -107,7 +107,7 @@ def _format_pose(pt_like, axis_angle):
 
 def _format_joint_positions(joint_values):
     jpos_fmt = "[" + ", ".join(["{:.4f}"] * 6) + "]"
-    return jpos_fmt.format(joint_values)
+    return jpos_fmt.format(*joint_values)
 
 
 def move_l(plane_to, accel, vel, blend_radius=0):
