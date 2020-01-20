@@ -81,6 +81,7 @@ def socket_send_string(ref_string):
 MAX_ACCEL = 1.5
 MAX_VELOCITY = 2
 
+
 def _format_pose(pt_like, axis_angle):
 
     if isinstance(pt_like, (list, tuple)):
@@ -105,8 +106,9 @@ def _format_pose(pt_like, axis_angle):
 
 
 def _format_joint_positions(joint_values):
-    jpos_fmt = "[" + ",".join("{:.4f}" * 6) + "]"
+    jpos_fmt = "[" + ",".join(["{:.4f}"] * 6) + "]"
     return jpos_fmt.format(joint_values)
+
 
 def move_l(plane_to, accel, vel, blend_radius=0):
     """
@@ -120,7 +122,6 @@ def move_l(plane_to, accel, vel, blend_radius=0):
     Returns:
         script: UR script
     """
-
     # Check acceleration and velocity are non-negative and below a set limit
     accel = MAX_ACCEL if (abs(accel) > MAX_ACCEL) else abs(accel)
     vel = MAX_VELOCITY if (abs(vel) > MAX_VELOCITY) else abs(vel)
@@ -216,7 +217,7 @@ def move_c(plane_to, point_via, accel, vel):
     Returns:
         script: UR script
     """
-
+    # TODO: Test
     # Check acceleration and velocity are non-negative and below a set limit
     accel = MAX_ACCEL if (abs(accel) > MAX_ACCEL) else abs(accel)
     vel = MAX_VELOCITY if (abs(vel) > MAX_VELOCITY) else abs(vel)
@@ -236,7 +237,6 @@ def move_c(plane_to, point_via, accel, vel):
 
 def set_tcp_by_plane(x_offset, y_offset, z_offset, ref_plane=rg.Plane.WorldXY):
     """
-    TODO: Need to test if this gives the correct result
     Function that returns UR script for setting tool center point
 
     Args:
@@ -248,6 +248,7 @@ def set_tcp_by_plane(x_offset, y_offset, z_offset, ref_plane=rg.Plane.WorldXY):
     Returns:
         script: UR script
     """
+    # TODO: Test
 
     axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(rg.Plane.WorldXY, plane_from=ref_plane)
 
@@ -273,8 +274,6 @@ def set_tcp_by_plane_angles(x_offset, y_offset, z_offset, x_rotate, y_rotate, z_
     Returns:
         script: UR script
     """
-    # TODO: Test
-
     # Create rotation matrix
     rX = rg.Transform.Rotation(x_rotate, rg.Vector3d(1, 0, 0), rg.Point3d(0, 0, 0))
     rY = rg.Transform.Rotation(y_rotate, rg.Vector3d(0, 1, 0), rg.Point3d(0, 0, 0))
