@@ -152,9 +152,13 @@ def clay_shooting(picking_planes,
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     # Send Robot to an initial known configuration ###
+    safe_pos_1 = [m.radians(x) for x n [-50.31, -91.74, 74.55, -76.12, -92.86, 52.34]]
+    safe_pos_2 = [m.radians(x) for x n [2, -91.74, 74.55, -76.12, -92.86, 52.34]]
 
+    script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
     # safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
-    script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
+
+    # script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
 
     # setup instructions
 
@@ -191,6 +195,7 @@ def clay_shooting(picking_planes,
     # Start general clay fabrication process ###
     for i, instruction in enumerate(instructions):
         picking_plane, placing_plane, push_conf = instruction
+        script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
 
         # Pick clay
         if not dry_run:
@@ -208,7 +213,9 @@ def clay_shooting(picking_planes,
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
         script += ur_standard.UR_log('Bullet {} placed.'.format(i + placing_index))
         # Move to safe travel plane   ###
-        script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
+        # script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
+
+        script += ur_standard.move_j(safe_pos_2, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
 
     if viz_planes_bool:
         viz_planes = ur_utils.visualize_ur_script(script)
