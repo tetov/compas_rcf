@@ -131,3 +131,5 @@ dmypy.json
 # VS Code
 .vscode/*
 *.code-workspace
+
+docker_ursim/programs
