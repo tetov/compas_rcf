@@ -112,21 +112,21 @@ def _push_moves(plane, push_conf, vertical_offset_bool):
     return script
 
 
-def _safe_travel_plane_moves(planes, reverse=False):
+def _safe_travel_moves(safe_pos_list, reverse=False):
 
     if reverse:
-        planes = planes[::-1]
+        safe_pos_list = safe_pos_list[::-1]
 
     script = ""
-    for plane in planes:
-        script += ur_standard.move_j_pose(plane, ROBOT_SAFE_SPEED, ROBOT_ACCEL)
+    for safe_pos in safe_pos_list:
+        script += ur_standard.move_j(safe_pos, ROBOT_SAFE_SPEED, ROBOT_ACCEL)
 
     return script
 
 
 def clay_shooting(picking_planes,
                   placing_planes,
-                  safe_travel_planes,
+                  safe_pos_list,
                   dry_run=False,
                   push_conf={'pushing': [False]},
                   tool_rotation=0,
@@ -152,13 +152,7 @@ def clay_shooting(picking_planes,
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
     # Send Robot to an initial known configuration ###
-    safe_pos_1 = [m.radians(x) for x in [-50.31, -91.74, 74.55, -76.12, -92.86, 52.34]]
-    safe_pos_2 = [m.radians(x) for x in [2, -91.74, 74.55, -76.12, -92.86, 52.34]]
-
-    script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
-    # safe_pos = [m.radians(258), m.radians(-110), m.radians(114), m.radians(-95), m.radians(-91), m.radians(0)]
-
-    # script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
+    script += ur_standard.move_j(safe_pos_list[0], ROBOT_ACCEL, ROBOT_SAFE_SPEED)
 
     # setup instructions
 
@@ -203,23 +197,17 @@ def clay_shooting(picking_planes,
 
             script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
 
-            # Move to safe travel plane   ###
-            script += _safe_travel_plane_moves(safe_travel_planes, reverse=False)
-
-        # script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
-
-        script += ur_standard.move_j(safe_pos_2, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
+        # safe moves
+        script += _safe_travel_moves(safe_pos_list)
 
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
         script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
         script += ur_standard.UR_log('Bullet {} placed.'.format(i + placing_index))
-        # Move to safe travel plane   ###
-        # script += _safe_travel_plane_moves(safe_travel_planes, reverse=True)
 
-        script += ur_standard.move_j(safe_pos_2, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
-        script += ur_standard.move_j(safe_pos_1, ROBOT_ACCEL, ROBOT_SAFE_SPEED)
+        # safe moves
+        script += _safe_travel_moves(safe_pos_list, reverse=True)
 
     if viz_planes_bool:
         viz_planes = ur_utils.visualize_ur_script(script)
