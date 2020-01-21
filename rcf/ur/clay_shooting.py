@@ -215,3 +215,54 @@ def clay_shooting(picking_planes,
         viz_planes = None
 
     return comm.concatenate_script(script), viz_planes
+
+
+class ClayCylinder():
+    """Simple Clay Cylinder.
+
+
+    Parameters:
+        origin_plane : Rhino.Geometry.Plane
+            The origin plane of the cylinder.
+        radius : float
+            The radius of the initial cylinder.
+        height : float
+            The height of the initial cylinder.
+        compression_ratio : float (>0, <=1)
+            The ratio of compression applied to the initial cylinder.
+    """
+    __author__ = "David Jenny"
+
+    def __init__(self, origin_plane, radius=40, height=200, compression_ratio=1):
+        self.op = origin_plane
+        self.rad = radius
+        self.h = height
+        self.cr = compression_ratio
+        self.v = self.calculate_volume()
+        self.v_m3 = self.calculate_volume_m3()
+        self.c_h = self.h * self.cr
+        self.c_rad = self.calculate_compressed_radius()
+        self.geom = []
+        self.vec = []
+
+    def calculate_volume(self):
+        volume = m.pi * self.rad**2 * self.h
+        return volume
+
+    def calculate_volume_m3(self):
+        volume_m3 = (m.pi * self.rad**2 * self.h)/(1000**3)
+        return volume_m3
+
+    def calculate_compressed_radius(self):
+        compressed_radius = m.sqrt(self.v/(self.c_h*m.pi))
+        return compressed_radius
+
+    def generate(self):
+        self.generate_geom()
+
+    def generate_geom(self):
+        circle = rg.Circle(self.op, self.c_rad)
+        cylinder = rg.Cylinder(circle, self.h * self.cr)
+        self.geom.append(cylinder)
+        vector = (self.op.Origin + self.op.ZAxis * self.h) - (self.op.Origin + self.op.ZAxis * self.c_h)
+        self.vec.append(vector)
