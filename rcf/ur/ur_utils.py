@@ -9,7 +9,12 @@ import re
 
 import Rhino.Geometry as rg
 
-from compas.geometry import Plane, Point, Rotation
+from compas.geometry import Frame, Point, Rotation, Transformation
+
+from compas_fab.robots.configuration import Configuration
+from compas_fab.robots.ur5 import Robot
+
+from rcf.utils import cgframe_to_rgplane, matrix_to_rgtransform
 
 # ----- Coordinate System conversions -----
 
@@ -253,21 +258,44 @@ def check_arguments(function):
 
 
 def visualize_ur_script(script):
+    # rcf_ = Frame(point, xaxis, yaxis)
+    M = [[-1000,    0,    0,    0], # noqa E201
+         [    0, 1000,    0,    0], # noqa E201
+         [    0,    0, 1000,    0], # noqa E201
+         [    0,    0,    0,    1]] # noqa E201 # yapf: disable
+    rgT = matrix_to_rgtransform(M)
+    cgT = Transformation.from_matrix(M)
+
+    robot = Robot()
+
     viz_planes = []
 
-    movel_matcher = re.compile(r'^\s*move[lj]\(p\[((-?\d+\.\d+,?){6}).*$')
-
+    movel_matcher = re.compile(r'^\s*move([lj]).+((-?\d+\.\d+,?\s?){6}).*$')
     for line in script.splitlines():
         mo = re.search(movel_matcher, line)
         if mo:
-            ptX, ptY, ptZ, rX, rY, rZ = mo.group(1).split(',')
+            if mo.group(1) == 'l':  # movel
+                ptX, ptY, ptZ, rX, rY, rZ = mo.group(2).split(',')
 
-            pt = Point(float(ptX) * 1000, float(ptY) * 1000, float(ptZ) * 1000)
-            plane = Plane(pt, [0, 0, -1])
-            R = Rotation.from_axis_angle_vector([float(rX), float(rY), float(rZ)], pt)
-            plane.transform(R)
+                pt = Point(float(ptX), float(ptY), float(ptZ))
+                pt.transform(cgT)
+                frame = Frame(pt, [1, 0, 0], [0, 1, 0])
 
-            viz_planes.append(
-                rg.Plane(rg.Point3d(pt.x, pt.y, pt.z), rg.Vector3d(plane.normal.x, plane.normal.y, plane.normal.z)))
+                R = Rotation.from_axis_angle_vector([float(rX), float(rY), float(rZ)], pt)
+                T = matrix_to_rgtransform(R)
+
+                plane = cgframe_to_rgplane(frame)
+                plane.Transform(T)
+
+                viz_planes.append(plane)
+            else:  # movej
+                joint_values = mo.group(2).split(',')
+                configuration = Configuration.from_revolute_values([float(d) for d in joint_values])
+                frame = robot.forward_kinematics(configuration)
+
+                plane = cgframe_to_rgplane(frame)
+                plane.Transform(rgT)
+
+                viz_planes.append(plane)
 
     return viz_planes
