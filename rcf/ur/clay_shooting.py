@@ -3,6 +3,8 @@ import math as m
 
 import Rhino.Geometry as rg
 
+from compas.datastructures import Network
+
 from rcf import utils
 from rcf.ur import ur_standard, comm, ur_utils
 
@@ -13,10 +15,8 @@ ROBOT_SAFE_SPEED = .8
 ROBOT_J_SPEED = .8
 BLEND_RADIUS_PUSHING = .002  # m
 
-# Tool related variables      ###
-TOOL_HEIGHT = 192  # mm```
-
-# Process related variables   ###
+# Tool related variables
+TOOL_HEIGHT = 192  # mm
 ACTUATOR_IO = 4
 
 
@@ -217,52 +217,100 @@ def clay_shooting(picking_planes,
     return comm.concatenate_script(script), viz_planes
 
 
-class ClayCylinder():
+class ClayBullet(object):
     """Simple Clay Cylinder.
 
 
-    Parameters:
-        origin_plane : Rhino.Geometry.Plane
-            The origin plane of the cylinder.
-        radius : float
-            The radius of the initial cylinder.
-        height : float
-            The height of the initial cylinder.
-        compression_ratio : float (>0, <=1)
-            The ratio of compression applied to the initial cylinder.
+    Parameters
+    ----------
+    plane: Rhino.Geometry.Plane
+        The origin plane of the cylinder.
+    radius : float, optional
+        The radius of the initial cylinder.
+    height : float, optional
+        The height of the initial cylinder.
+    compression_ratio : float (>0, <=1), optional
+        The ratio of compression applied to the initial cylinder.
     """
-    __author__ = "David Jenny"
+    def __init__(self, plane, radius=40, height=200, compression_ratio=1):
+        self.plane = plane
+        self.radius = radius
+        self.height = height
+        self.compression_ratio = compression_ratio
 
-    def __init__(self, origin_plane, radius=40, height=200, compression_ratio=1):
-        self.op = origin_plane
-        self.rad = radius
-        self.h = height
-        self.cr = compression_ratio
-        self.v = self.calculate_volume()
-        self.v_m3 = self.calculate_volume_m3()
-        self.c_h = self.h * self.cr
-        self.c_rad = self.calculate_compressed_radius()
-        self.geom = []
-        self.vec = []
+    @property
+    def volume(self):
+        return m.pi * self.radius**2 * self.height
 
-    def calculate_volume(self):
-        volume = m.pi * self.rad**2 * self.h
-        return volume
+    @property
+    def volume_m3(self):
+        return self.volume * 1000
 
-    def calculate_volume_m3(self):
-        volume_m3 = (m.pi * self.rad**2 * self.h)/(1000**3)
-        return volume_m3
+    @property
+    def compressed_radius(self):
+        return m.sqrt(self.volume / (self.compressed_height * m.pi))
 
-    def calculate_compressed_radius(self):
-        compressed_radius = m.sqrt(self.v/(self.c_h*m.pi))
-        return compressed_radius
+    @property
+    def compressed_height(self):
+        return self.height * self.compression_ratio
 
-    def generate(self):
-        self.generate_geom()
+    @property
+    def circle(self):
+        return rg.Circle(self.plane, self.compressed_radius)
 
-    def generate_geom(self):
-        circle = rg.Circle(self.op, self.c_rad)
-        cylinder = rg.Cylinder(circle, self.h * self.cr)
-        self.geom.append(cylinder)
-        vector = (self.op.Origin + self.op.ZAxis * self.h) - (self.op.Origin + self.op.ZAxis * self.c_h)
-        self.vec.append(vector)
+    @property
+    def cylinder(self):
+        return rg.Cylinder(self.circle, self.compressed_height)
+
+    @property
+    def vector(self):
+        # TODO: Find better name
+        return self.plane.Normal * self.height - self.plane.Normal * self.compressed_height
+
+
+class ClayStructure(Network):
+    def __init__(self, clay_bullets):
+        super(ClayStructure, self).__init__()
+        self._clay_bullets = clay_bullets
+        self.network_from_clay_bullets(self._clay_bullets)
+
+    @property
+    def clay_bullets(self):
+        return self.vertices
+
+    def _edges_from_distance(self, i, clay_bullet):
+        edges = []
+        for j, other_bullet in enumerate(self._clay_bullets):
+            if i == j:
+                continue
+            dist = clay_bullet.plane.Origin.DistanceTo(other_bullet.plane.Origin)
+            if dist <= clay_bullet.compressed_radius or dist <= other_bullet.compressed_radius:
+                edges.append([i, j])
+        return edges
+
+    def network_from_clay_bullets(self, clay_bullets):
+        for i, clay_bullet in enumerate(clay_bullets):
+            self.add_vertex(key=i,
+                            x=clay_bullet.plane.Origin.X,
+                            y=clay_bullet.plane.Origin.Y,
+                            z=clay_bullet.plane.Origin.Z,
+                            class_instance=clay_bullet)
+
+        edge_by_dist = [self._edges_from_distance(i, c) for i, c in enumerate(clay_bullets)]
+
+        for pt in edge_by_dist:
+            for u, v in pt:
+                self.add_edge(u, v, attr_dict={'is_touching': True})
+
+
+def _edges_from_distance(input_):
+    i, clay_bullet = input_[0]
+    all_bullets = input_[1]
+    edges = []
+    for j, other_bullet in enumerate(all_bullets):
+        if i == j:
+            continue
+        dist = clay_bullet.plane.Origin.DistanceTo(other_bullet.plane.Origin)
+        if dist <= clay_bullet.compressed_radius or dist <= other_bullet.compressed_radius:
+            edges.append([i, j])
+    return edges
