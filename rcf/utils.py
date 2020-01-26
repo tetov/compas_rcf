@@ -60,6 +60,27 @@ def axis_angle_vector_from_plane_to_plane(plane_to, plane_from=rg.Plane.WorldXY)
     return cg.axis_angle_vector_from_matrix(M)
 
 
+def reparametrize_crvs(crv_or_crvs, domain=(0, 1)):
+    interval = rg.Interval(*domain)
+    new_crvs = []
+
+    if not isinstance(crv_or_crvs, list):
+        got_list = False
+        crv_or_crvs = list(crv_or_crvs)
+    else:
+        got_list = True
+
+    new_crvs = [crv.DuplicateCurve() for crv in crv_or_crvs]
+
+    for crv in new_crvs:
+        crv.Domain = interval
+
+    if not got_list:
+        return new_crvs[1]
+    else:
+        return new_crvs
+
+
 #
 # compas_rhino.artists
 # compas to rhino convenience functions
@@ -249,6 +270,21 @@ def matrix_to_rgtransform(M):
         for j, val in enumerate(row):
             rgM[i, j] = val
     return rgM
+
+
+#
+# Fun IronPython conversions
+
+
+def array_to_list(array):
+    return list(array)
+
+
+def list_of_arrays_to_list_of_lists(list_of_arrays):
+    list_of_lists = []
+    for array in list_of_arrays:
+        list_of_lists.append(array_to_list(array))
+    return list_of_lists
 
 
 if __name__ == "__main__":
