@@ -53,6 +53,25 @@ def shift_list(seq, shift=1):
 def list_elem_w_index_wrap(l, i):
     return l[i % len(l)]
 
+def flip_matrix(listlike):
+    """Rotate 2D-array
+
+    Parameters
+    ----------
+    listlike: iterable
+        array to rotate
+
+    Returns
+    -------
+    iterable
+        rotated array
+
+    Notes
+    -----
+    Taken from https://stackoverflow.com/a/496056
+    """
+    return zip(*listlike[::-1])
+
 
 def axis_angle_vector_from_plane_to_plane(plane_to, plane_from=rg.Plane.WorldXY):
     T = rg.Transform.PlaneToPlane(plane_from, plane_to)
