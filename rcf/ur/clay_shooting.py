@@ -4,6 +4,8 @@ import math as m
 import Rhino.Geometry as rg
 
 from compas.datastructures import Network
+from compas.datastructures import Mesh as cg_Mesh
+from compas_ghpython.artists import MeshArtist
 
 from rcf import utils
 from rcf.ur import ur_standard, comm, ur_utils
@@ -142,7 +144,11 @@ def clay_shooting(picking_planes,
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
 
-    # Create a script object      ###
+    # extract planes if input is ClayBullets
+    if not is_elems_rgPlane(placing_planes):
+        placing_planes = [bullet.plane.Clone() for bullet in placing_planes]
+
+    # Create a string object to store script
     script = ""
 
     # set tcp
@@ -217,6 +223,12 @@ def clay_shooting(picking_planes,
     return comm.concatenate_script(script), viz_planes
 
 
+def is_elems_rgPlane(obj):
+    """ From https://stackoverflow.com/a/18495146
+    """
+    return bool(obj) and all(isinstance(elem, rg.Plane) for elem in obj)
+
+
 class ClayBullet(object):
     """Simple Clay Cylinder.
 
@@ -257,6 +269,45 @@ class ClayBullet(object):
     @property
     def circle(self):
         return rg.Circle(self.plane, self.compressed_radius)
+
+    @property
+    def cylinder_lowres(self, polygon_sides=6):
+        polygons = []
+        polygons.append(rg.Polyline.CreateInscribedPolygon(self.circle, polygon_sides))
+
+        T = rg.Transform.Translation(self.circle.Normal * -self.compressed_height)
+
+        polygons.append(polygons[-1].Duplicate())
+        polygons[-1].Transform(T)
+
+        mesh = cg_Mesh()
+
+        center_coords = []
+        center_coords.append(self.plane.Origin.Clone())
+        center_coords.append(self.plane.Origin.Clone())
+        center_coords[-1].Transform(T)
+
+        outer_verts_polygon = []
+        center_verts = []
+        for polygon, center in zip(polygons, center_coords):
+            print(center)
+            center_verts.append(mesh.add_vertex(x=center.X, y=center.Y, z=center.Z))
+
+            _temp_list = []
+            for pt in polygon.Item:
+                mesh.add_vertex()
+                _temp_list.append(mesh.add_vertex(x=pt.X, y=pt.Y, z=pt.Z))
+            outer_verts_polygon.append(_temp_list)
+
+        for verts, center in zip(outer_verts_polygon, center_verts):
+            for i, vkey in enumerate(verts[1:]):
+                mesh.add_face([verts[i], vkey, center])
+
+        vertex_for_vertex = zip(*outer_verts_polygon)
+        for i, vert_keys in enumerate(vertex_for_vertex[1:]):
+            mesh.add_face(vert_keys + vertex_for_vertex[i][::-1])
+
+        return MeshArtist(mesh).draw_mesh()
 
     @property
     def cylinder(self):
@@ -315,8 +366,6 @@ class ClayStructure(Network):
             if self.edge_length(u, v) <= 20:
                 self.add_edge(u, v, relation='neighboor_below', is_touching=True)
 
-
-
     def network_from_clay_bullets(self, clay_bullets):
         for i, clay_bullet in enumerate(clay_bullets):
             self.add_vertex(key=i,
@@ -325,9 +374,9 @@ class ClayStructure(Network):
                             z=clay_bullet.plane.Origin.Z,
                             class_instance=clay_bullet)
 
-        edges_by_dists = (self._edges_from_distance(i, c) for i, c in enumerate(clay_bullets))
+        # edges_by_dists = (self._edges_from_distance(i, c) for i, c in enumerate(clay_bullets))
 
-        edges_from_order = [(i, i+1) for i in range(len(clay_bullets) - 1)]
+        edges_from_order = [(i, i + 1) for i in range(len(clay_bullets) - 1)]
 
         for u, v in edges_from_order:
             pass
