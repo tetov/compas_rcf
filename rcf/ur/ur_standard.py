@@ -1,6 +1,6 @@
 """
 This module wraps standard UR Script functions.
-Main change is that plane infromation substitute for pose data
+Main change is that plane information substitute for pose data
 """
 
 import Rhino.Geometry as rg
@@ -46,10 +46,10 @@ def set_digital_out(id, signal):
 def socket_open(address, port):
     """
     Function that returns UR script for setting digital out
-    TODO(Jason) - some form of erroe checking?
+    TODO(Jason) - some form of error checking?
 
     Args:
-        adress: string. IP address
+        address: string. IP address
         port: int. Port number
 
     Returns:
@@ -100,7 +100,7 @@ def _format_pose(pt_like, axis_angle):
         pt_coords = pt_like.point.data
     else:
         raise TypeError('Could not convert argument to point')
-    pose_data = [c / 1000 for c in pt_coords] + axis_angle
+    pose_data = [c / 1000. for c in pt_coords] + [float(a) for a in axis_angle]
     pose_fmt = "p[" + ", ".join(["{:.4f}"] * 6) + "]"
     return pose_fmt.format(*pose_data)
 
@@ -143,7 +143,7 @@ def move_l_time(plane_to, time, blend_radius=0):
 
     Args:
         plane_to: Rhino.Geometry Plane. A target plane for calculating pose (in UR base coordinate system)
-        time: Amount of time the movement shoud take, in seconds. Overrides speed and acceleration.
+        time: Amount of time the movement should take, in seconds. Overrides speed and acceleration.
 
     Returns:
         script: UR script
