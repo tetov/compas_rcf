@@ -28,15 +28,32 @@ def get_centroid(closed_crv):
     return area_obj.Centroid
 
 
-def remap_value(value, from_domain, to_domain):
+def remap_values(values, from_domain, to_domain, include_clipped=False):
+    # TODO: Debug (reverse values compared to remap values in gh)
     from_min, from_max = from_domain
     to_min, to_max = to_domain
 
     from_range = (from_max - from_min)
     to_range = (to_max - to_min)
-    new_value = (((value - from_min) * to_range) / from_range) + to_min
 
-    return new_value
+    remapped_values = []
+
+    if not hasattr(values, "__iter__"):
+        values = [values]
+
+    for value in values:
+        new_value = (((value - from_min) * to_range) / from_range) + to_min
+
+        if to_min < new_value < to_max:
+            remapped_values.append(new_value)
+
+        elif include_clipped:
+            remapped_values.append(new_value)
+
+    if len(remapped_values) == 1:
+        return remapped_values[0]
+    else:
+        return remapped_values
 
 
 def flatten_list(l):
@@ -52,6 +69,7 @@ def shift_list(seq, shift=1):
 
 def list_elem_w_index_wrap(l, i):
     return l[i % len(l)]
+
 
 def flip_matrix(listlike):
     """Rotate 2D-array
