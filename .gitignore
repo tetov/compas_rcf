@@ -132,4 +132,4 @@ dmypy.json
 .vscode/*
 *.code-workspace
 
-docker_ursim/programs
+docker/ursim/programs
