@@ -1,0 +1,19 @@
+language: python
+
+python:
+- "2.7"
+- "3.6"
+
+before_install:
+- pip install --upgrade pip
+- pip install Cython --install-option="--no-cython-compile"
+# add bitbucket to known hosts
+- echo 'bitbucket.org,18.205.93.1 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==' >> $HOME/.ssh/known_hosts
+# installed using ssh key tied to @tetov account
+- pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@v0.2.2#egg=compas_rrc
+
+install:
+- pip install --no-cache-dir -r requirements-dev.txt
+
+script:
+- invoke test
