@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import math
 
 import Rhino.Geometry as rg
@@ -134,4 +138,3 @@ class ClayBullet(object):
         rg_mesh.Normals.ComputeNormals()
 
         return rg_mesh
-

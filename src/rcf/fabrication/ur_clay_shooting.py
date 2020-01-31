@@ -1,4 +1,7 @@
-from __future__ import division, absolute_import, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import math as m
 
 import Rhino.Geometry as rg
@@ -122,20 +125,20 @@ def _safe_travel_moves(safe_pos_list, reverse=False):
     return script
 
 
-def clay_shooting(picking_planes,
-                  placing_planes,
-                  safe_pos_list,
-                  dry_run=False,
-                  push_conf={'pushing': [False]},
-                  tool_rotation=0,
-                  picking_rotation=0,
-                  tool_height_correction=0,
-                  z_calib_picking=0,
-                  z_calib_placing=0,
-                  entry_exit_offset=-40,
-                  vertical_offset_bool=False,
-                  viz_planes_bool=False,
-                  placing_index=0):
+def ur_clay_shooting(picking_planes,
+                     placing_planes,
+                     safe_pos_list,
+                     dry_run=False,
+                     push_conf={'pushing': [False]},
+                     tool_rotation=0,
+                     picking_rotation=0,
+                     tool_height_correction=0,
+                     z_calib_picking=0,
+                     z_calib_placing=0,
+                     entry_exit_offset=-40,
+                     vertical_offset_bool=False,
+                     viz_planes_bool=False,
+                     placing_index=0):
 
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
