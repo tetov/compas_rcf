@@ -1,5 +1,7 @@
 # Authors
 
+Project is part of the [MAS programme in Architecture and Digital Fabrication](https://www.masdfab.com/) taught at ETH Zürich by [Gramazio Kohler Research](https://gramaziokohler.arch.ethz.ch/) and [Digital Building Technologies](https://dbt.arch.ethz.ch/).
+
 ## Students
 
 * Fatemeh Amiri
