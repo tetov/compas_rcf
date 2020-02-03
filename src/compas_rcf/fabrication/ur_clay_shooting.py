@@ -6,8 +6,8 @@ import math as m
 
 import Rhino.Geometry as rg
 
-from rcf import utils
-from rcf.ur_control import ur_standard, comm, ur_utils
+from compas_rcf import utils
+from compas_rcf.ur_control import ur_standard, comm, ur_utils
 
 # UR movement
 ROBOT_L_SPEED = 0.6  # m/s

@@ -6,7 +6,7 @@ import compas_rhino.install
 
 __all__ = []
 
-INSTALLABLE_PACKAGES = ['compas_fab', 'roslibpy', 'rcf']
+INSTALLABLE_PACKAGES = ['compas_fab', 'roslibpy', 'compas_rcf']
 
 
 # ==============================================================================

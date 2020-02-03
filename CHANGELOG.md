@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+* Name change from `rcf` to `compas_rcf`.
 
 ### Removed
 

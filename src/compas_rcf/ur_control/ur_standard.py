@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import Rhino.Geometry as rg
 
-import rcf.utils
+from compas_rcf.utils import axis_angle_vector_from_plane_to_plane
+from compas_rcf.utils import rgtransform_to_matrix
 
 import compas.geometry as cg
 from compas.geometry.transformations import axis_angle_vector_from_matrix
@@ -132,7 +133,7 @@ def move_l(plane_to, accel, vel, blend_radius=0):
     # Check blend radius is positive
     blend_radius = max(0, blend_radius)
 
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(plane_to)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(plane_to)
 
     # Create pose data
     pose = _format_pose(plane_to, axis_angle_vector)
@@ -157,7 +158,7 @@ def move_l_time(plane_to, time, blend_radius=0):
     # Check blend radius is positive
     blend_radius = max(0, blend_radius)
 
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(plane_to)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(plane_to)
 
     # Create pose data
     pose = _format_pose(plane_to, axis_angle_vector)
@@ -169,7 +170,7 @@ def move_l_time(plane_to, time, blend_radius=0):
 def move_l2(plane_to, vel, blend_radius):
     # TODO: Test
 
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(plane_to)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(plane_to)
 
     # Create pose data
     pose = _format_pose(plane_to, axis_angle_vector)
@@ -199,7 +200,7 @@ def move_j(joints, accel, vel):
 
 
 def move_j_pose(plane_to, accel, vel, blend_radius=0.):
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(plane_to)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(plane_to)
 
     # Create pose data
     pose = _format_pose(plane_to, axis_angle_vector)
@@ -226,7 +227,7 @@ def move_c(plane_to, point_via, accel, vel):
     accel = MAX_ACCEL if (abs(accel) > MAX_ACCEL) else abs(accel)
     vel = MAX_VELOCITY if (abs(vel) > MAX_VELOCITY) else abs(vel)
 
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(plane_to)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(plane_to)
 
     # Create pose data
     pose_to = _format_pose(plane_to, axis_angle_vector)
@@ -255,7 +256,7 @@ def set_tcp_by_plane(x_offset, y_offset, z_offset, ref_plane=rg.Plane.WorldXY):
     """
     # TODO: Test
 
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(rg.Plane.WorldXY, plane_from=ref_plane)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(rg.Plane.WorldXY, plane_from=ref_plane)
 
     # Create pose data
     pose = _format_pose([x_offset, y_offset, z_offset, axis_angle_vector])
@@ -284,7 +285,7 @@ def set_tcp_by_plane_angles(x_offset, y_offset, z_offset, x_rotate, y_rotate, z_
     rY = rg.Transform.Rotation(y_rotate, rg.Vector3d(0, 1, 0), rg.Point3d(0, 0, 0))
     rZ = rg.Transform.Rotation(z_rotate, rg.Vector3d(0, 0, 1), rg.Point3d(0, 0, 0))
     R = rX * rY * rZ
-    M = rcf.utils.rgtransform_to_matrix(R)
+    M = rgtransform_to_matrix(R)
     axis_angle_vector = axis_angle_vector_from_matrix(M)
 
     # Create pose data
@@ -351,7 +352,7 @@ def get_inverse_kin(var_name, ref_plane):
     """
     # TODO: Test
 
-    axis_angle_vector = rcf.utils.axis_angle_vector_from_plane_to_plane(ref_plane)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(ref_plane)
 
     # Create pose data
     pose = _format_pose(ref_plane, axis_angle_vector)

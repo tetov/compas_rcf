@@ -12,7 +12,7 @@ import sphinx_compas_theme
 
 # -- General configuration ------------------------------------------------
 
-project = "rcf"
+project = "compas_rcf"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
 release = "0.1.1"
@@ -98,7 +98,7 @@ html_theme = "compaspkg"
 html_theme_path = sphinx_compas_theme.get_html_theme_path()
 
 html_theme_options = {
-    "package_name"    : "rcf",
+    "package_name"    : "compas_rcf",
     "package_title"   : project,
     "package_version" : release,
 }

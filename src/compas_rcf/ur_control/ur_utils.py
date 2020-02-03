@@ -4,20 +4,15 @@ This module contains utility functions:
     2) Useful geometry functions e.g. Intersections
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import re
 
 import Rhino.Geometry as rg
-
 from compas.geometry import Frame, Point, Rotation, Transformation
-
 from compas_fab.robots.configuration import Configuration
 from compas_fab.robots.ur5 import Robot
-
-from rcf.utils import cgframe_to_rgplane, matrix_to_rgtransform
+from compas_rcf.utils import cgframe_to_rgplane, matrix_to_rgtransform
 
 # ----- Coordinate System conversions -----
 
@@ -46,7 +41,6 @@ def rhino_to_robotbase(ref_plane, model_base):
 
 
 def visualize_ur_script(script):
-    # rcf_ = Frame(point, xaxis, yaxis)
     M = [[-1000,    0,    0,    0], # noqa E201
          [    0, 1000,    0,    0], # noqa E201
          [    0,    0, 1000,    0], # noqa E201

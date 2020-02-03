@@ -6,7 +6,7 @@ import math
 
 import Rhino.Geometry as rg
 
-from rcf import utils
+from compas_rcf import utils
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas_ghpython.artists import MeshArtist

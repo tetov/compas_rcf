@@ -30,15 +30,15 @@ requirements = [
 optional_requirements = {}
 
 setup(
-    name="rcf",
+    name="compas_rcf",
     version="0.1.1",
     description="python module for MAS DFAB project Rapid Clay Formations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/tetov/rcf",
+    url="https://github.com/tetov/compas_rcf",
     author="Anton T Johansson",
     author_email="anton@tetov.se",
-    license="MIT license",
+    license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -56,9 +56,12 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
-    keywords=[],
-    project_urls={},
-    packages=["rcf"],
+    keywords=['architecture', 'engineering', 'fabrication', 'construction'],
+    project_urls={
+        "Repository": "https://github.com/compas-dev/compas",
+        "Issues": "https://github.com/compas-dev/compas/issues"
+        },
+    packages=["compas_rcf"],
     package_dir={"": "src"},
     package_data={},
     data_files=[],

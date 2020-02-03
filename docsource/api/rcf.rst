@@ -1,2 +1,2 @@
 
-.. automodule:: rcf
+.. automodule:: compas_rcf
