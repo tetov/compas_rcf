@@ -6,29 +6,29 @@ Project is part of the [MAS programme in Architecture and Digital Fabrication](h
 
 * Fatemeh Amiri
 * Jomana Baddad
-* Frédéric Brisson [@FredETH2019](https://github.com/FredETH2019/)
+* Frédéric Brisson [github](https://github.com/FredETH2019/)
 * YuHung Chiu
-* Ioulios Georgiou [@iouliosG](https://github.com/iouliosG/)
+* Ioulios Georgiou [github](https://github.com/iouliosG/)
 * Mahiro Goto
-* Anton T Johansson [@tetov](https://github.com/tetov/) <anton@tetov.se>
-* László Mangliár [@railgnam](https://github.com/railgnam/)
+* Anton T Johansson [github](https://github.com/tetov/) [email]<anton@tetov.se>
+* László Mangliár [github](https://github.com/railgnam/)
 * Dinorah Martinez Schulte
-* Edurne Morales [@edurnemorales](https://github.com/edurnemorales/)
+* Edurne Morales [github](https://github.com/edurnemorales/)
 * Maria Pia
-* Emmanuelle Sallin [@esallin](https://github.com/esallin/)
-* Indra Santosa [@isantosa](https://github.com/isantosa/)
+* Emmanuelle Sallin [github](https://github.com/esallin/)
+* Indra Santosa [github](https://github.com/isantosa/)
 * Eliott Sounigo
-* Clemente Rémy [@clementeremy](https://github.com/clementeremy/)
-* Chanon Techathuvanun [@ctechathuvanun](https://github.com/ctechathuvanun/)
-* Psing-Hsun Tsai [@PingHsunTsai](https://github.com/PingHsunTsai/)
+* Clemente Rémy [github](https://github.com/clementeremy/)
+* Chanon Techathuvanun [github](https://github.com/ctechathuvanun/)
+* Psing-Hsun Tsai [github](https://github.com/PingHsunTsai/)
 
 ## Tutors
 
-* David Jenny [@DavidJenny](https://github.com/DavidJenny/) <david.jenny@arch.ethz.ch>
-* Nicolas Feihl <feihl@arch.ethz.ch>
-* Coralie Ming <ming@arch.ethz.ch>
+* David Jenny [github](https://github.com/DavidJenny/)  [email](david.jenny@arch.ethz.ch)
+* Nicolas Feihl [email](feihl@arch.ethz.ch)
+* Coralie Ming [email](ming@arch.ethz.ch)
 
 ## Collaborators
 
-* Gonzalo Casas [@GonzaloCasas](https://github.com/gonzalocasas) <casas@arch.ethz.ch> software engineer, Gramazio Kohler Research
-* Philippe Fleischmann <fleischmann@dfab.ch> robot technician, NCCR Digital Fabrication
+* Gonzalo Casas [github](https://github.com/gonzalocasas) [email](casas@arch.ethz.ch) software engineer, Gramazio Kohler Research
+* Philippe Fleischmann [email](fleischmann@dfab.ch) robot technician, NCCR Digital Fabrication
