@@ -31,7 +31,7 @@ optional_requirements = {}
 
 setup(
     name="rcf",
-    version="0.1.0",
+    version="0.1.1",
     description="python module for MAS DFAB project Rapid Clay Formations",
     long_description=long_description,
     long_description_content_type="text/markdown",
