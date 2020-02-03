@@ -27,3 +27,8 @@ Project is part of the [MAS programme in Architecture and Digital Fabrication](h
 * David Jenny [@DavidJenny](https://github.com/DavidJenny/) <david.jenny@arch.ethz.ch>
 * Nicolas Feihl <feihl@arch.ethz.ch>
 * Coralie Ming <ming@arch.ethz.ch>
+
+## Collaborators
+
+* Gonzalo Casas [@GonzaloCasas](https://github.com/gonzalocasas) <casas@arch.ethz.ch> software engineer, Gramazio Kohler Research
+* Philippe Fleischmann <fleischmann@dfab.ch> robot technician, NCCR Digital Fabrication
