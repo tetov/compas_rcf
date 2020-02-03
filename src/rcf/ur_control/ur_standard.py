@@ -247,7 +247,8 @@ def set_tcp_by_plane(x_offset, y_offset, z_offset, ref_plane=rg.Plane.WorldXY):
         x_offset: float. tooltip offset in mm
         y_offset: float. tooltip offset in mm
         z_offset: float. tooltip offset in mm
-        ref_plane: Plane that defines orientation of the tip. If none specified, world XY plane used as default. (in UR base coordinate system)
+        ref_plane: Plane that defines orientation of the tip. If none specified,
+        world XY plane used as default. (in UR base coordinate system)
 
     Returns:
         script: UR script

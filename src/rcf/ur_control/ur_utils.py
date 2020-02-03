@@ -24,16 +24,19 @@ from rcf.utils import cgframe_to_rgplane, matrix_to_rgtransform
 
 def rhino_to_robotbase(ref_plane, model_base):
     """
-    Function that transforms a reference plane from Rhino coordinate system to the robot's base coordinate system
+    Function that transforms a reference plane from Rhino coordinate system to
+    the robot's base coordinate system
     TODO (Jason): maybe change this whole method? maybe not model but robot base
 
     Args:
         ref_plane: Rhino.Geometry plane object. The reference plane to transform
-        model_base: Rhino.Geometry plane object. The base plane for building on. Given in robot's base coordinate system.
+        model_base: Rhino.Geometry plane object. The base plane for building on.
+        Given in robot's base coordinate system.
 
     Returns:
         ref_plane: Reference plane transformed to robot space
     """
+    # TODO: Replace with compas method
 
     # Transform the orientation plane based on model_base coordinate system
     _matrix = rg.Transform.PlaneToPlane(rg.Plane.WorldXY, model_base)

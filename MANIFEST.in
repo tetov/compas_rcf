@@ -1,6 +1,7 @@
 graft src
 
 prune .github
+prune .style.yapf
 
 prune data
 prune docs

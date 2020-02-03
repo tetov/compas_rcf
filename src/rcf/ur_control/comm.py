@@ -77,7 +77,7 @@ def send_script(script_to_send, robot_id, offline_simulation):
     s.settimeout(2)
     try:
         s.connect((HOST, PORT))
-    except:
+    except:  # noqa E722
         print("Cannot connect to ", HOST, PORT)
 
     s.settimeout(None)
@@ -88,7 +88,7 @@ def send_script(script_to_send, robot_id, offline_simulation):
 
     try:
         s.send(script_to_send)
-    except:
+    except:  # noqa E722
         print("failed to send")
     s.close()
 
@@ -183,7 +183,7 @@ def read(HOST, PORT):
     try:
         s.connect((HOST, PORT))
         print('connected')
-    except:
+    except:  # noqa E722
         traceback.print_exc()
         print('Cannot connect to {}, {}'.format(HOST, PORT))
     # s.settimeout(None)
