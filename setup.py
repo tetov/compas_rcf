@@ -35,7 +35,7 @@ setup(
     description="python module for MAS DFAB project Rapid Clay Formations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="",
+    url="https://github.com/tetov/rcf",
     author="Anton T Johansson",
     author_email="anton@tetov.se",
     license="MIT license",
