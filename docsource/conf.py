@@ -15,7 +15,7 @@ import sphinx_compas_theme
 project = "compas_rcf"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
-release = "0.1.1"
+release = "0.1.2"
 version = ".".join(release.split(".")[0:2])
 
 master_doc = "index"
