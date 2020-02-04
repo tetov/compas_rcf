@@ -1,12 +1,14 @@
 """
 This module manages communications and script execution
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-import socket
-
-import traceback
-import struct
 import math
+import socket
+import struct
+import traceback
 
 # ------ Wraps communications
 

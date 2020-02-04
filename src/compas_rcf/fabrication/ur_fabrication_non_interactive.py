@@ -6,8 +6,10 @@ import math as m
 
 import Rhino.Geometry as rg
 
-from compas_rcf import utils
-from compas_rcf.ur_control import ur_standard, comm, ur_utils
+from compas_rcf.ur import comm
+from compas_rcf.ur import ur_standard
+from compas_rcf.ur.visualize_urscript import visualize_urscript
+from compas_rcf.utils.util_funcs import list_elem_w_index_wrap
 
 # UR movement
 ROBOT_L_SPEED = 0.6  # m/s
@@ -173,7 +175,7 @@ def ur_clay_shooting(picking_planes,
     for i, placing_plane in enumerate(placing_planes):
         instruction = []
 
-        picking_plane = utils.list_elem_w_index_wrap(picking_planes, i)
+        picking_plane = list_elem_w_index_wrap(picking_planes, i)
         instruction.append(picking_plane)
 
         instruction.append(placing_plane)
@@ -182,7 +184,7 @@ def ur_clay_shooting(picking_planes,
 
         for key, value in push_conf.iteritems():
             if value is not None:
-                list_elem = utils.list_elem_w_index_wrap(value, i)
+                list_elem = list_elem_w_index_wrap(value, i)
                 plane_push_conf.update({key: list_elem})
             else:
                 plane_push_conf.update({key: None})
@@ -215,7 +217,7 @@ def ur_clay_shooting(picking_planes,
         script += _safe_travel_moves(safe_pos_list, reverse=True)
 
     if viz_planes_bool:
-        viz_planes = ur_utils.visualize_ur_script(script)
+        viz_planes = visualize_urscript(script)
     else:
         viz_planes = None
 

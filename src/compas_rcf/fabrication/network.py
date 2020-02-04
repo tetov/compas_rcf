@@ -65,8 +65,7 @@ class ClayStructure(Network):
         edges_from_order = [(i, i + 1) for i in range(len(clay_bullets) - 1)]
 
         for u, v in edges_from_order:
-            pass
-            # self.add_edge(u, v, relation='print_order', is_touching=True)
+            self.add_edge(u, v, relation='print_order', is_touching=True)
 
         # TODO: Better distance value
         self._set_attributes_edges_longer_than(26, is_touching=False)
