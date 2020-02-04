@@ -5,7 +5,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 import logging
 import socket
 import time
@@ -84,6 +83,7 @@ def start_log() -> None:
 # ===============================================================
 
 
+"""
 def parse_json(file_name):
     file = Path.joinpath(FILE_DIR.parent, file_name)
 
@@ -101,6 +101,7 @@ def parse_json(file_name):
     print("We have %d commands to send" % len(commands))
 
     return commands, start_at_safe_pt
+"""
 
 
 # ===============================================================
