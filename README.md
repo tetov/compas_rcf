@@ -18,7 +18,7 @@ python module for MAS DFAB project Rapid Clay Formations
     * `conda create -n compas_rcf python=3.7 git compas_fab`
     * `conda activate compas_rcf`
 2.  Dependency [compas\_rrc](https://bitbucket.org/ethrfl/compas_rrc) is a private repository and needs to be installed first.
-    * `pip install git+https://bitbucket.com/eth-rfl/compas_rrc`
+    * `pip install git+https://bitbucket.org/ethrfl/compas_rrc`
     * Authentication problems? [Try this](#authentication-problems-with-bitbucket).
 3.  Then install `compas_rcf`
     * `pip install compas_rcf` or `pip install compas_rcf==version` for specific version.
@@ -28,7 +28,7 @@ python module for MAS DFAB project Rapid Clay Formations
 
 1.  (Optional) set up environment
 2.  Dependency [compas\_rrc](https://bitbucket.org/ethrfl/compas_rrc) is a private repository and needs to be installed first.
-    * `pip install git+https://bitbucket.com/eth-rfl/compas_rrc`
+    * `pip install git+https://bitbucket.org/ethrfl/compas_rrc`
     * Authentication problems? [Try this](#authentication-problems-with-bitbucket).
 3.  Then install `compas_rcf`
     * `pip install compas_rcf` or `pip install compas_rcf==version` for specific version.
@@ -42,7 +42,7 @@ python module for MAS DFAB project Rapid Clay Formations
     -   `conda create -n compas_rcf-dev python=3.7 git compas_fab`
     -   `conda activate compas_rcf-dev`
 2.  Dependency [compas\_rrc](https://bitbucket.org/ethrfl/compas_rrc) is a private repository and needs to be installed first.
-    -   `pip install git+https://bitbucket.com/eth-rfl/compas_rrc`
+    -   `pip install git+https://bitbucket.org/ethrfl/compas_rrc`
     -   Alternatively you can install it from a directory if you need to make changes:
         -   `cd /path/to/repository/directory`
         -   `git clone https://bitbucket.com/eth-rfl/compas_rrc`
@@ -60,7 +60,7 @@ python module for MAS DFAB project Rapid Clay Formations
 
 1.  (Optional) set up environment
 2.  Dependency [compas\_rrc](https://bitbucket.org/ethrfl/compas_rrc) is a private repository and needs to be installed first.
-    -   `pip install git+https://bitbucket.com/eth-rfl/compas_rrc`
+    -   `pip install git+https://bitbucket.org/ethrfl/compas_rrc`
     -   Alternatively you can install it from a directory if you need to make changes:
         -   `cd /path/to/repository/directory`
         -   `git clone https://bitbucket.com/eth-rfl/compas_rrc`
