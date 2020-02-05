@@ -4,7 +4,13 @@ from __future__ import print_function
 
 import random
 
-import Rhino.Geometry as rg
+import compas.geometry as cg
+
+from compas_rcf import IPY
+
+if IPY:
+    import Rhino.Geometry as rg
+    from compas_rcf.utils.rhino_to_compas import rgplane_to_cgframe
 
 
 def rand_vector(dimensions):
@@ -123,3 +129,17 @@ def list_of_arrays_to_list_of_lists(list_of_arrays):
     for array in list_of_arrays:
         list_of_lists.append(array_to_list(array))
     return list_of_lists
+
+
+def ensure_frame(frame_like):
+    if isinstance(frame_like, cg.Frame):
+        return frame_like
+
+    if isinstance(frame_like, cg.Plane):
+        return cg.Frame.from_plane(frame_like)
+
+    if IPY:
+        if isinstance(frame_like, rg.Plane):
+            return rgplane_to_cgframe(frame_like)
+
+    raise TypeError('Can\'t convert {} to compas.geometry.Frame'.format(type(frame_like)))

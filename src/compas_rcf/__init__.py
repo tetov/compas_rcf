@@ -55,4 +55,6 @@ try:
 except Exception:
     pass
 
+IPY = compas.IPY
+
 __all__ = ["HOME", "DATA", "DOCS", "TEMP"]

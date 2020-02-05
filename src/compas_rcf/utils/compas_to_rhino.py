@@ -5,7 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import compas.geometry as cg
-import Rhino.Geometry as rg
+
+from compas_rcf import IPY
+
+if IPY:
+    import Rhino.Geometry as rg
 
 
 def cgpoint_to_rgpoint(pt):  # type: (cg.Point) -> rg.Point3d

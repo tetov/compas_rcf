@@ -2,13 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import compas.geometry as cg
-import Rhino.Geometry as rg
-
 from compas_rcf.ur.urscript_wrapper import set_DO
 from compas_rcf.ur.urscript_wrapper import set_standard_analog_out
 from compas_rcf.ur.urscript_wrapper import textmsg
-from compas_rcf.utils.rhino_to_compas import rgplane_to_cgframe
+from compas_rcf.utils import ensure_frame
 
 # Programs
 
@@ -46,12 +43,7 @@ def format_joint_positions(joint_values):
 
 
 def format_pose(frame_like):
-    if isinstance(frame_like, rg.Plane):
-        frame = rgplane_to_cgframe(frame_like)
-    elif isinstance(frame_like, cg.Frame):
-        frame = frame_like
-    else:
-        raise TypeError
+    frame = ensure_frame(frame_like)
 
     pose_data = [c / 1000. for c in frame.origin.data] + frame.axis_angle_vector()
     pose_fmt = "p[" + ", ".join(["{:.4f}"] * 6) + "]"
