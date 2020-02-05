@@ -53,6 +53,7 @@ def picking_frame():
     frame = Frame(pt, Vector(-1, 0, 0), Vector(0, 1, 0))
     return frame
 
+
 def placing_frames(pt):
     placing_frame = Frame(pt, Vector(-1.000, 0.000, 0.000), Vector(0.000, 1.000, 0.000))
     pre_frame = Frame(pt + Vector(0, 0, BULLET_HEIGHT + 200), Vector(-1, 0, 0), Vector(0, 1, 0))
