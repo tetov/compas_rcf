@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+* `ClayBulletEncoder` to serialize `ClayBullet` added to `compas_rcf/fabrication/clay_obj.py`
+* Frames before and after placement added to `ClayBullet`
+* `from_data` constructor added to `ClayBullet`
+* Function to parse list of ClayBullet instances from JSON added in new module `compas_rcf/utils/json_.py`
+* `ensure_frame` function added to `compas_rcf.utils.
 
 ### Changed
 
