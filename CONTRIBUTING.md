@@ -30,7 +30,7 @@ In short, this is how that works.
    pip install -r requirements-dev.txt
    ```
    If you have authentication issues with BitBucket (for compas_rrc) [Try installing
-   the new Git Credential manager for Windows](FIXME)
+   the new Git Credential manager for Windows](https://compas_rcf.tetov.se/known_issues.html#authentication-problems-with-bitbucket-1)
 
 4. (Optional) Make package accessible in Rhino and Grasshopper
    ```bash

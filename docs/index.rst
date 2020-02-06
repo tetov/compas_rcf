@@ -7,8 +7,8 @@ compas_rcf
    :titlesonly:
 
    getting_started
-   known_issues
    examples
+   known_issues
    contributing
    changelog
    authors
