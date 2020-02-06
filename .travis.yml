@@ -17,6 +17,9 @@ install:
 
 script:
 - invoke test
+- if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
+    invoke docs;
+  fi
 
 deploy:
     provider: pages
