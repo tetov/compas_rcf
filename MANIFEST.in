@@ -1,7 +1,6 @@
 graft src
 
 prune .github
-prune .style.yapf
 
 prune data
 prune docs
@@ -17,7 +16,7 @@ include AUTHORS.md
 include CHANGELOG.md
 
 exclude requirements-dev.txt
-exclude pytest.ini .bumpversion.cfg .editorconfig
+exclude pytest.ini .bumpversion.cfg .editorconfig .style.yapf
 exclude tasks.py
 exclude CONTRIBUTING.md
 

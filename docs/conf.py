@@ -7,9 +7,10 @@
 import sys
 import os
 
+from sphinx.ext.napoleon.docstring import NumpyDocstring
 import sphinx_compas_theme
 
-
+sys.path.insert(0, os.path.abspath('../'))
 # -- General configuration ------------------------------------------------
 
 project = "compas_rcf"
@@ -19,34 +20,52 @@ release = "0.1.5"
 version = ".".join(release.split(".")[0:2])
 
 master_doc = "index"
-source_suffix = [".rst", ]
-templates_path = ["_templates", ]
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown'
+}
+templates_path = [
+    "_templates",
+]
 exclude_patterns = []
 
-pygments_style   = "sphinx"
-show_authors     = True
+pygments_style = "sphinx"
+show_authors = True
 add_module_names = True
-language         = None
-
+language = None
 
 # -- Extension configuration ------------------------------------------------
 
 extensions = [
+    "recommonmark",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
-    "matplotlib.sphinxext.plot_directive",
+    "sphinx.ext.viewcode",
+    "sphinx_autodoc_typehints",
 ]
 
 # autodoc options
+autodoc_default_options = {
+    'member-order': 'bysource',
+    'special-members': '__init__',
+    'exclude-members': '__weakref__',
+    'undoc-members': True,
+    'private-members': True,
+    'show-inheritance': True,
+}
 
-autodoc_default_flags = [
-    "undoc-members",
-    "show-inheritance",
-]
+autodoc_member_order = 'alphabetical'
+
+
+autodoc_default_options = {
+    'undoc-members': True,
+    'show-inheritance': True,
+}
+autodoc_typehints = 'signature'
 
 autodoc_member_order = "alphabetical"
 
@@ -55,7 +74,7 @@ autoclass_content = "class"
 # autosummary options
 
 autosummary_generate = True
-
+autosummary_imported_members = True
 # napoleon options
 
 napoleon_google_docstring = True
@@ -81,7 +100,7 @@ napoleon_use_rtype = False
 # plot_working_directory
 # plot_template
 
-plot_html_show_source_link = False
+plot_html_show_source_link = True
 plot_html_show_formats = False
 
 # intersphinx options
@@ -91,16 +110,15 @@ intersphinx_mapping = {
     "compas": ("https://compas-dev.github.io/main", "https://compas-dev.github.io/main/objects.inv"),
 }
 
-
 # -- Options for HTML output ----------------------------------------------
 
 html_theme = "compaspkg"
 html_theme_path = sphinx_compas_theme.get_html_theme_path()
 
 html_theme_options = {
-    "package_name"    : "compas_rcf",
-    "package_title"   : project,
-    "package_version" : release,
+    "package_name": "compas_rcf",
+    "package_title": project,
+    "package_version": release,
 }
 
 html_context = {}

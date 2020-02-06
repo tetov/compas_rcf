@@ -2,7 +2,7 @@ language: python
 
 python:
 - "2.7"
-- "3.6"
+- "3.7"
 
 before_install:
 - pip install --upgrade pip
@@ -17,3 +17,13 @@ install:
 
 script:
 - invoke test
+
+deploy:
+    provider: pages
+    skip_cleanup: true
+    keep-history: true
+    github_token: $GITHUB_TOKEN
+    local_dir: dist/docs
+    target_branch: gh-pages
+    on:
+        condition: $TRAVIS_PYTHON_VERSION = 3.6

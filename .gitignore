@@ -133,3 +133,7 @@ dmypy.json
 *.code-workspace
 
 docker/ursim/programs
+
+# generated docs
+docs/__build/
+docs/api/generated/

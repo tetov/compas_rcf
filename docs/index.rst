@@ -6,8 +6,10 @@ compas_rcf
    :maxdepth: 3
    :titlesonly:
 
-   intro
-   gettingstarted
+   getting_started
+   known_issues
    examples
-   api
+   contributing
+   changelog
+   authors
    license

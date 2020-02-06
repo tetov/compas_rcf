@@ -9,7 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Set up sphinx docs
+* Added deploy job for travis
+
 ### Changed
+
+* Travis Python 3 version bumped up to 3.7
+* docs moved from docsource to docs
+* sphinx target directory now dist/docs
 
 ### Removed
 
