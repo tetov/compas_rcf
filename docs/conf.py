@@ -123,7 +123,7 @@ html_theme_options = {
 
 html_context = {}
 html_static_path = []
-html_extra_path = [".nojekyll"]
+html_extra_path = [".nojekyll", "CNAME"]
 html_last_updated_fmt = ""
 html_copy_source = False
 html_show_sourcelink = False
