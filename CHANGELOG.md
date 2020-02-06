@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.1.6] 2020-02-06
 
 ### Added
 
@@ -21,9 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * sphinx target directory now dist/docs
 * Corrected compas_fab version range (from `<0.12` to `<0.11`)
 * Fixed compas_rrc requirement syntax given it's installed from git repository
-
-### Removed
-
+* Added compas_rrc to installable packages for `compas_rcf.install_rhino`
 
 ## [0.1.5] 2020-02-05
 
