@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed compas_rrc requirement syntax given it's installed from git repository
 * Added compas_rrc to installable packages for `compas_rcf.install_rhino`
 
-## [0.1.5] 2020-02-05
+## [[0.1.6] 2020-02-06] 2020-02-05
 
 ### Added
 * `ClayBulletEncoder` to serialize `ClayBullet` added to `compas_rcf.fabrication.clay_obj`

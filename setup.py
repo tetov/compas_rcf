@@ -25,13 +25,13 @@ def read(*names, **kwargs):
 long_description = read("README.md")
 requirements = [
     'compas_fab>=0.10.1,<0.11',
-    'compas_rrc @ git+https://bitbucket.org/ethrfl/compas_rrc@v0.2.2'
+    'compas_rrc @ git+https://bitbucket.org/ethrfl/compas_rrc'
 ]
 optional_requirements = {}
 
 setup(
     name="compas_rcf",
-    version="0.1.5",
+    version="0.1.6",
     description="python module for MAS DFAB project Rapid Clay Formations",
     long_description=long_description,
     long_description_content_type="text/markdown",
