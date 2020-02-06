@@ -15,6 +15,7 @@ In short, this is how that works.
 
     * Using [Anaconda](https://www.anaconda.com/)
     ```bash
+    conda config --add channels conda-forge
     conda create -n compas_rcf-dev python=3.7 git compas_fab  # use conda to install compas_fab if possible
     conda activate compas_rcf-dev
     ```

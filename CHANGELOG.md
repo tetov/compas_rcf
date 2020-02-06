@@ -11,12 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Set up sphinx docs
 * Added deploy job for travis
+* Open file dialog function added to new module `compas_rcf.util.ui`
+* Open file dialog implemented in ABB fabricaton runner
 
 ### Changed
 
 * Travis Python 3 version bumped up to 3.7
 * docs moved from docsource to docs
 * sphinx target directory now dist/docs
+* Corrected compas_fab version range (from `<0.12` to `<0.11`)
+* Fixed compas_rrc requirement syntax given it's installed from git repository
 
 ### Removed
 
