@@ -51,4 +51,4 @@ To update the repository run:
 
 .. code:: bash
 
-   python install -U compas_rcf
+   pip install -U compas_rcf
