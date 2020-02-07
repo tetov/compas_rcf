@@ -34,7 +34,10 @@ TOOL = 't_A057_MockTool01'
 PICKING_WOBJ = 'ob_A057_WobjPicking01'
 PLACING_WOBJ = 'ob_A057_WobjPlacing01'
 
+# IO
 IO_NEEDLES = 'doDNetOut1'
+GRIP = 1
+RELEASE = 0
 
 # Acceleration
 ACCEL = 100  # %
@@ -52,51 +55,42 @@ ROBOT_JOINTS_END_POSITION = ROBOT_JOINTS_START_POSITION
 EXTERNAL_AXIS_DUMMY = []
 
 # FABRICATION SETUP
-PICKING_BASE = Point(500.00, -750.00, 300.00)
-BULLET_HEIGHT = 70
+OFFSET_DISTANCE = 100  # mm
 
-COMPRESSION_RATIO = .5
+def get_picking_frame(bullet_height):
+    """ Get picking frame
+    """
+    # TODO: Set up a grid to pick from
+    picking_frame = Frame(Point(0, 0, 0), Vector(-1, 0, 0), Vector(0, 1, 0))
 
-
-def get_picking_frames():
-
-    pt = Point(0, 0, 0) + Vector(0, 0, BULLET_HEIGHT)
-    picking_frame = Frame(pt, Vector(-1, 0, 0), Vector(0, 1, 0))
-
-    offset_frame = picking_frame.copy()
-
-    T = Translation([0, 0, BULLET_HEIGHT * .5])
-
-    offset_frame.transform(T)
-
-    return [picking_frame, offset_frame]
+    return get_offset_frame(picking_frame, bullet_height)
 
 
-def adjust_placement_frame_with_compression_ratio(frame):
-    T = Translation(frame.zaxis * BULLET_HEIGHT * COMPRESSION_RATIO)
-    frame.transform(T)
 
-    return frame
+def get_offset_frame(origin_frame, distance):
+    """ Offset a frame in it's Z axis direction
+    """
+    offset_vector = origin_frame.zaxis * distance
+    T = Translation(offset_vector)
 
+    return origin_frame.transformed(T)
 
-def get_offset_plane(frame):
-    offset_z = BULLET_HEIGHT * .5
-    offset_vector = Vector(0, 0, offset_z)
-
-    placement_pt = frame.point
-    xaxis = frame.xaxis
-    yaxis = frame.yaxis
-
-    offset_pt = placement_pt + offset_vector
-
-    offset_frame = Frame(offset_pt, xaxis=xaxis, yaxis=yaxis)
-
-    return offset_frame
-
+def send_grip_release(do_state):
+    if TARGET_REAL_ROBOT:
+        abb.send(SetDigital(IO_NEEDLES, do_state))
+    else:
+        # Custom instruction can grip a bullet in RobotStudio note the tool tip must touch the bullet
+        if do_state == GRIP:
+            abb.send(CustomInstruction('r_A057_RS_ToolGrip'))
+        else:
+            abb.send(CustomInstruction('r_A057_RS_ToolRelease'))
 
 if __name__ == '__main__':
 
     json_path = open_file_dialog()
+    print(json_path)
+    clay_bullets = load_bullets(json_path)
+    print(clay_bullets)
 
     # Create Ros Client
     ros = RosClient()
@@ -117,80 +111,63 @@ if __name__ == '__main__':
 
     print('Tool, Wobj, Acc and MaxSpeed sent to robot')
 
-    clay_bullets = load_bullets(json_path)
+    # Initial configuration
+    abb.send(MoveToJoints(ROBOT_JOINTS_START_POSITION, EXTERNAL_AXIS_DUMMY, 500, Zone.FINE))
 
-    # TODO: Iterate over objects instead of creating this extra step
-    instructions = []
+
     for bullet in clay_bullets:
-        instruction = {}
-        instruction.update({'pre': bullet.pre_frames})
-        instruction.update({'post': bullet.post_frames})
-        instruction.update({'placement': bullet.placement_frame})
-        instructions.append(instruction)
 
-    for instruction in instructions:
+        placement_frame = bullet.placement_frame
+        pre_frames = bullet.pre_frames
+        post_frames = bullet.post_frames
 
-        placement_frame = instruction['placement']
-        pre_frames = instruction['pre']
-        post_frames = instruction['post']
-
-        # flip planes
-        R = Rotation.from_axis_and_angle(placement_frame.xaxis, math.radians(180))
-
-        placement_frame.transform(R)
+        bullet_height = bullet.height
+        compressed_height = bullet.compressed_height
 
         if not TARGET_REAL_ROBOT:
             # Custom instruction create a clay bullet in RobotStudio
+            # TODO: Create bullet at picking point
             abb.send(CustomInstruction('r_A057_RS_Create_Bullet'))
 
         # change work object before picking
         abb.send(SetWorkObject(PICKING_WOBJ))
 
         # pick bullet
-        picking_frame, offset_frame = get_picking_frames()
+        picking_frame = get_picking_frame(bullet_height)
+        offset_picking = get_offset_frame(picking_frame, OFFSET_DISTANCE)
 
-        abb.send(MoveToFrame(offset_frame, 500, Zone.FINE))
+        abb.send(MoveToFrame(offset_picking, 500, Zone.FINE))
 
         abb.send_and_wait(MoveToFrame(picking_frame, 500, Zone.FINE))
+        # TODO: Try compress bullet a little bit before picking
 
-        if TARGET_REAL_ROBOT:
-            abb.send(SetDigital(IO_NEEDLES, 0))
-        else:
-            # Custom instruction can grip a bullet in RobotStudio note the tool tip must touch the bullet
-            abb.send(CustomInstruction('r_A057_RS_ToolGrip'))
+        send_grip_release(GRIP)
 
-        abb.send(MoveToFrame(offset_frame, 500, Zone.FINE))
+        abb.send(MoveToFrame(offset_picking, 500, Zone.FINE))
 
         # change work object before placing
         abb.send(SetWorkObject(PLACING_WOBJ))
 
         # add offset placing plane to pre and post frames
-        adjusted_placement_for_compression = adjust_placement_frame_with_compression_ratio(placement_frame)
 
-        offset_placing_plane = get_offset_plane(placement_frame)
-
-        pre_frames.append(offset_placing_plane)
-        post_frames.insert(0, offset_placing_plane)
+        offset_placement = get_offset_frame(placement_frame, OFFSET_DISTANCE)
 
         # Safe pos then vertical offset
         for frame in pre_frames:
-            # TODO: Rotate frames in grasshopper instead
-            frame.transform(R)
             abb.send(MoveToFrame(frame, 500, Zone.FINE))
 
-        abb.send_and_wait(MoveToFrame(adjusted_placement_for_compression, 500, Zone.FINE))
+        abb.send(MoveToFrame(offset_placement, 500, Zone.FINE))
+        abb.send_and_wait(MoveToFrame(placement_frame, 500, Zone.FINE))
 
-        if TARGET_REAL_ROBOT:
-            abb.send(SetDigital(IO_NEEDLES, 1))
-        else:
-            # Custom instruction releases a bullet from the tool
-            abb.send(CustomInstruction('r_A057_RS_ToolRelease'))
+        send_grip_release(RELEASE)
+
+        abb.send(MoveToFrame(offset_placement, 500, Zone.FINE))
 
         # offset placement frame then safety frame
         for frame in post_frames:
-            # TODO: Rotate frames in grasshopper instead
-            frame.transform(R)
             abb.send(MoveToFrame(frame, 500, Zone.FINE))
+
+        # REPEAT LOOP
 
     abb.send(MoveToJoints(ROBOT_JOINTS_START_POSITION, EXTERNAL_AXIS_DUMMY, 1000, Zone.FINE))
 

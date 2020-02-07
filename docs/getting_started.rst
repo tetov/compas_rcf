@@ -17,7 +17,8 @@ Installation
     .. code:: bash
 
        conda config --add channels conda-forge
-       conda create -n compas_rcf python=3.7 git compas_fab  # use conda to install compas_fab if possible
+       # use conda to install compas_fab if possible
+       conda create -n compas_rcf python=3.7 git compas_fab
        conda activate compas_rcf
 
     -  Using `virtualenv <https://github.com/pypa/virtualenv>`__

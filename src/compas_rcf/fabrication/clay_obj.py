@@ -8,6 +8,7 @@ import math
 import compas.geometry as cg
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
+from compas.geometry import Translation
 from compas_ghpython.artists import MeshArtist
 
 from compas_rcf import IPY
@@ -25,8 +26,8 @@ class ClayBullet(object):
 
     Parameters
     ----------
-    plane: Rhino.Geometry.Plane
-        The origin plane of the cylinder.
+    location: Rhino.Geometry.Plane, compas.geometry.Plane, compas.geometry.Frame
+
     radius : float, optional
         The radius of the initial cylinder.
     height : float, optional
@@ -35,14 +36,14 @@ class ClayBullet(object):
         The ratio of compression applied to the initial cylinder.
     """
     def __init__(self,
-                 placement_frame,
+                 location,
                  pre_frames=[],
                  post_frames=[],
                  radius=40,
                  height=200,
                  compression_ratio=1,
                  tool=None):
-        self.placement_frame = placement_frame  # property & setter to convert planes to frames
+        self.location = location
         self.pre_frames = pre_frames  # property & setter to convert planes to frames
         self.post_frames = post_frames  # property & setter to convert planes to frames
 
@@ -52,12 +53,19 @@ class ClayBullet(object):
         self.tool = tool
 
     @property
-    def placement_frame(self):
-        return self._placement_frame
+    def location(self):
+        return self._location
 
-    @placement_frame.setter
-    def placement_frame(self, frame_like):
-        self._placement_frame = ensure_frame(frame_like)
+    @location.setter
+    def location(self, frame_like):
+        self._location = ensure_frame(frame_like)
+
+    @property
+    def placement_frame(self):
+        vector = self.location.zaxis * self.compressed_height * -1
+        T = Translation(vector)
+
+        return self._location.transformed(T)
 
     @property
     def pre_frames(self):
@@ -85,7 +93,7 @@ class ClayBullet(object):
     def plane(self):
         """ For Compatibility with older scripts
         """
-        return self.placement_plane
+        return self.location
 
     @property
     def placement_plane(self):
@@ -143,7 +151,7 @@ class ClayBullet(object):
             The constructed ClayBullet instance
         """
 
-        placement_frame = Frame.from_data(data.pop('_placement_frame'))
+        location = Frame.from_data(data.pop('_location'))
 
         pre_frames = []
         for frame_data in data.pop('_pre_frames'):
@@ -156,7 +164,7 @@ class ClayBullet(object):
         # Take the rest of the dictionary
         kwargs = data
 
-        return cls(placement_frame, pre_frames=pre_frames, post_frames=post_frames, **kwargs)
+        return cls(location, pre_frames=pre_frames, post_frames=post_frames, **kwargs)
 
     def generate_mesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution
