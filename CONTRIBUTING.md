@@ -28,6 +28,8 @@ In short, this is how that works.
 3. Install development dependencies:
 
    ```bash
+   # install compas_rrc separately
+   pip install git+https://bitbucket.org/ethrfl/compas_rrc#egg=compas_rrc-v0.2.2
    pip install -r requirements-dev.txt
    ```
    If you have authentication issues with BitBucket (for compas_rrc) [Try installing

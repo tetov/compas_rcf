@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 long_description = read("README.md")
 requirements = [
     'compas_fab>=0.10.1,<0.11',
-    'compas_rrc @ git+https://bitbucket.org/ethrfl/compas_rrc#egg=compas_rrc'
+    'compas_rrc>=0.2.2'
 ]
 optional_requirements = {}
 

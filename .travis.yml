@@ -20,9 +20,6 @@ script:
 
 before_deploy:
     - invoke docs
-    - if [ "$TRAVIS_TAG" ]; then
-      python setup.py clean --all sdist bdist_wheel --universal;
-      fi
 
 deploy:
     - provider: pages
@@ -32,14 +29,4 @@ deploy:
       local_dir: dist/docs
       target_branch: gh-pages
       on:
-          condition: $TRAVIS_PYTHON_VERSION = 3.7
-    - provider: releases
-      api_key: $GITHUB_TOKEN
-      skip_cleanup: true
-      file-glob: true
-      file:
-          - dist/compas_rcf*.whl
-          - dist/compas_rcf*.tar.gz
-      on:
-          tags: true
           condition: $TRAVIS_PYTHON_VERSION = 3.7
