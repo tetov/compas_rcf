@@ -17,15 +17,11 @@ install:
 
 script:
     - invoke test
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
-      invoke docs;
-      fi
 
 before_deploy:
-    - >
-      invoke docs
-      if [ "$TRAVIS_TAG" ]; then
-        python setup.py clean --all sdist bdist_wheel --universal
+    - invoke docs
+    - if [ "$TRAVIS_TAG" ]; then
+      python setup.py clean --all sdist bdist_wheel --universal;
       fi
 
 deploy:
