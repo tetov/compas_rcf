@@ -9,7 +9,6 @@ python module for MAS DFAB project Rapid Clay Formations
 
 """
 
-# Test
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

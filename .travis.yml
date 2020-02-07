@@ -1,32 +1,49 @@
 language: python
 
 python:
-- "2.7"
-- "3.7"
+    - "2.7"
+    - "3.7"
 
 before_install:
-- pip install --upgrade pip
-- pip install Cython --install-option="--no-cython-compile"
-# add bitbucket to known hosts
-- echo 'bitbucket.org,18.205.93.1 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==' >> $HOME/.ssh/known_hosts
-# installed using ssh key tied to @tetov account
-- pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@v0.2.2#egg=compas_rrc
+    - pip install --upgrade pip
+    - pip install Cython --install-option="--no-cython-compile"
+    # add bitbucket to known hosts
+    - echo 'bitbucket.org,18.205.93.1 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==' >> $HOME/.ssh/known_hosts
+    # installed using ssh key tied to @tetov account
+    - pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@v0.2.2#egg=compas_rrc
 
 install:
-- pip install --no-cache-dir -r requirements-dev.txt
+    - pip install --no-cache-dir -r requirements-dev.txt
 
 script:
-- invoke test
-- if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
-    invoke docs;
-  fi
+    - invoke test
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
+      invoke docs;
+      fi
+
+before_deploy:
+    - >
+      invoke docs
+      if [ "$TRAVIS_TAG" ]; then
+        python setup.py clean --all sdist bdist_wheel --universal
+      fi
 
 deploy:
-    provider: pages
-    skip_cleanup: true
-    keep-history: true
-    github_token: $GITHUB_TOKEN
-    local_dir: dist/docs
-    target_branch: gh-pages
-    on:
-        condition: $TRAVIS_PYTHON_VERSION = 3.7
+    - provider: pages
+      skip_cleanup: true
+      keep-history: true
+      github_token: $GITHUB_TOKEN
+      local_dir: dist/docs
+      target_branch: gh-pages
+      on:
+          condition: $TRAVIS_PYTHON_VERSION = 3.7
+    - provider: releases
+      api_key: $GITHUB_TOKEN
+      skip_cleanup: true
+      file-glob: true
+      file:
+          - dist/compas_rcf*.whl
+          - dist/compas_rcf*.tar.gz
+      on:
+          tags: true
+          condition: $TRAVIS_PYTHON_VERSION = 3.7
