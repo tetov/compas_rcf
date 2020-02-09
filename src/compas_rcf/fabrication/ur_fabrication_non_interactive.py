@@ -24,8 +24,7 @@ ACTUATOR_IO = 4
 
 
 def _get_offset_plane(initial_plane, dist, vertical_offset_bool):
-    """
-    generates an offset plane.
+    """Generates an offset plane.
     archetypical use: generate entry or exit planes for robotic processes.
     """
 

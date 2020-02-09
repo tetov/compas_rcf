@@ -7,6 +7,8 @@ Contributions are welcome and very much appreciated!
 We accept code contributions through pull requests.
 In short, this is how that works.
 
+### Setup
+
 **Important:** All code related to fabrication with ABB industrial robots requires [compas_rrc](https://bitbucket.com/eth-rfl/compas_rrc) which is hosted in a private repository.
 
 1. Fork [the repository](https://github.com/compas_rcf) and clone the fork.
@@ -29,11 +31,10 @@ In short, this is how that works.
     source {{path/to/venv}}/bin/activate
     ```
 
-3. Install development dependencies:
+3. Install package and dependencies:
 
    ```bash
-   # install compas_rrc separately
-   pip install git+https://bitbucket.org/ethrfl/compas_rrc#egg=compas_rrc-v0.2.2
+   cd path/to/compas_rcf
    pip install -r requirements-dev.txt
    ```
 
@@ -46,23 +47,25 @@ In short, this is how that works.
    python -m compas_rcf.install_rhino
    ```
 
-5. Make sure all tests pass:
+### Make a pull request
+
+1. Make sure all tests pass on the unmodified code:
 
    ```bash
    invoke test
    ```
 
-6. Start making your changes to the **master** branch (or branch off of it).
-7. Make sure all tests still pass:
+2. Start making your changes to the **master** branch (or branch off of it) on your fork.
+3. Make sure all tests still pass:
 
    ```bash
    invoke test
    ```
 
-8. Add yourself to the *Contributors* section of `AUTHORS.md`.
-9. Document the changes in the `CHANGELOG.md`
-10. Commit your changes and push your branch to GitHub.
-11. Create a [pull request](https://help.github.com/articles/about-pull-requests/) through the GitHub website.
+4. Add yourself to the *Contributors* section of `AUTHORS.md`.
+5. Document the changes in the `CHANGELOG.md`
+6. Commit your changes and push your branch to GitHub.
+7. Create a [pull request](https://help.github.com/articles/about-pull-requests/) through the GitHub website.
 
 During development, use [pyinvoke](http://docs.pyinvoke.org/) tasks on the
 command line to ease recurring operations:

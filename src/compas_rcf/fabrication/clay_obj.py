@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import json
 import math
+from itertools import count
 
 import compas.geometry as cg
 from compas.datastructures import Mesh as cg_Mesh
@@ -23,7 +24,6 @@ if IPY:
 class ClayBullet(object):
     """Simple Clay Cylinder.
 
-
     Parameters
     ----------
     location: Rhino.Geometry.Plane, compas.geometry.Plane, compas.geometry.Frame
@@ -35,17 +35,29 @@ class ClayBullet(object):
     compression_ratio : float (>0, <=1), optional
         The ratio of compression applied to the initial cylinder.
     """
+
+    # creates id-s for objects
+    _ids = count(0)
+
     def __init__(self,
                  location,
-                 pre_frames=[],
-                 post_frames=[],
+                 trajectory_to=[],
+                 trajectory_from=[],
+                 id=None,
                  radius=40,
                  height=200,
                  compression_ratio=1,
+                 precision=5,
                  tool=None):
         self.location = location
-        self.pre_frames = pre_frames  # property & setter to convert planes to frames
-        self.post_frames = post_frames  # property & setter to convert planes to frames
+        self.trajectory_to = trajectory_to  # property & setter to convert planes to frames
+        self.trajectory_from = trajectory_from  # property & setter to convert planes to frames
+
+        # sortable ID, used for fabrication sequence
+        if id is None:
+            self.id = next(self._ids)
+        else:
+            self.id = str(id) + 'x'
 
         self.radius = radius
         self.height = height
@@ -54,81 +66,171 @@ class ClayBullet(object):
 
     @property
     def location(self):
+        """Frame specifying location of bottom of clay cylinder.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         return self._location
 
     @location.setter
     def location(self, frame_like):
+        """Ensure that location is stored as compas.geometry.Frame object."""
         self._location = ensure_frame(frame_like)
 
     @property
     def placement_frame(self):
+        """Last frame in placement procedure, derived from location, height and compression ratio.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         vector = self.location.zaxis * self.compressed_height * -1
         T = Translation(vector)
 
         return self._location.transformed(T)
 
     @property
-    def pre_frames(self):
-        return self._pre_frames
+    def trajectory_to(self):
+        """Frames describing trajectory from picking station to placement moves.
 
-    @pre_frames.setter
-    def pre_frames(self, frame_list):
-        self._pre_frames = []
+        Returns
+        -------
+        list of :class:`compas.geometry.Frame`
+        """
+        return self._trajectory_to
+
+    @trajectory_to.setter
+    def trajectory_to(self, frame_list):
+        """Ensure that trajectory_to are stored as compas.geometry.Frame objects."""
+        self._trajectory_to = []
         for frame_like in frame_list:
             frame = ensure_frame(frame_like)
-            self._pre_frames.append(frame)
+            self._trajectory_to.append(frame)
 
     @property
-    def post_frames(self):
-        return self._post_frames
+    def trajectory_from(self):
+        """Frames describing trajectory from last placement move to picking station.
 
-    @post_frames.setter
-    def post_frames(self, frame_list):
-        self._post_frames = []
+        Returns
+        -------
+        list of :class:`compas.geometry.Frame`
+        """
+        return self._trajectory_from
+
+    @trajectory_from.setter
+    def trajectory_from(self, frame_list):
+        """Ensure that trajectory_from are stored as compas.geometry.Frame objects."""
+        self._trajectory_from = []
         for frame_like in frame_list:
             frame = ensure_frame(frame_like)
-            self._post_frames.append(frame)
+            self._trajectory_from.append(frame)
 
     @property
     def plane(self):
-        """ For Compatibility with older scripts
+        """For Compatibility with older scripts."""
+        return self.location_plane
+
+    @property
+    def location_plane(self):
+        """Rhino.Geometry.Plane representation of location frame.
+
+        Returns
+        -------
+        Rhino.Geometry.Plane
         """
-        return self.location
+        return cgframe_to_rgplane(self.location)
 
     @property
     def placement_plane(self):
+        """Rhino.Geometry.Plane representation of placement frame.
+
+        Returns
+        -------
+        Rhino.Geometry.Plane
+        """
         return cgframe_to_rgplane(self.placement_frame)
 
     @property
     def pre_planes(self):
-        return [cgframe_to_rgplane(frame) for frame in self.pre_frames]
+        """Rhino.Geometry.Plane representations of pre frames.
+
+        Returns
+        -------
+        Rhino.Geometry.Plane
+        """
+        return [cgframe_to_rgplane(frame) for frame in self.trajectory_to]
 
     @property
     def post_planes(self):
+        """Rhino.Geometry.Plane representation of pre frames.
+
+        Returns
+        -------
+        Rhino.Geometry.Plane
+        """
         return [cgframe_to_rgplane(frame) for frame in self.post_planes]
 
     @property
     def volume(self):
+        """Volume of clay bullet in mm^3.
+
+        Returns
+        -------
+        float
+        """
         return math.pi * self.radius**2 * self.height
 
     @property
     def volume_m3(self):
-        return self.volume * 1000
+        """Volume of clay bullet in m^3.
+
+        Returns
+        -------
+        float
+        """
+        return self.volume * 1e-9
 
     @property
     def compressed_radius(self):
+        """Radius of clay bullet in mm when compressed to defined compression ratio.
+
+        Returns
+        -------
+        float
+        """
         return math.sqrt(self.volume / (self.compressed_height * math.pi))
 
     @property
     def compressed_height(self):
+        """Height of clay bullet in mm when compressed to defined compression ratio.
+
+        Returns
+        -------
+        float
+        """
         return self.height * self.compression_ratio
 
     @property
     def circle(self):
-        return rg.Circle(self.plane, self.compressed_radius)
+        """Rhino.Geometry.Circle representing bullet footprint.
+
+        Returns
+        -------
+        Rhino.Geometry.Circle
+        """
+        return rg.Circle(self.location_plane, self.compressed_radius)
 
     @property
     def cylinder(self):
+        """Rhino.Geometry.Cylinder representing bullet.
+
+        Returns
+        -------
+        Rhino.Geometry.Cylinder
+        """
         return rg.Cylinder(self.circle, self.compressed_height)
 
     @property
@@ -150,24 +252,23 @@ class ClayBullet(object):
         :class:`ClayBullet`
             The constructed ClayBullet instance
         """
-
         location = Frame.from_data(data.pop('_location'))
 
-        pre_frames = []
-        for frame_data in data.pop('_pre_frames'):
-            pre_frames.append(Frame.from_data(frame_data))
+        trajectory_to = []
+        for frame_data in data.pop('_trajectory_to'):
+            trajectory_to.append(Frame.from_data(frame_data))
 
-        post_frames = []
-        for frame_data in data.pop('_post_frames'):
-            post_frames.append(Frame.from_data(frame_data))
+        trajectory_from = []
+        for frame_data in data.pop('_trajectory_from'):
+            trajectory_from.append(Frame.from_data(frame_data))
 
         # Take the rest of the dictionary
         kwargs = data
 
-        return cls(location, pre_frames=pre_frames, post_frames=post_frames, **kwargs)
+        return cls(location, trajectory_to=trajectory_to, trajectory_from=trajectory_from, **kwargs)
 
     def generate_mesh(self, face_count=18):
-        """Generate mesh representation of bullet with custom resolution
+        """Generate mesh representation of bullet with custom resolution.
 
         Parameters
         ----------
@@ -244,10 +345,33 @@ class ClayBullet(object):
         return rg_mesh
 
 
-class ClayBulletEncoder(json.JSONEncoder):
-    """ JSON encoder for :class:ClayBullet
-        Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
+def check_id_collision(clay_bullets):
+    """Check for duplicate ids in list of ClayBullet instances.
+
+    Parameters
+    ----------
+    clay_bullets : list of :class:`ClayBullet`
+
+    Raises
+    ------
+    Exception
+        Raises exception when first duplicate is found
     """
+    ids = [bullet.id for bullet in clay_bullets]
+
+    set_of_ids = set()
+    for id in ids:
+        if id in set_of_ids:
+            raise Exception('Id {} appears more than once in list of ClayBullet instances'.format(id))
+        set_of_ids.add(id)
+
+
+class ClayBulletEncoder(json.JSONEncoder):
+    """JSON encoder for :class:`ClayBullet`.
+
+    Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
+    """
+
     def default(self, obj):
         if isinstance(obj, ClayBullet):
             return obj.__dict__

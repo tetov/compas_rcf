@@ -4,18 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.1.9\] \[2020-02-09\]
 
 ### Added
+
+- Print colored dict function added to `compas_rcf.utils.ui`.
+- Packages Colorama and Questionary added to to requirements. They are used for CLI runner.
 
 ### Changed
 
 - `compas_rcf.fabrication.abb_fabrication_non_interactive` refactored
+- `compas_rcf.fabrication.abb_fabrication_non_interactive` renamed to `abb_rcf_runner`.
+- `compas_rcf.fabrication.abb_rcf_runner` now takes args and can edit conf setup during runtime.
 - `compas.rcf.fabrication.ClayBullet` property `placement_frame` changed to be where the tool should stop while placing. New property `location` is the new required argument for the object and defines the clay bullets lowest point. `placement_frame` is derived from `location` and `compressed height`.
+- `ClayBulley` attributes `pre_frames` and `post_frames` renamed to `trajectory_to` and `trajectory_from` to be more descriptive.
 - Fixes to docs: In Updating section of `getting_started.rst` python was changed to pip. Inline comments removed from
     installation instructions.
-
-### Removed
 
 ## \[0.1.8\] \[2020-02-07\]
 
@@ -30,7 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Set up sphinx docs
 - Added deploy job for travis
 - Open file dialog function added to new module `compas_rcf.util.ui`
-- Open file dialog implemented in ABB fabricaton runner
+- Open file dialog implemented in ABB fabrication runner
 
 ### Changed
 

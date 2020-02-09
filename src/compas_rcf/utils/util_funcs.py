@@ -14,19 +14,33 @@ if IPY:
 
 
 def rand_vector(dimensions):
-    '''
-    https://stackoverflow.com/a/8453514
-    '''
+    """Create a random vector.
+
+    Pads vector if fewer than three dimensions up to three dimensions.
+
+    Parameters
+    ----------
+    dimensions : int
+
+    Returns
+    -------
+    `class`:compas.geometry.Vector
+        Unitized random vector
+
+    Notes
+    -----
+    Adapted from `Stack Overflow <https://stackoverflow.com/a/8453514>`_
+    """
     v = [random.gauss(0, 1) for i in range(dimensions)]
     magnitude = sum(x**2 for x in v)**.5
     vector = [x / magnitude for x in v]
-    if len(vector) > 3:
+    if len(vector) < 3:
         for i in range(3 - len(vector)):
             vector += [0]
 
-    vector = rg.Vector3d(*vector)
+    vector = cg.Vector(vector)
 
-    vector.Unitize()
+    vector.unitize()
 
     return vector
 
@@ -69,8 +83,11 @@ def flatten_list(l):
 
 
 def shift_list(seq, shift=1):
-    """
-    https://stackoverflow.com/a/29498813
+    """Shift indices of list, wrapping at end.
+
+    Notes
+    -----
+    Source: https://stackoverflow.com/a/29498813
     """
     return seq[-shift:] + seq[:-shift]
 
@@ -80,7 +97,7 @@ def list_elem_w_index_wrap(l, i):
 
 
 def flip_matrix(listlike):
-    """Rotate 2D-array
+    """Rotate 2D-array.
 
     Parameters
     ----------
@@ -143,3 +160,23 @@ def ensure_frame(frame_like):
             return rgplane_to_cgframe(frame_like)
 
     raise TypeError('Can\'t convert {} to compas.geometry.Frame'.format(type(frame_like)))
+
+
+def get_offset_frame(origin_frame, distance):
+    """Offset a frame in its Z axis direction.
+
+    Parameters
+    ----------
+    origin_frame : `class`:compas.geometry.Frame
+        Frame to offset
+    distance : float
+        Translation distance in mm
+
+    Returns
+    -------
+    `class`:compas.geometry.Frame
+    """
+    offset_vector = origin_frame.zaxis * distance * -1
+    T = cg.Translation(offset_vector)
+
+    return origin_frame.transformed(T)

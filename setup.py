@@ -24,7 +24,10 @@ def read(*names, **kwargs):
 long_description = read("README.md")
 requirements = [
     'compas_fab>=0.10.1,<0.11',
-    'compas_rrc>=0.2.2'
+    'compas_rrc>=0.2.2',
+    'questionary==1.5.1',
+    # 'PyYAML==5.3',
+    'colorama==0.4.3'
 ]
 optional_requirements = {}
 
