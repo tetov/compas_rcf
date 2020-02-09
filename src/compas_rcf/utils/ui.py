@@ -6,7 +6,8 @@ from colorama import init, Fore, Style
 
 def open_file_dialog(initial_dir="/", file_type=('JSON files', '*.json')):
     root = Tk()
-    root.filename = askopenfilename(initialdir=initial_dir, title="Select file", filetypes=(file_type, ("all files", "*.*")))
+    root.filename = askopenfilename(initialdir=initial_dir, title="Select file",
+                                    filetypes=(file_type, ("all files", "*.*")))
     return root.filename
 
 

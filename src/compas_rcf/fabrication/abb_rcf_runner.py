@@ -29,7 +29,7 @@ from compas_rcf.utils.json_ import load_bullets
 from compas_rcf.utils.ui import open_file_dialog
 from compas_rcf.utils.ui import print_dict_w_colors
 
-DEFAULT_JSON_DIR = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control\\04_fabrication_data_jsons\\'
+DEFAULT_JSON_DIR = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control\\04_fabrication_data_jsons\\'  # noqa: E501
 
 # These are the default values, can be changed while script is running
 ROBOT_CONF = {
@@ -43,7 +43,8 @@ ROBOT_CONF = {
     'release': 0,
     # Acceleration
     'accel': 100,  # %
-    'accel_ramp': 100,  # %: The rate at which acceleration and deceleration increases as a percentage of the normal values.
+    'accel_ramp': 100,  # %: The rate at which acceleration and deceleration
+                        # increases as a percentage of the normal values.
     # Max Speed
     'speed_override': 100,  # %
     'speed_max_tcp': 500,  # mm/2
@@ -180,8 +181,8 @@ def set_check_settings(target_select):
             if answer is not None:
                 ROBOT_CONF[key] = answer
                 print(Fore.BLUE + str(key) +
-                        Style.RESET_ALL + " changed to: " +
-                        Fore.GREEN + str(ROBOT_CONF[key]))
+                      Style.RESET_ALL + " changed to: " +
+                      Fore.GREEN + str(ROBOT_CONF[key]))
 
         print(Fore.CYAN + Style.BRIGHT + "\nRobot configuration")
         print_dict_w_colors(ROBOT_CONF)
@@ -203,8 +204,8 @@ def set_check_settings(target_select):
             if answer is not None:
                 ROBOT_CONF[key] = answer
                 print(Fore.BLUE + str(key) +
-                        Style.RESET_ALL + " changed to: " +
-                        Fore.GREEN + str(ROBOT_CONF[key]))
+                      Style.RESET_ALL + " changed to: " +
+                      Fore.GREEN + str(ROBOT_CONF[key]))
 
         print(Fore.CYAN + Style.BRIGHT + "Fabrication configuration")
         print_dict_w_colors(FABRICATION_CONF)
