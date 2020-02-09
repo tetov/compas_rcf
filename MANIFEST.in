@@ -19,4 +19,4 @@ exclude pytest.ini .bumpversion.cfg .editorconfig .style.yapf
 exclude tasks.py
 exclude CONTRIBUTING.md
 
-global-exclude *.py[cod] __pycache__ *.dylib *.nb[ic] .DS_Store
+global-exclude *.py[cod] __pycache__ *.dylib *.nb[ic] .DS_Store .mypy_cache
