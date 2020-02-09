@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('../'))
 project = "compas_rcf"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
-release = "0.1.8"
+release = "0.1.9"
 version = ".".join(release.split(".")[0:2])
 
 master_doc = "index"
