@@ -23,6 +23,7 @@ from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 from compas_rrc import Zone
+from compas_rrc import WaitTime
 
 from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils.json_ import load_bullets
@@ -34,7 +35,7 @@ DEFAULT_JSON_DIR = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_f
 # These are the default values, can be changed while script is running
 ROBOT_CONF = {
     # tool & wobj
-    'tool': 't_A057_MockTool01',
+    'tool': 't_A057_ClayTool01',
     'picking_wobj': 'ob_A057_WobjPicking01',
     'placing_wobj': 'ob_A057_WobjPlacing01',
     # IO
@@ -47,14 +48,14 @@ ROBOT_CONF = {
                         # increases as a percentage of the normal values.
     # Max Speed
     'speed_override': 100,  # %
-    'speed_max_tcp': 500,  # mm/2
+    'speed_max_tcp': 500,  # mm/s
     # Safe positions
-    'robot_joints_start_position': [-127, 54, 9, -2, 30, 7],
-    'robot_joints_end_position':  [-127, 54, 9, -2, 30, 7]
+    'robot_joints_start_position': [-107, 23, 20, 0, 34, 2],
+    'robot_joints_end_position':  [-107, 23, 20, 0, 34, 2]
 }
 
 FABRICATION_CONF = {
-    'offset_distance': 120  # mm
+    'offset_distance': 100  # mm
 }
 
 
@@ -77,7 +78,7 @@ def get_picking_frame(bullet_height):
     # TODO: Set up a grid to pick from
     picking_frame = Frame(Point(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0))
 
-    return get_offset_frame(picking_frame, bullet_height)
+    return get_offset_frame(picking_frame, bullet_height * .95)
 
 
 def send_grip_release(client, do_state):
@@ -94,7 +95,9 @@ def send_grip_release(client, do_state):
         Value to set DO to
     """
     if ROBOT_CONF['is_target_real']:
-        client.send(SetDigital(ROBOT_CONF['tool'], do_state))
+        client.send(WaitTime(.5))
+        client.send(SetDigital(ROBOT_CONF['io_needles'], do_state))
+        client.send(WaitTime(2))
     else:
         # Custom instruction can grip a bullet in RobotStudio note the tool tip must touch the bullet
         if do_state == ROBOT_CONF['grip']:
@@ -232,17 +235,18 @@ def send_picking(client, picking_frame):
     # pick bullet
     offset_picking = get_offset_frame(picking_frame, FABRICATION_CONF['offset_distance'])
 
-    client.send(MoveToFrame(offset_picking, 500, Zone.FINE))
+    client.send(MoveToFrame(offset_picking, 250, Zone.Z100))
 
-    client.send_and_wait(MoveToFrame(picking_frame, 500, Zone.FINE))
+    client.send_and_wait(MoveToFrame(picking_frame, 50, Zone.FINE))
+
     # TODO: Try compress bullet a little bit before picking
 
     send_grip_release(client, ROBOT_CONF['grip'])
 
-    client.send_and_wait(MoveToFrame(offset_picking, 500, Zone.FINE))
+    client.send_and_wait(MoveToFrame(offset_picking, 250, Zone.Z100))
 
 
-def send_placing(client, placement_frame, trajectory_to, trajectory_from):
+def send_placing(client, bullet):
     """Send movement and IO instructions to place a clay bullet.
 
     Parameters
@@ -254,26 +258,25 @@ def send_placing(client, placement_frame, trajectory_to, trajectory_from):
     # change work object before placing
     client.send(SetWorkObject(ROBOT_CONF['placing_wobj']))
 
-    # add offset placing plane to pre and post frames
-
-    offset_placement = get_offset_frame(placement_frame, FABRICATION_CONF['offset_distance'])
+    #ee#offset_placement = get_offset_frame(bullet.placement_frame, FABRICATION_CONF['offset_distance'])
+    top_bullet_frame = get_offset_frame(bullet.location, bullet.height)
 
     # Safe pos then vertical offset
-    for frame in trajectory_to:
-        client.send(MoveToFrame(frame, 500, Zone.FINE))
+    for frame in bullet.trajectory_to:
+        client.send(MoveToFrame(frame, 250, Zone.Z100))
 
-    client.send(MoveToFrame(offset_placement, 500, Zone.FINE))
-    client.send_and_wait(MoveToFrame(placement_frame, 500, Zone.FINE))
+    client.send(MoveToFrame(offset_placement, 250, Zone.Z50))
+    client.send(MoveToFrame(top_bullet_frame, 50, Zone.FINE))
 
     send_grip_release(client, ROBOT_CONF['release'])
 
-    client.send(MoveToFrame(offset_placement, 500, Zone.FINE))
+    client.send_and_wait(MoveToFrame(bullet.placement_frame, 50, Zone.FINE))
+
+    client.send(MoveToFrame(offset_placement, 250, Zone.FINE))
 
     # offset placement frame then safety frame
-    for frame in trajectory_from:
-        client.send(MoveToFrame(frame, 500, Zone.FINE))
-
-    client.send_and_wait(MoveToFrame(trajectory_from[-1], 500, Zone.FINE))
+    for frame in bullet.trajectory_from:
+        client.send(MoveToFrame(frame, 250, Zone.Z100))
 
 
 def abb_run(debug=False, target_select=None):
@@ -312,7 +315,7 @@ def abb_run(debug=False, target_select=None):
         send_picking(abb, picking_frame)
 
         # Place bullet
-        send_placing(abb, placement_frame, trajectory_to, trajectory_from)
+        send_placing(abb, bullet)
 
     shutdown_procedure(abb)
 
