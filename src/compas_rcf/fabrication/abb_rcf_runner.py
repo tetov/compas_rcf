@@ -9,7 +9,12 @@ from __future__ import print_function
 import sys
 from os import path
 
-import questionary
+try:
+    import questionary
+except ModuleNotFoundError:  # Error conveniently introduced in 3.6
+    raise  # Raise original exception
+except ImportError:
+    raise Exception('This module requires Python >=3.6')
 from colorama import Fore
 from colorama import Style
 from colorama import init
@@ -112,8 +117,7 @@ def initial_setup(client):
 
     # Initial configuration
     client.send(
-        MoveToJoints(CONF.safe_joint_positions.start, EXTERNAL_AXIS_DUMMY,
-                     CONF.movement.speed_travel,
+        MoveToJoints(CONF.safe_joint_positions.start, EXTERNAL_AXIS_DUMMY, CONF.movement.speed_travel,
                      CONF.movement.zone_travel))
 
 
@@ -125,8 +129,7 @@ def shutdown_procedure(client):
     client : :class:`compas_rrc.AbbClient`
     """
     client.send(
-        MoveToJoints(CONF.safe_joint_positions.end, EXTERNAL_AXIS_DUMMY,
-                     CONF.movement.speed_travel,
+        MoveToJoints(CONF.safe_joint_positions.end, EXTERNAL_AXIS_DUMMY, CONF.movement.speed_travel,
                      CONF.movement.zone_travel))
 
     client.send_and_wait(PrintText('Finished'))
