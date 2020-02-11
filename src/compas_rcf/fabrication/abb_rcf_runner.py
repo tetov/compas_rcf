@@ -212,7 +212,7 @@ def send_picking(client, picking_frame):
 
     send_grip_release(client, CONF.tool.grip_state)
 
-    client.send_and_wait(MoveToFrame(offset_picking, speed_picking, zone_pick_place))
+    client.send(MoveToFrame(offset_picking, speed_travel, zone_travel))
 
 
 def send_placing(client, bullet):

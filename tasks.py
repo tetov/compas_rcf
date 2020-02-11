@@ -7,14 +7,12 @@ import os
 import sys
 from shutil import rmtree
 
-from invoke import Exit
 from invoke import task
 
 try:
     input = raw_input
 except NameError:
     pass
-
 
 BASE_FOLDER = os.path.dirname(__file__)
 
@@ -63,10 +61,12 @@ def help(ctx):
     log.write('Use "invoke -h <taskname>" to get detailed help for a task.')
 
 
-@task(help={
-    'docs': 'True to clean up generated documentation, otherwise False',
-    'bytecode': 'True to clean up compiled python files, otherwise False.',
-    'builds': 'True to clean up build/packaging artifacts, otherwise False.'})
+@task(
+    help={
+        'docs': 'True to clean up generated documentation, otherwise False',
+        'bytecode': 'True to clean up compiled python files, otherwise False.',
+        'builds': 'True to clean up build/packaging artifacts, otherwise False.'
+    })
 def clean(ctx, docs=True, bytecode=True, builds=True):
     """Cleans the local copy from compiled artifacts."""
 
@@ -101,10 +101,12 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
             rmtree(os.path.join(BASE_FOLDER, folder), ignore_errors=True)
 
 
-@task(help={
-      'rebuild': 'True to clean all previously built docs before starting, otherwise False.',
-      'doctest': 'True to run doctests, otherwise False.',
-      'check_links': 'True to check all web links in docs for validity, otherwise False.'})
+@task(
+    help={
+        'rebuild': 'True to clean all previously built docs before starting, otherwise False.',
+        'doctest': 'True to run doctests, otherwise False.',
+        'check_links': 'True to check all web links in docs for validity, otherwise False.'
+    })
 def docs(ctx, doctest=False, rebuild=True, check_links=False):
     """Builds package's HTML documentation."""
 
@@ -126,21 +128,17 @@ def check(ctx):
     """Check the consistency of documentation, coding style and a few other things."""
 
     with chdir(BASE_FOLDER):
-        log.write('Checking MANIFEST.in...')
-        ctx.run('check-manifest --ignore-bad-ideas=test.so,fd.so,smoothing.so,drx_c.so')
-
         log.write('Checking metadata...')
         ctx.run('python setup.py check --strict --metadata')
 
         log.write('Running flake8 python linter...')
         ctx.run('flake8 --count --statistics src tests')
 
-        # log.write('Checking python imports...')
-        # ctx.run('isort --check-only --diff --recursive src tests setup.py')
+        log.write('Checking python imports...')
+        ctx.run('isort --check-only --diff --recursive src tests setup.py')
 
 
-@task(help={
-      'checks': 'True to run all checks before testing, otherwise False.'})
+@task(help={'checks': 'True to run all checks before testing, otherwise False.'})
 def test(ctx, checks=False, doctest=False):
     """Run all tests."""
     if checks:
@@ -164,42 +162,29 @@ def prepare_changelog(ctx):
         with open('CHANGELOG.md', 'r+') as changelog:
             content = changelog.read()
             changelog.seek(0)
-            changelog.write(content.replace(
-                '## ', UNRELEASED_CHANGELOG_TEMPLATE, 1))
+            changelog.write(content.replace('## ', UNRELEASED_CHANGELOG_TEMPLATE, 1))
 
         ctx.run('git add CHANGELOG.md && git commit -m "Prepare changelog for next release"')
 
 
-
-@task(help={
-      'release_type': 'Type of release follows semver rules. Must be one of: major, minor, patch.'})
-def release(ctx, release_type):
-    """Releases the project in one swift command!"""
-    if release_type not in ('patch', 'minor', 'major'):
-        raise Exit('The release type parameter is invalid.\nMust be one of: major, minor, patch')
-
-    # Run checks
-    ctx.run('invoke check test')
-
-    # Bump version and git tag it
-    ctx.run('bump2version %s --verbose' % release_type)
-
-    # Build project
+@task
+def build(ctx):
+    """Build project."""
     ctx.run('python setup.py clean --all sdist bdist_wheel')
 
-    # Upload to pypi
-    if confirm('You are about to upload the release to pypi.org. Are you sure? [y/N]'):
-        files = ['dist/*.whl', 'dist/*.gz', 'dist/*.zip']
-        dist_files = ' '.join([pattern for f in files for pattern in glob.glob(f)])
 
-        if len(dist_files):
-            ctx.run('twine upload --skip-existing %s' % dist_files)
+@task(help={'new_version': 'Version number to release'})
+def release(ctx, new_version):
+    """Releases the project in one swift command!"""
+    # Run checks
+    ctx.run('invoke check test build docs')
 
-            prepare_changelog(ctx)
-        else:
-            raise Exit('No files found to release')
-    else:
-        raise Exit('Aborted release')
+    # TODO: check if dirty
+
+    # Bump version and git tag it
+    ctx.run('git -s tag {}'.format(new_version))
+
+    prepare_changelog(ctx)
 
 
 @contextlib.contextmanager

@@ -35,7 +35,8 @@ In short, this is how that works.
 
    ```bash
    cd path/to/compas_rcf
-   pip install -r requirements-dev.txt
+   pip install git+https://bitbucket.org/ethrfl/compas_rrc#egg=compas_rrc-v0.2.2
+   pip install -e .[dev]
    ```
 
    If you have authentication issues with BitBucket (for compas_rrc) [Try installing

@@ -6,7 +6,7 @@ import random
 
 import compas.geometry as cg
 
-from compas_rcf import IPY
+from compas import IPY
 
 if IPY:
     import Rhino.Geometry as rg
