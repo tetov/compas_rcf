@@ -59,7 +59,7 @@ def get_picking_frame(bullet_height):
     # TODO: Set up a grid to pick from
     picking_frame = Frame(Point(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0))
 
-    return get_offset_frame(picking_frame, bullet_height * .95)
+    return get_offset_frame(picking_frame, bullet_height)
 
 
 def send_grip_release(client, do_state):
@@ -212,7 +212,7 @@ def send_picking(client, picking_frame):
 
     send_grip_release(client, CONF.tool.grip_state)
 
-    client.send_and_wait(MoveToFrame(offset_picking, speed_travel, zone_travel))
+    client.send_and_wait(MoveToFrame(offset_picking, speed_picking, zone_pick_place))
 
 
 def send_placing(client, bullet):
@@ -237,15 +237,15 @@ def send_placing(client, bullet):
 
     # add offset placing plane to pre and post frames
 
-    offset_placement = get_offset_frame(bullet.placement_frame, offset_distance)
     top_bullet_frame = get_offset_frame(bullet.location, bullet.height)
+    offset_placement = get_offset_frame(top_bullet_frame, offset_distance)
 
     # Safe pos then vertical offset
     for frame in bullet.trajectory_to:
         client.send(MoveToFrame(frame, speed_travel, zone_travel))
 
     client.send(MoveToFrame(offset_placement, speed_travel, zone_travel))
-    client.send(MoveToFrame(top_bullet_frame, speed_travel, zone_travel))
+    client.send(MoveToFrame(top_bullet_frame, speed_placing, zone_pick_place))
 
     send_grip_release(client, CONF.tool.release_state)
 
