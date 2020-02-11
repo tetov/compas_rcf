@@ -21,7 +21,7 @@ __author__ = ["Anton T Johansson"]
 __copyright__ = "MAS DFAB 1920 students and tutors"
 __license__ = "MIT License"
 __email__ = "anton@tetov.se"
-__version__ = "0.1.9"
+__version__ = "0.1.10"
 
 
 HERE = os.path.dirname(__file__)
