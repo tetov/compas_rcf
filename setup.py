@@ -25,8 +25,8 @@ long_description = read("README.md")
 requirements = [
     'compas_fab>=0.10.1,<0.11',
     'compas_rrc>=0.2.2',
-    'questionary==1.5.1',
-    # 'PyYAML==5.3',
+    'questionary ~= 1.5.1 ; python_version > "2.7"',
+    'confuse ~= 1.0.0',
     'colorama==0.4.3'
 ]
 optional_requirements = {}
