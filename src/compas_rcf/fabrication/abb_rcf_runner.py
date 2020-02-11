@@ -6,8 +6,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
+from os import path
+
 import questionary
-from colorama import init, Fore, Style
+from colorama import Fore
+from colorama import Style
+from colorama import init
 from compas.geometry import Frame
 from compas.geometry import Point
 from compas.geometry import Vector
@@ -22,41 +27,17 @@ from compas_rrc import SetDigital
 from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
-from compas_rrc import Zone
 
+from compas_rcf.fabrication.conf import ABB_RCF_CONF_TEMPLATE
+from compas_rcf.fabrication.conf import fabrication_conf
 from compas_rcf.utils import get_offset_frame
+from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
-from compas_rcf.utils.ui import open_file_dialog
-from compas_rcf.utils.ui import print_dict_w_colors
 
-DEFAULT_JSON_DIR = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control\\04_fabrication_data_jsons\\'  # noqa: E501
+ROBOT_CONTROL_FOLDER_DRIVE = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control'
 
-# These are the default values, can be changed while script is running
-ROBOT_CONF = {
-    # tool & wobj
-    'tool': 't_A057_MockTool01',
-    'picking_wobj': 'ob_A057_WobjPicking01',
-    'placing_wobj': 'ob_A057_WobjPlacing01',
-    # IO
-    'io_needles': 'doDNetOut1',
-    'grip': 1,
-    'release': 0,
-    # Acceleration
-    'accel': 100,  # %
-    'accel_ramp': 100,  # %: The rate at which acceleration and deceleration
-                        # increases as a percentage of the normal values.
-    # Max Speed
-    'speed_override': 100,  # %
-    'speed_max_tcp': 500,  # mm/2
-    # Safe positions
-    'robot_joints_start_position': [-127, 54, 9, -2, 30, 7],
-    'robot_joints_end_position':  [-127, 54, 9, -2, 30, 7]
-}
-
-FABRICATION_CONF = {
-    'offset_distance': 120  # mm
-}
-
+DEFAULT_CONF_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, '05_fabrication_confs')
+DEFAULT_JSON_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, '04_fabrication_data_jsons')
 
 # Define external axis, will not be used but required in move cmds
 EXTERNAL_AXIS_DUMMY: list = []
@@ -93,11 +74,11 @@ def send_grip_release(client, do_state):
     do_state : int (0 or 1)
         Value to set DO to
     """
-    if ROBOT_CONF['is_target_real']:
-        client.send(SetDigital(ROBOT_CONF['tool'], do_state))
+    if CONF.is_target_real:
+        client.send(SetDigital(CONF.tool.io_needles_pin, do_state))
     else:
         # Custom instruction can grip a bullet in RobotStudio note the tool tip must touch the bullet
-        if do_state == ROBOT_CONF['grip']:
+        if do_state == CONF.tool.grip_state:
             client.send(CustomInstruction('r_A057_RS_ToolGrip'))
         else:
             client.send(CustomInstruction('r_A057_RS_ToolRelease'))
@@ -110,19 +91,27 @@ def initial_setup(client):
     ----------
     client : :class:`compas_rrc.AbbClient`
     """
-    client.send(SetTool(ROBOT_CONF['tool']))
-    client.send(SetWorkObject(ROBOT_CONF['placing_wobj']))
+    accel = CONF.speed_values.accel
+    accel_ramp = CONF.speed_values.accel_ramp
+    speed_override = CONF.speed_values.speed_override
+    speed_max_tcp = CONF.speed_values.speed_max_tcp
+
+    client.send(SetTool(CONF.tool.tool_name))
+    client.send(SetWorkObject(CONF.wobjs.placing_wobj_name))
 
     # Set Acceleration
-    client.send(SetAcceleration(ROBOT_CONF['accel'], ROBOT_CONF['accel_ramp']))
+    client.send(SetAcceleration(accel, accel_ramp))
 
     # Set Max Speed
-    client.send(SetMaxSpeed(ROBOT_CONF['speed_override'], ROBOT_CONF['speed_max_tcp']))
+    client.send(SetMaxSpeed(speed_override, speed_max_tcp))
 
     print('Tool, Wobj, Acc and MaxSpeed sent to robot')
 
     # Initial configuration
-    client.send(MoveToJoints(ROBOT_CONF['robot_joints_start_position'], EXTERNAL_AXIS_DUMMY, 500, Zone.FINE))
+    client.send(
+        MoveToJoints(CONF.safe_joint_positions.start, EXTERNAL_AXIS_DUMMY,
+                     CONF.movement.speed_travel,
+                     CONF.movement.zone_travel))
 
 
 def shutdown_procedure(client):
@@ -132,7 +121,10 @@ def shutdown_procedure(client):
     ----------
     client : :class:`compas_rrc.AbbClient`
     """
-    client.send(MoveToJoints(ROBOT_CONF['robot_joints_end_position'], EXTERNAL_AXIS_DUMMY, 1000, Zone.FINE))
+    client.send(
+        MoveToJoints(CONF.safe_joint_positions.end, EXTERNAL_AXIS_DUMMY,
+                     CONF.movement.speed_travel,
+                     CONF.movement.zone_travel))
 
     client.send_and_wait(PrintText('Finished'))
 
@@ -141,7 +133,7 @@ def shutdown_procedure(client):
     client.terminate()
 
 
-def set_check_settings(target_select):
+def get_settings(target_select):
     """Print and prompts user for changes to default configuration.
 
     Parameters
@@ -151,65 +143,33 @@ def set_check_settings(target_select):
     """
     init(autoreset=True)
 
-    if target_select is None:
-        question = questionary.select(
-            "Target?",
-            choices=[
-                "Virtual robot",
-                "Real robot",
-            ]).ask()
-        is_target_real = question == "Real robot"
+    load_or_default = questionary.select("Load config or use default?", choices=['Default', 'Load'],
+                                         default='Default').ask()
+
+    if load_or_default == 'Load':
+        conf_file = ui.open_file_dialog(initial_dir=DEFAULT_CONF_DIR, file_type=('YAML files', '*.yaml'))
+        fabrication_conf.set_file(conf_file)
     else:
-        is_target_real = target_select == "real"
+        fabrication_conf.read(defaults=True, user=False)
 
-    ROBOT_CONF.update({'is_target_real': is_target_real})
+    global CONF
 
-    print(Fore.CYAN + Style.BRIGHT + "\nRobot configuration")
+    CONF = fabrication_conf.get(ABB_RCF_CONF_TEMPLATE)  # Will raise exception if conf is invalid
 
-    print_dict_w_colors(ROBOT_CONF)
+    if target_select is None:
+        question = questionary.select("Target?", choices=["Virtual robot", "Real robot"], default='Virtual robot').ask()
+        CONF.is_target_real = question == "Real robot"
+    else:
+        CONF.is_target_real = target_select == "real"
 
-    # edit or confirm ROBOT_CONF
-    edit_keys = questionary.checkbox(
-        "Select settings to change:",
-        choices=ROBOT_CONF.keys()
-    ).ask()
+    print(Fore.CYAN + Style.BRIGHT + "Configuration")
 
-    if edit_keys is not None:
-        for key in edit_keys:
-            answer = questionary.text("New value for {} [{}]:".format(key, ROBOT_CONF[key])).ask()
+    ui.print_conf_w_colors(fabrication_conf)
 
-            if answer is not None:
-                ROBOT_CONF[key] = answer
-                print(Fore.BLUE + str(key) +
-                      Style.RESET_ALL + " changed to: " +
-                      Fore.GREEN + str(ROBOT_CONF[key]))
-
-        print(Fore.CYAN + Style.BRIGHT + "\nRobot configuration")
-        print_dict_w_colors(ROBOT_CONF)
-        questionary.confirm("Is this correct?")
-
-    # edit or confirm FABRICATION_CONF
-    print(Fore.CYAN + Style.BRIGHT + "Fabrication configuration")
-    print_dict_w_colors(FABRICATION_CONF)
-
-    edit_keys = questionary.checkbox(
-        "Select settings to change:",
-        choices=FABRICATION_CONF.keys()
-    ).ask()
-
-    if edit_keys is not None:
-        for key in edit_keys:
-            answer = questionary.text("New value for {} [{}]:".format(key, FABRICATION_CONF[key])).ask()
-
-            if answer is not None:
-                ROBOT_CONF[key] = answer
-                print(Fore.BLUE + str(key) +
-                      Style.RESET_ALL + " changed to: " +
-                      Fore.GREEN + str(ROBOT_CONF[key]))
-
-        print(Fore.CYAN + Style.BRIGHT + "Fabrication configuration")
-        print_dict_w_colors(FABRICATION_CONF)
-        questionary.confirm("Is this correct?")
+    conf_ok = questionary.confirm("Configuration correct?").ask()
+    if not conf_ok:
+        print("Exiting.")
+        sys.exit()
 
 
 def send_picking(client, picking_frame):
@@ -221,25 +181,36 @@ def send_picking(client, picking_frame):
     picking_frame : compas.geometry.Frame
         Target frame to pick up bullet
     """
-    if not ROBOT_CONF['is_target_real']:
+    offset_distance = CONF.movement.offset_distance
+
+    speed_travel = CONF.movement.speed_travel
+    speed_picking = CONF.movement.speed_picking
+
+    zone_pick_place = CONF.movement.zone_pick_place
+    zone_travel = CONF.movement.zone_travel
+
+    print(zone_pick_place)
+    zone_travel = CONF.movement.zone_travel
+
+    if not CONF.is_target_real:
         # Custom instruction create a clay bullet in RobotStudio
         # TODO: Create bullet at picking point
         client.send(CustomInstruction('r_A057_RS_Create_Bullet'))
 
     # change work object before picking
-    client.send(SetWorkObject(ROBOT_CONF['picking_wobj']))
+    client.send(SetWorkObject(CONF.wobjs.picking_wobj_name))
 
     # pick bullet
-    offset_picking = get_offset_frame(picking_frame, FABRICATION_CONF['offset_distance'])
+    offset_picking = get_offset_frame(picking_frame, offset_distance)
 
-    client.send(MoveToFrame(offset_picking, 500, Zone.FINE))
+    client.send(MoveToFrame(offset_picking, speed_travel, zone_travel))
 
-    client.send_and_wait(MoveToFrame(picking_frame, 500, Zone.FINE))
+    client.send_and_wait(MoveToFrame(picking_frame, speed_picking, zone_pick_place))
     # TODO: Try compress bullet a little bit before picking
 
-    send_grip_release(client, ROBOT_CONF['grip'])
+    send_grip_release(client, CONF.grip)
 
-    client.send_and_wait(MoveToFrame(offset_picking, 500, Zone.FINE))
+    client.send_and_wait(MoveToFrame(offset_picking, speed_travel, zone_travel))
 
 
 def send_placing(client, placement_frame, trajectory_to, trajectory_from):
@@ -251,40 +222,46 @@ def send_placing(client, placement_frame, trajectory_to, trajectory_from):
     picking_frame : compas.geometry.Frame
         Target frame to pick up bullet
     """
+    offset_distance = CONF.movement.offset_distance
+
+    speed_travel = CONF.movement.speed_travel
+    speed_placing = CONF.movement.speed_placing
+
+    zone_pick_place = CONF.movement.zone_pick_place
+    zone_travel = CONF.movement.zone_travel
+
     # change work object before placing
-    client.send(SetWorkObject(ROBOT_CONF['placing_wobj']))
+    client.send(SetWorkObject(CONF.placing_wobj))
 
     # add offset placing plane to pre and post frames
 
-    offset_placement = get_offset_frame(placement_frame, FABRICATION_CONF['offset_distance'])
+    offset_placement = get_offset_frame(placement_frame, offset_distance)
 
     # Safe pos then vertical offset
     for frame in trajectory_to:
-        client.send(MoveToFrame(frame, 500, Zone.FINE))
+        client.send(MoveToFrame(frame, speed_travel, zone_travel))
 
-    client.send(MoveToFrame(offset_placement, 500, Zone.FINE))
-    client.send_and_wait(MoveToFrame(placement_frame, 500, Zone.FINE))
+    client.send(MoveToFrame(offset_placement, speed_travel, zone_travel))
+    client.send_and_wait(MoveToFrame(placement_frame, speed_placing, zone_pick_place))
 
-    send_grip_release(client, ROBOT_CONF['release'])
+    send_grip_release(client, CONF.tool.release_state)
 
-    client.send(MoveToFrame(offset_placement, 500, Zone.FINE))
+    client.send(MoveToFrame(offset_placement, speed_travel, zone_travel))
 
     # offset placement frame then safety frame
     for frame in trajectory_from:
-        client.send(MoveToFrame(frame, 500, Zone.FINE))
-
-    client.send_and_wait(MoveToFrame(trajectory_from[-1], 500, Zone.FINE))
+        client.send(MoveToFrame(frame, speed_travel, zone_travel))
 
 
 def abb_run(debug=False, target_select=None):
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
     print('\ncompas_rfc abb runner\n')
 
-    set_check_settings(target_select)
+    get_settings(target_select)
 
     # TODO: Add function to get latest script or previous script
 
-    json_path = open_file_dialog(initial_dir=DEFAULT_JSON_DIR)
+    json_path = ui.open_file_dialog(initial_dir=DEFAULT_JSON_DIR)
     clay_bullets = load_bullets(json_path)
 
     # Create Ros Client

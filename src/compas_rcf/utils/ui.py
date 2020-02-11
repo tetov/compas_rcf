@@ -1,7 +1,10 @@
+from os import name
+from os import system
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
 from colorama import init, Fore, Style
+from confuse import ConfigTypeError
 
 
 def open_file_dialog(initial_dir="/", file_type=('JSON files', '*.json')):
@@ -11,17 +14,26 @@ def open_file_dialog(initial_dir="/", file_type=('JSON files', '*.json')):
     return root.filename
 
 
-def print_dict_w_colors(dict_):
-    init(autoreset=True)
+def print_conf_w_colors(conf):
+    """Prints dicts styled based on hierarchy, supports 1 level of nested dicts."""
 
-    for key in dict_:
-        print(Fore.BLUE + Style.BRIGHT +
-              "* " + str(key) + ": " +
-              Style.RESET_ALL + Fore.GREEN + Style.DIM +
-              str(dict_[key]))
+    init(autoreset=True)
+    print()
+
+    for key in conf.keys():
+        try:
+            print(Fore.BLUE + Style.BRIGHT + "* " + str(key) + ":")
+            for subkey in conf[key].keys():
+                print(Fore.GREEN + Style.DIM + "    - " + str(subkey) + ": " +
+                      Fore.YELLOW + str(conf[key][subkey]))
+        except ConfigTypeError:
+            print(Fore.BLUE + Style.BRIGHT + "* " + str(key) + ": " + Fore.GREEN + Style.DIM + str(conf[key]))
 
     print()
 
 
-if __name__ == "__main__":
-    print(open_file_dialog())
+def clear_screen():
+    if name == 'nt':
+        system('cls')
+    else:
+        system('clear')

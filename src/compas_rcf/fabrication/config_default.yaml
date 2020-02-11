@@ -1,0 +1,35 @@
+movement:
+  offset_distance: 120
+  speed_placing: 100
+  speed_picking: 100
+  speed_travel: 250
+  zone_pick_place: 'Fine'
+  zone_travel: 'Z100'
+safe_joint_positions:
+  end:
+  - -127.0
+  - 54.0
+  - 9.0
+  - -2.0
+  - 30.0
+  - 7.0
+  start:
+  - -127.0
+  - 54.0
+  - 9.0
+  - -2.0
+  - 30.0
+  - 7.0
+speed_values:
+  speed_override: 100
+  accel: 100
+  speed_max_tcp: 500
+  accel_ramp: 100
+tool:
+  io_needles_pin: doDNetOut1
+  tool_name: t_A057_ClayTool01
+  grip_state: 1
+  release_state: 0
+wobjs:
+  picking_wobj_name: ob_A057_WobjPicking01
+  placing_wobj_name: ob_A057_WobjPlacing01
