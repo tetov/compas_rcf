@@ -4,14 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.1.10\] \[2020-10-11\]
 
 ### Added
 
+- Module `compas_rcf.fabrication.conf` added. Reads yaml files for fabrication settings. Provides template to validate files.
+- Package `confuse` new dependecy, ("painless YAML config files for Python")
+- Default config file (in YAML) added to `compas_rcf.fabrication`
+- Module `compas_rcf.abb.helpers` added, for now only a dict mapping Zone data names to absolute value
+
 ### Changed
+
+- `compas_rcf.fabrication.abb_rcf_runner` updated to use YAML configs.
+- docker compose dirs moved from `./docker` to `.data/docker-compose`
 
 ### Removed
 
+* Hard-coded fabrication configuration removed from `compas_rcf.fabrication.abb_rcf_runner`. Default values now stored in `compas_rcf.fabrication.default_config.yaml`
 
 ## \[0.1.9\] \[2020-02-09\]
 

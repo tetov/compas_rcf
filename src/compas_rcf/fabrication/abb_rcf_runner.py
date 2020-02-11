@@ -27,7 +27,6 @@ from compas_rrc import SetDigital
 from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
-from compas_rrc import Zone
 from compas_rrc import WaitTime
 
 from compas_rcf.fabrication.conf import ABB_RCF_CONF_TEMPLATE
@@ -35,8 +34,6 @@ from compas_rcf.fabrication.conf import fabrication_conf
 from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
-from compas_rcf.utils.ui import open_file_dialog
-from compas_rcf.utils.ui import print_dict_w_colors
 
 ROBOT_CONTROL_FOLDER_DRIVE = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control'
 
@@ -195,7 +192,6 @@ def send_picking(client, picking_frame):
     zone_pick_place = CONF.movement.zone_pick_place
     zone_travel = CONF.movement.zone_travel
 
-    print(zone_pick_place)
     zone_travel = CONF.movement.zone_travel
 
     if not CONF.is_target_real:
@@ -214,7 +210,7 @@ def send_picking(client, picking_frame):
     client.send_and_wait(MoveToFrame(picking_frame, speed_picking, zone_pick_place))
     # TODO: Try compress bullet a little bit before picking
 
-    send_grip_release(client, CONF.grip)
+    send_grip_release(client, CONF.tool.grip_state)
 
     client.send_and_wait(MoveToFrame(offset_picking, speed_travel, zone_travel))
 
@@ -237,11 +233,11 @@ def send_placing(client, bullet):
     zone_travel = CONF.movement.zone_travel
 
     # change work object before placing
-    client.send(SetWorkObject(CONF.placing_wobj))
+    client.send(SetWorkObject(CONF.wobjs.placing_wobj_name))
 
     # add offset placing plane to pre and post frames
 
-    offset_placement = get_offset_frame(placement_frame, offset_distance)
+    offset_placement = get_offset_frame(bullet.placement_frame, offset_distance)
     top_bullet_frame = get_offset_frame(bullet.location, bullet.height)
 
     # Safe pos then vertical offset
@@ -286,13 +282,7 @@ def abb_run(debug=False, target_select=None):
 
     for bullet in clay_bullets:
 
-        placement_frame = bullet.placement_frame
-        trajectory_to = bullet.trajectory_to
-        trajectory_from = bullet.trajectory_from
-
-        bullet_height = bullet.height
-
-        picking_frame = get_picking_frame(bullet_height)
+        picking_frame = get_picking_frame(bullet.height)
 
         # Pick bullet
         send_picking(abb, picking_frame)
