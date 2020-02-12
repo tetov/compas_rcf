@@ -137,3 +137,6 @@ docker/ursim/programs
 # generated docs
 docs/__build/
 docs/api/generated/
+
+# Artifact from setuptools_scm for releases
+_version.py

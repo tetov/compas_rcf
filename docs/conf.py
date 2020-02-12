@@ -4,22 +4,18 @@
 #
 # needs_sphinx = "1.0"
 
-import sys
-import os
-
-from sphinx.ext.napoleon.docstring import NumpyDocstring
+from compas_rcf import __version__
 import sphinx_compas_theme
 
-sys.path.insert(0, os.path.abspath('../'))
 # -- General configuration ------------------------------------------------
 
 project = "compas_rcf"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
-release = "0.1.11"
-version = ".".join(release.split(".")[0:2])
+version = release = __version__
 
 master_doc = "index"
+
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown'
@@ -27,7 +23,7 @@ source_suffix = {
 templates_path = [
     "_templates",
 ]
-exclude_patterns = []
+exclude_patterns: list = []
 
 pygments_style = "sphinx"
 show_authors = True
@@ -58,13 +54,6 @@ autodoc_default_options = {
     'show-inheritance': True,
 }
 
-autodoc_member_order = 'alphabetical'
-
-
-autodoc_default_options = {
-    'undoc-members': True,
-    'show-inheritance': True,
-}
 autodoc_typehints = 'signature'
 
 autodoc_member_order = "alphabetical"
@@ -75,6 +64,7 @@ autoclass_content = "class"
 
 autosummary_generate = True
 autosummary_imported_members = True
+
 # napoleon options
 
 napoleon_google_docstring = True
@@ -89,19 +79,6 @@ napoleon_use_ivar = False
 napoleon_use_param = False
 napoleon_use_rtype = False
 
-# plot options
-
-# plot_include_source
-# plot_pre_code
-# plot_basedir
-# plot_formats
-# plot_rcparams
-# plot_apply_rcparams
-# plot_working_directory
-# plot_template
-
-plot_html_show_source_link = True
-plot_html_show_formats = False
 
 # intersphinx options
 
@@ -121,12 +98,12 @@ html_theme_options = {
     "package_version": release,
 }
 
-html_context = {}
-html_static_path = []
+html_context: dict = {}
+html_static_path: list = []
 html_extra_path = [".nojekyll", "CNAME"]
 html_last_updated_fmt = ""
 html_copy_source = False
-html_show_sourcelink = False
+html_show_sourcelink = True
 html_add_permalinks = ""
 html_experimental_html5_writer = True
 html_compact_lists = True

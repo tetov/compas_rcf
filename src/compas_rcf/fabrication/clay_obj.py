@@ -12,7 +12,7 @@ from compas.geometry import Frame
 from compas.geometry import Translation
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf import IPY
+from compas import IPY
 from compas_rcf.utils import ensure_frame
 from compas_rcf.utils import list_elem_w_index_wrap
 from compas_rcf.utils.compas_to_rhino import cgframe_to_rgplane
