@@ -1,5 +1,4 @@
-"""
-Will be replaced by urscript_wrapper
+"""Will be replaced by urscript_wrapper.
 
 This module wraps standard UR Script functions.
 Main change is that plane information substitute for pose data
@@ -9,12 +8,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import compas.geometry as cg
 import Rhino.Geometry as rg
+from compas.geometry.transformations import axis_angle_vector_from_matrix
 
 from compas_rcf.utils.rhino_to_compas import rgtransform_to_matrix
-
-import compas.geometry as cg
-from compas.geometry.transformations import axis_angle_vector_from_matrix
 
 
 # Import this from helpers when I've solved problem with format_ur_cmd

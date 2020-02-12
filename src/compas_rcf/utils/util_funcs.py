@@ -5,7 +5,6 @@ from __future__ import print_function
 import random
 
 import compas.geometry as cg
-
 from compas import IPY
 
 if IPY:

@@ -9,12 +9,6 @@ from __future__ import print_function
 import sys
 from os import path
 
-try:
-    import questionary
-except ModuleNotFoundError:  # Error conveniently introduced in 3.6
-    raise  # Raise original exception
-except ImportError:
-    raise Exception('This module requires Python >=3.6')
 from colorama import Fore
 from colorama import Style
 from colorama import init
@@ -39,6 +33,14 @@ from compas_rcf.fabrication.conf import fabrication_conf
 from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
+
+try:
+    import questionary
+except ModuleNotFoundError:  # Error conveniently introduced in 3.6
+    raise  # Raise original exception
+except ImportError:
+    raise Exception('This module requires Python >=3.6')
+
 
 ROBOT_CONTROL_FOLDER_DRIVE = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control'
 

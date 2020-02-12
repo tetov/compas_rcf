@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
 import io
 from os import path
 
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
 
-def read(*names, **kwargs):
+def _read(*names, **kwargs):
     return io.open(path.join(here, *names), encoding=kwargs.get("encoding", "utf8")).read()
 
 
-long_description = read("README.md")
+long_description = _read("README.md")
 
 requirements = [
     'compas_fab ~= 0.10.2', 'compas_rrc ~= 0.2.2', 'questionary ~= 1.5.1', 'colorama ~= 0.4.3',
