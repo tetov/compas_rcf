@@ -1,7 +1,7 @@
 """Helpers for scripts interacting with ABB robots or RAPID code."""
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from __future__ import absolute_import
 
 # Describes the valid zone data definitions.
 ZONE_DICT = {

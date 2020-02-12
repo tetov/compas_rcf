@@ -1,32 +1,42 @@
 language: python
 
 python:
-    - "2.7"
     - "3.7"
 
+git:
+    depth: false
+
 before_install:
-    - pip install --upgrade pip
+    - pip install --upgrade pip setuptools wheel
     - pip install Cython --install-option="--no-cython-compile"
     # add bitbucket to known hosts
     - echo 'bitbucket.org,18.205.93.1 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==' >> $HOME/.ssh/known_hosts
-    # installed using ssh key tied to @tetov account
-    - pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@v0.2.2#egg=compas_rrc
 
 install:
-    - pip install --no-cache-dir -r requirements-dev.txt
+    - pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@v0.2.2#egg=compas_rrc
+    - pip install --no-cache-dir -e .[dev]
+    - python -c "from setuptools_scm import get_version;get_version('.', write_to='src/compas_rcf/_version.py')"
 
 script:
     - invoke test
 
 before_deploy:
     - invoke docs
+    - python setup.py clean --all sdist bdist_wheel
 
 deploy:
     - provider: pages
       skip_cleanup: true
-      keep-history: true
-      github_token: $GITHUB_TOKEN
+      keep_history: true
+      token: $GITHUB_TOKEN
       local_dir: dist/docs
       target_branch: gh-pages
+    - provider: pypi
+      username: "__token__"
+      password: $PYPI_TOKEN
+      distributions: "sdist bdist_wheel"
+      skip_existing: true
+      skip_cleanup: true
       on:
-          condition: $TRAVIS_PYTHON_VERSION = 3.7
+          tags: true
+

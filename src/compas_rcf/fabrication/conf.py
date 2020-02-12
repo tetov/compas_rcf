@@ -2,8 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from compas_rcf.abb.helpers import ZONE_DICT
 import confuse
+
+from compas_rcf.abb.helpers import ZONE_DICT
 
 
 class ZoneDataTemplate(confuse.Template):

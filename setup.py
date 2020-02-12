@@ -1,39 +1,47 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# flake8: noqa
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
 import io
 from os import path
 
+from setuptools import find_packages
 from setuptools import setup
-from setuptools.command.develop import develop
-from setuptools.command.install import install
-
 
 here = path.abspath(path.dirname(__file__))
 
 
-def read(*names, **kwargs):
-    return io.open(
-        path.join(here, *names),
-        encoding=kwargs.get("encoding", "utf8")
-    ).read()
+def _read(*names, **kwargs):
+    return io.open(path.join(here, *names), encoding=kwargs.get("encoding", "utf8")).read()
 
-long_description = read("README.md")
+
+long_description = _read("README.md")
+
 requirements = [
-    'compas_fab>=0.10.1,<0.11',
-    'compas_rrc>=0.2.2',
-    'questionary ~= 1.5.1 ; python_version > "2.7"',
-    'confuse ~= 1.0.0',
-    'colorama==0.4.3'
+    'compas_fab ~= 0.10.2', 'compas_rrc ~= 0.2.2', 'questionary ~= 1.5.1', 'colorama ~= 0.4.3',
+    'confuse ~= 1.0.0'
 ]
-optional_requirements = {}
+
+dev_requirements = [
+    'attrs ~= 17.4',
+    'doc8',
+    'flake8',
+    'invoke >= 0.14',
+    'isort',
+    'pydocstyle',
+    'pytest >= 3.2',
+    'recommonmark >=0.6',
+    'sphinx_compas_theme >= 0.4',
+    'sphinx > =1.6',
+    'sphinx-autodoc-typehints[type_comments] >= 1.10 ; python_version > "2.7"',
+    'setuptools_scm[toml]',  # test
+    'yapf',
+]
 
 setup(
     name="compas_rcf",
-    version="0.1.10",
     description="python module for MAS DFAB project Rapid Clay Formations",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -50,30 +58,27 @@ setup(
         "Operating System :: POSIX",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: IronPython"
     ],
     keywords=['architecture', 'engineering', 'fabrication', 'construction'],
     project_urls={
         "Repository": "https://github.com/compas-dev/compas",
-        "Issues": "https://github.com/compas-dev/compas/issues"
-        },
-    packages=["compas_rcf"],
+        "Issues": "https://github.com/compas-dev/compas/issues",
+        "Documentation": "https://compas_rcf.tetov.se/"
+    },
+    packages=find_packages(),
     package_dir={"": "src"},
-    package_data={},
-    data_files=[],
     include_package_data=True,
     zip_safe=False,
     install_requires=requirements,
+    extras_require={"dev": dev_requirements},
     python_requires=">=2.7",
-    extras_require=optional_requirements,
     entry_points={
         "console_scripts": [],
     },
-    ext_modules=[],
 )

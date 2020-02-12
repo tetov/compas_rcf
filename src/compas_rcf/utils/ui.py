@@ -1,9 +1,15 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from os import name
 from os import system
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
-from colorama import init, Fore, Style
+from colorama import Fore
+from colorama import Style
+from colorama import init
 from confuse import ConfigTypeError
 
 

@@ -9,7 +9,6 @@ from __future__ import print_function
 import sys
 from os import path
 
-import questionary
 from colorama import Fore
 from colorama import Style
 from colorama import init
@@ -34,6 +33,14 @@ from compas_rcf.fabrication.conf import fabrication_conf
 from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
+
+try:
+    import questionary
+except ModuleNotFoundError:  # Error conveniently introduced in 3.6
+    raise  # Raise original exception
+except ImportError:
+    raise Exception('This module requires Python >=3.6')
+
 
 ROBOT_CONTROL_FOLDER_DRIVE = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control'
 
@@ -113,8 +120,7 @@ def initial_setup(client):
 
     # Initial configuration
     client.send(
-        MoveToJoints(CONF.safe_joint_positions.start, EXTERNAL_AXIS_DUMMY,
-                     CONF.movement.speed_travel,
+        MoveToJoints(CONF.safe_joint_positions.start, EXTERNAL_AXIS_DUMMY, CONF.movement.speed_travel,
                      CONF.movement.zone_travel))
 
 
@@ -126,8 +132,7 @@ def shutdown_procedure(client):
     client : :class:`compas_rrc.AbbClient`
     """
     client.send(
-        MoveToJoints(CONF.safe_joint_positions.end, EXTERNAL_AXIS_DUMMY,
-                     CONF.movement.speed_travel,
+        MoveToJoints(CONF.safe_joint_positions.end, EXTERNAL_AXIS_DUMMY, CONF.movement.speed_travel,
                      CONF.movement.zone_travel))
 
     client.send_and_wait(PrintText('Finished'))
@@ -213,7 +218,7 @@ def send_picking(client, picking_frame):
 
     send_grip_release(client, CONF.tool.grip_state)
 
-    client.send_and_wait(MoveToFrame(offset_picking, speed_picking, zone_pick_place))
+    client.send(MoveToFrame(offset_picking, speed_travel, zone_travel))
 
 
 def send_placing(client, bullet):

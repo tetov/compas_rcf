@@ -2,20 +2,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from compas.geometry import Frame
+
+from compas_rcf.ur.helpers import format_joint_positions
+from compas_rcf.ur.helpers import format_pose
+from compas_rcf.ur.helpers import format_urscript_cmd
+
 try:
     from typing import List
 except ImportError:
     pass
 
-from compas.geometry import Frame
-
-from compas_rcf.ur.helpers import format_urscript_cmd
-from compas_rcf.ur.helpers import format_pose
-from compas_rcf.ur.helpers import format_joint_positions
-
 # Motion
-
-
 @format_urscript_cmd
 def movel(frame_to, accel=1.2, vel=.25, time=0, zone=0):
     # type: (Frame, float, float, float, float) -> str
