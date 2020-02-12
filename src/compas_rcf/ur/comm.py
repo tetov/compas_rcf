@@ -1,5 +1,4 @@
-"""
-This module manages communications and script execution
+"""This module manages communications and script execution.
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -37,8 +36,8 @@ def concatenate_script(list_ur_commands):
     for l in lines:
         ur_script += "\t" + l + "\n"
 
-    ur_script += 'end\n'
-    ur_script += '\nclay_script()\n'
+    ur_script += "end\n"
+    ur_script += "\nclay_script()\n"
     return ur_script
 
 
@@ -57,8 +56,8 @@ def stop_script():
     ur_script += "\twait_ext_axis()\n"
     # Call UR robot to stop
     ur_script += "\tstop program\n"
-    ur_script += '\nend\n'
-    ur_script += '\nstop_script()\n'
+    ur_script += "\nend\n"
+    ur_script += "\nstop_script()\n"
     return ur_script
 
 
@@ -71,7 +70,7 @@ def send_script(script_to_send, robot_id, offline_simulation):
         robot_id: Integer. ID of robot
 
     """
-    '''Function that opens a socket connection to the robot'''
+    """Function that opens a socket connection to the robot"""
     PORT = 30002
     HOST = get_ip_ur(robot_id, offline_simulation)
 
@@ -105,11 +104,11 @@ def get_ip_ur(ur_number, offline_simulation=False):
     Returns:
         ip: string.
     """
-    subnet = '192.168.10.'
+    subnet = "192.168.10."
     if not offline_simulation:
         ip = subnet + str(ur_number + 9)
     else:
-        ip = 'localhost'
+        ip = "localhost"
     print(ip)
     return ip
 
@@ -125,7 +124,7 @@ def _get_ip_axis(ur_number):
         ip: string.
     """
     ip = 10 * ur_number
-    return '192.168.10.%d' % ip
+    return "192.168.10.%d" % ip
 
 
 def create_ur_script(template, scripts, robot_id):
@@ -181,13 +180,13 @@ def read(HOST, PORT):
     """
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(.1)
+    s.settimeout(0.1)
     try:
         s.connect((HOST, PORT))
-        print('connected')
+        print("connected")
     except:  # noqa E722
         traceback.print_exc()
-        print('Cannot connect to {}, {}'.format(HOST, PORT))
+        print("Cannot connect to {}, {}".format(HOST, PORT))
     # s.settimeout(None)
     data = s.recv(1024)
     s.close()

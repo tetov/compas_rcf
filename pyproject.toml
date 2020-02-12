@@ -18,3 +18,6 @@ not_skip = "__init__.py"
 add_imports = "__future__.absolute_import,__future__.division,__future__.print_function"
 force_adds = true
 skip = "_version.py"
+
+[tool.black]
+include = '\.pyi?$'

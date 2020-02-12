@@ -16,10 +16,12 @@ from compas_rcf.utils.compas_to_rhino import matrix_to_rgtransform
 
 
 def visualize_urscript(script):
-    M = [[-1000,    0,    0,    0], # noqa E201
-         [    0, 1000,    0,    0], # noqa E201
-         [    0,    0, 1000,    0], # noqa E201
-         [    0,    0,    0,    1]] # noqa E201 # yapf: disable
+    M = [
+        [-1000, 0, 0, 0],
+        [0, 1000, 0, 0],
+        [0, 0, 1000, 0],
+        [0, 0, 0, 1],
+    ]
     rgT = matrix_to_rgtransform(M)
     cgT = Transformation.from_matrix(M)
 
@@ -27,18 +29,20 @@ def visualize_urscript(script):
 
     viz_planes = []
 
-    movel_matcher = re.compile(r'^\s*move([lj]).+((-?\d+\.\d+,?\s?){6}).*$')
+    movel_matcher = re.compile(r"^\s*move([lj]).+((-?\d+\.\d+,?\s?){6}).*$")
     for line in script.splitlines():
         mo = re.search(movel_matcher, line)
         if mo:
-            if mo.group(1) == 'l':  # movel
-                ptX, ptY, ptZ, rX, rY, rZ = mo.group(2).split(',')
+            if mo.group(1) == "l":  # movel
+                ptX, ptY, ptZ, rX, rY, rZ = mo.group(2).split(",")
 
                 pt = Point(float(ptX), float(ptY), float(ptZ))
                 pt.transform(cgT)
                 frame = Frame(pt, [1, 0, 0], [0, 1, 0])
 
-                R = Rotation.from_axis_angle_vector([float(rX), float(rY), float(rZ)], pt)
+                R = Rotation.from_axis_angle_vector(
+                    [float(rX), float(rY), float(rZ)], pt
+                )
                 T = matrix_to_rgtransform(R)
 
                 plane = cgframe_to_rgplane(frame)
@@ -46,8 +50,10 @@ def visualize_urscript(script):
 
                 viz_planes.append(plane)
             else:  # movej
-                joint_values = mo.group(2).split(',')
-                configuration = Configuration.from_revolute_values([float(d) for d in joint_values])
+                joint_values = mo.group(2).split(",")
+                configuration = Configuration.from_revolute_values(
+                    [float(d) for d in joint_values]
+                )
                 frame = robot.forward_kinematics(configuration)
 
                 plane = cgframe_to_rgplane(frame)

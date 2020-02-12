@@ -31,7 +31,7 @@ def rand_vector(dimensions):
     Adapted from `Stack Overflow <https://stackoverflow.com/a/8453514>`_
     """
     v = [random.gauss(0, 1) for i in range(dimensions)]
-    magnitude = sum(x**2 for x in v)**.5
+    magnitude = sum(x ** 2 for x in v) ** 0.5
     vector = [x / magnitude for x in v]
     if len(vector) < 3:
         for i in range(3 - len(vector)):
@@ -54,8 +54,8 @@ def remap_values(values, from_domain, to_domain, include_clipped=False):
     from_min, from_max = from_domain
     to_min, to_max = to_domain
 
-    from_range = (from_max - from_min)
-    to_range = (to_max - to_min)
+    from_range = from_max - from_min
+    to_range = to_max - to_min
 
     remapped_values = []
 
@@ -158,7 +158,9 @@ def ensure_frame(frame_like):
         if isinstance(frame_like, rg.Plane):
             return rgplane_to_cgframe(frame_like)
 
-    raise TypeError('Can\'t convert {} to compas.geometry.Frame'.format(type(frame_like)))
+    raise TypeError(
+        "Can't convert {} to compas.geometry.Frame".format(type(frame_like))
+    )
 
 
 def get_offset_frame(origin_frame, distance):

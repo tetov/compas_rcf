@@ -111,8 +111,8 @@ def _format_pose(pt_like, axis_angle):
     elif isinstance(pt_like, cg.Frame):
         pt_coords = pt_like.point.data
     else:
-        raise TypeError('Could not convert argument to point')
-    pose_data = [c / 1000. for c in pt_coords] + [float(a) for a in axis_angle]
+        raise TypeError("Could not convert argument to point")
+    pose_data = [c / 1000.0 for c in pt_coords] + [float(a) for a in axis_angle]
     pose_fmt = "p[" + ", ".join(["{:.4f}"] * 6) + "]"
     return pose_fmt.format(*pose_data)
 
@@ -146,7 +146,12 @@ def move_l(plane_to, accel, vel, blend_radius=0):
     pose = _format_pose(plane_to, axis_angle_vector)
 
     # Format UR script
-    return "movel(%s, a = %.2f, v = %.2f, r = %.2f)\n" % (pose, accel, vel, blend_radius)
+    return "movel(%s, a = %.2f, v = %.2f, r = %.2f)\n" % (
+        pose,
+        accel,
+        vel,
+        blend_radius,
+    )
 
 
 def move_l_time(plane_to, time, blend_radius=0):
@@ -171,7 +176,13 @@ def move_l_time(plane_to, time, blend_radius=0):
     pose = _format_pose(plane_to, axis_angle_vector)
 
     # Format UR script
-    return "movel(%s, a = %.2f, v = %.2f, t = %.2f, r = %.4f)\n" % (pose, 1.2, 0.25, time, blend_radius)
+    return "movel(%s, a = %.2f, v = %.2f, t = %.2f, r = %.4f)\n" % (
+        pose,
+        1.2,
+        0.25,
+        time,
+        blend_radius,
+    )
 
 
 def move_l2(plane_to, vel, blend_radius):
@@ -203,17 +214,21 @@ def move_j(joints, accel, vel):
     # TODO: Check acceleration and velocity are below set limit
     joint_positions = _format_joint_positions(joints)
 
-    return "movej({}, a = {:.2f}, v = {:.2f})\n".format(joint_positions, abs(accel), abs(vel))
+    return "movej({}, a = {:.2f}, v = {:.2f})\n".format(
+        joint_positions, abs(accel), abs(vel)
+    )
 
 
-def move_j_pose(plane_to, accel, vel, blend_radius=0.):
+def move_j_pose(plane_to, accel, vel, blend_radius=0.0):
     axis_angle_vector = axis_angle_vector_from_plane_to_plane(plane_to)
 
     # Create pose data
     pose = _format_pose(plane_to, axis_angle_vector)
 
     # Return UR script
-    return "movej({}, a = {:.2f}, v = {:.2f}, r = {:.2f})\n".format(pose, accel, vel, blend_radius)
+    return "movej({}, a = {:.2f}, v = {:.2f}, r = {:.2f})\n".format(
+        pose, accel, vel, blend_radius
+    )
 
 
 def move_c(plane_to, point_via, accel, vel):
@@ -241,7 +256,9 @@ def move_c(plane_to, point_via, accel, vel):
     pose_via = _format_pose(point_via, axis_angle_vector)
 
     # Format UR script
-    return "movec({}, {}, a = {:.2f}, v = {:.2f})\n".format(pose_to, pose_via, accel, vel)
+    return "movec({}, {}, a = {:.2f}, v = {:.2f})\n".format(
+        pose_to, pose_via, accel, vel
+    )
 
 
 # ----- UR Internals module -----
@@ -263,7 +280,9 @@ def set_tcp_by_plane(x_offset, y_offset, z_offset, ref_plane=rg.Plane.WorldXY):
     """
     # TODO: Test
 
-    axis_angle_vector = axis_angle_vector_from_plane_to_plane(rg.Plane.WorldXY, plane_from=ref_plane)
+    axis_angle_vector = axis_angle_vector_from_plane_to_plane(
+        rg.Plane.WorldXY, plane_from=ref_plane
+    )
 
     # Create pose data
     pose = _format_pose([x_offset, y_offset, z_offset, axis_angle_vector])
@@ -317,7 +336,7 @@ def popup(message, title):
 
 
 def UR_log(message):
-    return 'textmsg(\"{}\")\n'.format(message)
+    return 'textmsg("{}")\n'.format(message)
 
 
 def sleep(time):

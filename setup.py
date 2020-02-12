@@ -25,7 +25,8 @@ requirements = [
 ]
 
 dev_requirements = [
-    'attrs ~= 17.4',
+    'attrs ~= 19.3',
+    'black ~= 1.9.10'
     'doc8',
     'flake8',
     'invoke >= 0.14',
@@ -36,7 +37,7 @@ dev_requirements = [
     'sphinx_compas_theme >= 0.4',
     'sphinx > =1.6',
     'sphinx-autodoc-typehints[type_comments] >= 1.10 ; python_version > "2.7"',
-    'setuptools_scm[toml]',  # test
+    'setuptools_scm[toml]',
     'yapf',
 ]
 
@@ -59,7 +60,6 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: Implementation :: CPython",
@@ -77,7 +77,7 @@ setup(
     zip_safe=False,
     install_requires=requirements,
     extras_require={"dev": dev_requirements},
-    python_requires=">=2.7",
+    python_requires=">=3.7",  # usage in IronPython is supported, see note in README
     entry_points={
         "console_scripts": [],
     },

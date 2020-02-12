@@ -9,7 +9,7 @@ from compas_rcf.fabrication import ClayBullet
 
 def load_bullets(file_path):
 
-    with open(file_path, mode='r') as fp:
+    with open(file_path, mode="r") as fp:
         json_string = json.load(fp)
 
     clay_bullets = []

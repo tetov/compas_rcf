@@ -14,9 +14,9 @@ from compas_rcf.utils.util_funcs import list_elem_w_index_wrap
 # UR movement
 ROBOT_L_SPEED = 0.6  # m/s
 ROBOT_ACCEL = 0.8  # m/s2
-ROBOT_SAFE_SPEED = .8
-ROBOT_J_SPEED = .8
-BLEND_RADIUS_PUSHING = .002  # m
+ROBOT_SAFE_SPEED = 0.8
+ROBOT_J_SPEED = 0.8
+BLEND_RADIUS_PUSHING = 0.002  # m
 
 # Tool related variables
 TOOL_HEIGHT = 192  # mm
@@ -45,13 +45,17 @@ def _get_offset_plane(initial_plane, dist, vertical_offset_bool):
 
 
 def _default_movel(plane, blend_radius=0):
-    return ur_standard.move_l(plane, ROBOT_L_SPEED, ROBOT_ACCEL, blend_radius=blend_radius)
+    return ur_standard.move_l(
+        plane, ROBOT_L_SPEED, ROBOT_ACCEL, blend_radius=blend_radius
+    )
 
 
 def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
     script = ""
 
-    entry_plane, exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
+    entry_plane, exit_plane = _get_offset_plane(
+        plane, entry_exit_offset, vertical_offset_bool
+    )
 
     if rotation > 0:
         rotated_plane = plane.Clone()
@@ -66,10 +70,14 @@ def _picking_moves(plane, entry_exit_offset, rotation, vertical_offset_bool):
     return script
 
 
-def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, sleep=.5):
+def _shooting_moves(
+    plane, entry_exit_offset, push_conf, vertical_offset_bool, sleep=0.5
+):
     script = ""
 
-    entry_plane, exit_plane = _get_offset_plane(plane, entry_exit_offset, vertical_offset_bool)
+    entry_plane, exit_plane = _get_offset_plane(
+        plane, entry_exit_offset, vertical_offset_bool
+    )
 
     script += _default_movel(entry_plane)
     script += _default_movel(plane)
@@ -77,7 +85,7 @@ def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, s
     script += ur_standard.set_digital_out(ACTUATOR_IO, True)
     script += ur_standard.sleep(sleep)
 
-    if push_conf['pushing']:
+    if push_conf["pushing"]:
         script += _push_moves(plane, push_conf, vertical_offset_bool)
 
     script += _default_movel(exit_plane)
@@ -89,10 +97,10 @@ def _shooting_moves(plane, entry_exit_offset, push_conf, vertical_offset_bool, s
 
 def _push_moves(plane, push_conf, vertical_offset_bool):
 
-    n = push_conf['n_pushes']
-    dist = push_conf['push_offsets']
-    angle_step = push_conf['angle_steps']
-    rot_axis = push_conf['push_rotation_axis']
+    n = push_conf["n_pushes"]
+    dist = push_conf["push_offsets"]
+    angle_step = push_conf["angle_steps"]
+    rot_axis = push_conf["push_rotation_axis"]
 
     script = ""
 
@@ -126,20 +134,22 @@ def _safe_travel_moves(safe_pos_list, reverse=False):
     return script
 
 
-def ur_clay_shooting(picking_planes,
-                     placing_planes,
-                     safe_pos_list,
-                     dry_run=False,
-                     push_conf={'pushing': [False]},
-                     tool_rotation=0,
-                     picking_rotation=0,
-                     tool_height_correction=0,
-                     z_calib_picking=0,
-                     z_calib_placing=0,
-                     entry_exit_offset=-40,
-                     vertical_offset_bool=False,
-                     viz_planes_bool=False,
-                     placing_index=0):
+def ur_clay_shooting(
+    picking_planes,
+    placing_planes,
+    safe_pos_list,
+    dry_run=False,
+    push_conf={"pushing": [False]},
+    tool_rotation=0,
+    picking_rotation=0,
+    tool_height_correction=0,
+    z_calib_picking=0,
+    z_calib_placing=0,
+    entry_exit_offset=-40,
+    vertical_offset_bool=False,
+    viz_planes_bool=False,
+    placing_index=0,
+):
 
     reload(comm)  # noqa E0602
     reload(ur_standard)  # noqa E0602
@@ -153,7 +163,9 @@ def ur_clay_shooting(picking_planes,
 
     # set tcp
     tool_height = TOOL_HEIGHT + tool_height_correction
-    script += ur_standard.set_tcp_by_plane_angles(0, 0, tool_height, 0.0, 0.0, m.radians(tool_rotation))
+    script += ur_standard.set_tcp_by_plane_angles(
+        0, 0, tool_height, 0.0, 0.0, m.radians(tool_rotation)
+    )
     # Ensure actuator is retracted ###
     script += ur_standard.set_digital_out(ACTUATOR_IO, False)
 
@@ -168,7 +180,7 @@ def ur_clay_shooting(picking_planes,
         if len(value) == len(placing_planes) or len(value) == 1:
             continue
 
-        raise Exception('Mismatched between {} list and placing_plane list'.format(key))
+        raise Exception("Mismatched between {} list and placing_plane list".format(key))
 
     instructions = []
     for i, placing_plane in enumerate(placing_planes):
@@ -201,7 +213,9 @@ def ur_clay_shooting(picking_planes,
             # apply z calibration specific to picking station
             picking_plane.Translate(rg.Vector3d(0, 0, z_calib_picking))
 
-            script += _picking_moves(picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool)
+            script += _picking_moves(
+                picking_plane, entry_exit_offset, picking_rotation, vertical_offset_bool
+            )
 
         # safe moves
         script += _safe_travel_moves(safe_pos_list)
@@ -209,8 +223,10 @@ def ur_clay_shooting(picking_planes,
         # apply z calibration specific to placing station
         placing_plane.Translate(rg.Vector3d(0, 0, z_calib_placing))
 
-        script += _shooting_moves(placing_plane, entry_exit_offset, push_conf, vertical_offset_bool)
-        script += ur_standard.UR_log('Bullet {} placed.'.format(i + placing_index))
+        script += _shooting_moves(
+            placing_plane, entry_exit_offset, push_conf, vertical_offset_bool
+        )
+        script += ur_standard.UR_log("Bullet {} placed.".format(i + placing_index))
 
         # safe moves
         script += _safe_travel_moves(safe_pos_list, reverse=True)

@@ -39,25 +39,27 @@ class ClayBullet(object):
     # creates id-s for objects
     _ids = count(0)
 
-    def __init__(self,
-                 location,
-                 trajectory_to=[],
-                 trajectory_from=[],
-                 id=None,
-                 radius=40,
-                 height=200,
-                 compression_ratio=1,
-                 precision=5,
-                 tool=None):
+    def __init__(
+        self,
+        location,
+        trajectory_to=[],
+        trajectory_from=[],
+        id=None,
+        radius=40,
+        height=200,
+        compression_ratio=1,
+        precision=5,
+        tool=None,
+    ):
         self.location = location
-        self.trajectory_to = trajectory_to  # property & setter to convert planes to frames
-        self.trajectory_from = trajectory_from  # property & setter to convert planes to frames
+        self.trajectory_to = trajectory_to
+        self.trajectory_from = trajectory_from
 
         # sortable ID, used for fabrication sequence
         if id is None:
             self.id = next(self._ids)
         else:
-            self.id = str(id) + 'x'
+            self.id = str(id) + "x"
 
         self.radius = radius
         self.height = height
@@ -181,7 +183,7 @@ class ClayBullet(object):
         -------
         float
         """
-        return math.pi * self.radius**2 * self.height
+        return math.pi * self.radius ** 2 * self.height
 
     @property
     def volume_m3(self):
@@ -236,7 +238,9 @@ class ClayBullet(object):
     @property
     def vector(self):
         # TODO: Find better name
-        return self.plane.Normal * self.height - self.plane.Normal * self.compressed_height
+        return (
+            self.plane.Normal * self.height - self.plane.Normal * self.compressed_height
+        )
 
     @classmethod
     def from_data(cls, data):
@@ -252,20 +256,25 @@ class ClayBullet(object):
         :class:`ClayBullet`
             The constructed ClayBullet instance
         """
-        location = Frame.from_data(data.pop('_location'))
+        location = Frame.from_data(data.pop("_location"))
 
         trajectory_to = []
-        for frame_data in data.pop('_trajectory_to'):
+        for frame_data in data.pop("_trajectory_to"):
             trajectory_to.append(Frame.from_data(frame_data))
 
         trajectory_from = []
-        for frame_data in data.pop('_trajectory_from'):
+        for frame_data in data.pop("_trajectory_from"):
             trajectory_from.append(Frame.from_data(frame_data))
 
         # Take the rest of the dictionary
         kwargs = data
 
-        return cls(location, trajectory_to=trajectory_to, trajectory_from=trajectory_from, **kwargs)
+        return cls(
+            location,
+            trajectory_to=trajectory_to,
+            trajectory_from=trajectory_from,
+            **kwargs
+        )
 
     def generate_mesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution.
@@ -362,7 +371,11 @@ def check_id_collision(clay_bullets):
     set_of_ids = set()
     for id in ids:
         if id in set_of_ids:
-            raise Exception('Id {} appears more than once in list of ClayBullet instances'.format(id))
+            raise Exception(
+                "Id {} appears more than once in list of ClayBullet instances".format(
+                    id
+                )
+            )
         set_of_ids.add(id)
 
 
