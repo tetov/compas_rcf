@@ -6,11 +6,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys  # noqa
-
-
-from datetime import datetime
 import logging
+import sys
+from datetime import datetime
 from os import path
 
 from colorama import Fore
@@ -40,11 +38,11 @@ from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
 
 if sys.version_info[0] < 2:
-    raise Exception("This module requires Python 3")  # noqa
+    raise Exception("This module requires Python 3")
 else:
     import questionary
 
-ROBOT_CONTROL_FOLDER_DRIVE = "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"
+ROBOT_CONTROL_FOLDER_DRIVE = "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"  # noqa E501
 
 DEFAULT_CONF_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, "05_fabrication_confs")
 DEFAULT_JSON_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, "04_fabrication_data_jsons")
@@ -91,7 +89,8 @@ def send_grip_release(client, do_state):
         client.send(SetDigital(CONF.tool.io_needles_pin, do_state))
         client.send(WaitTime(CONF.tool.wait_after_io))
     else:
-        # Custom instruction can grip a bullet in RobotStudio, note the tool tip must touch the bullet
+        # Custom instruction can grip a bullet in RobotStudio
+        # note the tool tip must touch the bullet
         if do_state == CONF.tool.grip_state:
             client.send(CustomInstruction("r_A057_RS_ToolGrip"))
         else:
@@ -115,17 +114,17 @@ def initial_setup(client):
     send_grip_release(client, CONF.tool.release_state)
 
     client.send(SetTool(CONF.tool.tool_name))
-    logging.debug('Tool {} set.'.format(CONF.tool.tool_name))
+    logging.debug("Tool {} set.".format(CONF.tool.tool_name))
     client.send(SetWorkObject(CONF.wobjs.placing_wobj_name))
-    logging.debug('Work object {} set.')
+    logging.debug("Work object {} set.")
 
     # Set Acceleration
     client.send(SetAcceleration(CONF.speed_values.accel, CONF.speed_values.accel_ramp))
-    logging.debug('Acceleration values set.')
+    logging.debug("Acceleration values set.")
 
     # Set Max Speed
     client.send(SetMaxSpeed(CONF.speed.speed_override, CONF.speed.speed_max_tcp))
-    logging.debug('Speed set.')
+    logging.debug("Speed set.")
 
     # Initial configuration
     client.send(
@@ -136,7 +135,7 @@ def initial_setup(client):
             CONF.movement.zone_travel,
         )
     )
-    logging.debug('Sent move to safe joint position')
+    logging.debug("Sent move to safe joint position")
 
 
 def shutdown_procedure(client):
@@ -391,7 +390,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Add DEBUG level messages to logfile, and print them on console if --verbose is set.",
+        help="Add DEBUG level messages to logfile, and print them on console if --verbose is set.",  # noqa E501
     )
 
     args = parser.parse_args()

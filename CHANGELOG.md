@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[0.1.12\] \[2020-10-13\]
+
+### Added
+
+- Logging added to `compas_rcf.fabrication.abb_rcf_runner`
+
+### Changed
+
+- Whole package has had its imports sorted
+- Set up black formatting and formatted everything
+- Travis now handles build and releasing of tagged commit, using `setuptools_scm`
+  to handle version setup.
+- `setuptools_scm` replaces `MANIFEST.in` in handling what to include when building.
+
+### Removed
+
+- Lots of dev deps
+
 ## \[0.1.10\] \[2020-10-11\]
 
 ### Added

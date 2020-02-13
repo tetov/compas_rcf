@@ -83,7 +83,9 @@ class ClayBullet(object):
 
     @property
     def placement_frame(self):
-        """Last frame in placement procedure, derived from location, height and compression ratio.
+        """Last frame in placement procedure.
+
+        Derived from location, height and compression ratio.
 
         Returns
         -------
