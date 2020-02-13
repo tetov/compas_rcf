@@ -12,15 +12,17 @@ from colorama import Style
 from colorama import init
 from confuse import ConfigTypeError
 
+root = Tk()
+root.withdraw()
+
 
 def open_file_dialog(initial_dir="/", file_type=("JSON files", "*.json")):
-    root = Tk()
-    root.filename = askopenfilename(
+    filename = askopenfilename(
         initialdir=initial_dir,
         title="Select file",
         filetypes=(file_type, ("all files", "*.*")),
     )
-    return root.filename
+    return filename
 
 
 def print_conf_w_colors(conf):
