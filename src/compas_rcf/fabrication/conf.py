@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import confuse
 
-from compas_rcf.abb.helpers import ZONE_DICT
+from compas_rcf.abb.helpers import zone_dict
 
 
 class ZoneDataTemplate(confuse.Template):
@@ -16,42 +16,49 @@ class ZoneDataTemplate(confuse.Template):
             if not -1 >= value >= 2000:  # arbitrary max value
                 self.fail(u"ZoneData needs to be from -1 to 2000", view)
             return value
-        if value.upper() not in ZONE_DICT.keys():
-            self.fail(u"ZoneData must match one of {0}".format(", ".join(ZONE_DICT.keys())), view)
+        if value.upper() not in zone_dict.keys():
+            self.fail(
+                u"ZoneData must match one of {0}".format(", ".join(zone_dict.keys())),
+                view,
+            )
         print(value)
-        print(ZONE_DICT[value.upper()])
-        return ZONE_DICT[value.upper()]
+        print(zone_dict[value.upper()])
+        return zone_dict[value.upper()]
 
 
-ABB_RCF_CONF_TEMPLATE = {
-    'is_target_real': confuse.TypeTemplate(bool, default=False),
-    'wobjs': {
-        'picking_wobj_name': str,
-        'placing_wobj_name': str,
+abb_rcf_conf_template = {
+    # Two following is set by command line arguments
+    "debug": confuse.TypeTemplate(bool, default=False),
+    "verbose": confuse.TypeTemplate(bool, default=False),
+    # is_target_real is set either by command line argument, during run or in conf file
+    "target": confuse.TypeTemplate(bool, default=None),
+    "wobjs": {"picking_wobj_name": str, "placing_wobj_name": str,},
+    "tool": {
+        "tool_name": str,
+        "io_needles_pin": str,
+        "grip_state": int,
+        "release_state": int,
+        "wait_before_io": confuse.Number(default=2),
+        "wait_after_io": confuse.Number(default=0.5),
     },
-    'tool': {
-        'tool_name': str,
-        'io_needles_pin': str,
-        'grip_state': int,
-        'release_state': int,
+    "speed_values": {
+        "speed_override": confuse.Number(default=100),
+        "speed_max_tcp": float,
+        "accel": float,
+        "accel_ramp": confuse.Number(default=100),
     },
-    'speed_values': {
-        'speed_override': float,
-        'speed_max_tcp': float,
-        'accel': float,
-        'accel_ramp': float,
+    "safe_joint_positions": {
+        "start": confuse.Sequence([float] * 6),
+        "end": confuse.Sequence([float] * 6),
     },
-    'safe_joint_positions': {
-        'start': confuse.Sequence([float] * 6),
-        'end': confuse.Sequence([float] * 6)
-    },
-    'movement': {
-        'offset_distance': float,
-        'speed_placing': float,
-        'speed_picking': float,
-        'speed_travel': float,
-        'zone_travel': ZoneDataTemplate(),
-        'zone_pick_place': ZoneDataTemplate(),
+    "movement": {
+        "offset_distance": float,
+        "speed_placing": float,
+        "speed_picking": float,
+        "speed_travel": float,
+        "zone_travel": ZoneDataTemplate(),
+        "zone_pick": ZoneDataTemplate(),
+        "zone_place": ZoneDataTemplate(),
     },
 }
 
@@ -69,7 +76,7 @@ def get_numerical_zone_value(zone_data):
     float or int
         zone data in mm
     """
-    return ZONE_DICT[zone_data.upper()]
+    return zone_dict[zone_data.upper()]
 
 
-fabrication_conf = confuse.LazyConfig('FabricationRunner', __name__)
+fabrication_conf = confuse.LazyConfig("FabricationRunner", __name__)

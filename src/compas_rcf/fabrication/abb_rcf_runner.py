@@ -6,7 +6,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys
+import sys  # noqa
+if sys.version_info[0] < 2: raise Exception('This module requires Python 3')  # noqa
+
+from datetime import datetime
+import logging
 from os import path
 
 from colorama import Fore
@@ -28,7 +32,8 @@ from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 from compas_rrc import WaitTime
 
-from compas_rcf.fabrication.conf import ABB_RCF_CONF_TEMPLATE
+from compas_rcf import __version__
+from compas_rcf.fabrication.conf import abb_rcf_conf_template
 from compas_rcf.fabrication.conf import fabrication_conf
 from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils import ui
@@ -46,6 +51,7 @@ ROBOT_CONTROL_FOLDER_DRIVE = 'G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Pha
 
 DEFAULT_CONF_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, '05_fabrication_confs')
 DEFAULT_JSON_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, '04_fabrication_data_jsons')
+DEFAULT_LOG_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, '06_fabrication_logs')
 
 # Define external axis, will not be used but required in move cmds
 EXTERNAL_AXIS_DUMMY: list = []
@@ -83,15 +89,17 @@ def send_grip_release(client, do_state):
         Value to set DO to
     """
     if CONF.is_target_real:
-        client.send(WaitTime(.5))
+        client.send(WaitTime(CONF.tool.wait_before_io))
         client.send(SetDigital(CONF.tool.io_needles_pin, do_state))
-        client.send(WaitTime(2))
+        client.send(WaitTime(CONF.tool.wait_after_io))
     else:
-        # Custom instruction can grip a bullet in RobotStudio note the tool tip must touch the bullet
+        # Custom instruction can grip a bullet in RobotStudio, note the tool tip must touch the bullet
         if do_state == CONF.tool.grip_state:
             client.send(CustomInstruction('r_A057_RS_ToolGrip'))
         else:
             client.send(CustomInstruction('r_A057_RS_ToolRelease'))
+
+    logging.debug('Signal sent to {}'.format('grip' if do_state == CONF.tool.grip_state else 'release'))
 
 
 def initial_setup(client):
@@ -141,7 +149,7 @@ def shutdown_procedure(client):
     client.terminate()
 
 
-def get_settings(target_select):
+def get_settings():
     """Print and prompts user for changes to default configuration.
 
     Parameters
@@ -157,18 +165,21 @@ def get_settings(target_select):
     if load_or_default == 'Load':
         conf_file = ui.open_file_dialog(initial_dir=DEFAULT_CONF_DIR, file_type=('YAML files', '*.yaml'))
         fabrication_conf.set_file(conf_file)
+        logging.info('Configuration loaded from {}'.format(conf_file))
     else:
         fabrication_conf.read(defaults=True, user=False)
+        logging.info('Default configuration loaded from package')
 
+    # At this point the conf is considered set, if changes needs to happen after
+    # this point CONF needs to be set again. There's probably a better way though.
     global CONF
+    CONF = fabrication_conf.get(abb_rcf_conf_template)
 
-    CONF = fabrication_conf.get(ABB_RCF_CONF_TEMPLATE)  # Will raise exception if conf is invalid
-
-    if target_select is None:
+    if CONF.target is None:
         question = questionary.select("Target?", choices=["Virtual robot", "Real robot"], default='Virtual robot').ask()
-        CONF.is_target_real = question == "Real robot"
-    else:
-        CONF.is_target_real = target_select == "real"
+        CONF.target = 'real' if question == "Real robot" else "virtual"
+
+    logging.info('Target is {} controller.'.format(CONF.target.upper()))
 
     print(Fore.CYAN + Style.BRIGHT + "Configuration")
 
@@ -176,6 +187,7 @@ def get_settings(target_select):
 
     conf_ok = questionary.confirm("Configuration correct?").ask()
     if not conf_ok:
+        logging.critical('Program exited because user didn\'t confirm config')
         print("Exiting.")
         sys.exit()
 
@@ -189,17 +201,7 @@ def send_picking(client, picking_frame):
     picking_frame : compas.geometry.Frame
         Target frame to pick up bullet
     """
-    offset_distance = CONF.movement.offset_distance
-
-    speed_travel = CONF.movement.speed_travel
-    speed_picking = CONF.movement.speed_picking
-
-    zone_pick_place = CONF.movement.zone_pick_place
-    zone_travel = CONF.movement.zone_travel
-
-    zone_travel = CONF.movement.zone_travel
-
-    if not CONF.is_target_real:
+    if CONF.target == 'virtual':
         # Custom instruction create a clay bullet in RobotStudio
         # TODO: Create bullet at picking point
         client.send(CustomInstruction('r_A057_RS_Create_Bullet'))
@@ -208,16 +210,16 @@ def send_picking(client, picking_frame):
     client.send(SetWorkObject(CONF.wobjs.picking_wobj_name))
 
     # pick bullet
-    offset_picking = get_offset_frame(picking_frame, offset_distance)
+    offset_picking = get_offset_frame(picking_frame, CONF.movement.offset_distance)
 
-    client.send(MoveToFrame(offset_picking, speed_travel, zone_travel))
+    client.send(MoveToFrame(offset_picking, CONF.movement.speed_travel, CONF.movement.zone_travel))
 
-    client.send_and_wait(MoveToFrame(picking_frame, speed_picking, zone_pick_place))
+    client.send_and_wait(MoveToFrame(picking_frame, CONF.movement.speed_picking, CONF.movement.zone_pick))
     # TODO: Try compress bullet a little bit before picking
 
     send_grip_release(client, CONF.tool.grip_state)
 
-    client.send(MoveToFrame(offset_picking, speed_travel, zone_travel))
+    client.send(MoveToFrame(offset_picking, CONF.movement.speed_travel, CONF.movement.zone_travel))
 
 
 def send_placing(client, bullet):
@@ -229,13 +231,8 @@ def send_placing(client, bullet):
     picking_frame : compas.geometry.Frame
         Target frame to pick up bullet
     """
-    offset_distance = CONF.movement.offset_distance
 
-    speed_travel = CONF.movement.speed_travel
-    speed_placing = CONF.movement.speed_placing
-
-    zone_pick_place = CONF.movement.zone_pick_place
-    zone_travel = CONF.movement.zone_travel
+    logging.debug('Location frame: {}'.format(bullet.location))
 
     # change work object before placing
     client.send(SetWorkObject(CONF.wobjs.placing_wobj_name))
@@ -243,36 +240,57 @@ def send_placing(client, bullet):
     # add offset placing plane to pre and post frames
 
     top_bullet_frame = get_offset_frame(bullet.location, bullet.height)
-    offset_placement = get_offset_frame(top_bullet_frame, offset_distance)
+    offset_placement = get_offset_frame(top_bullet_frame, CONF.movement.offset_distance)
 
     # Safe pos then vertical offset
     for frame in bullet.trajectory_to:
-        client.send(MoveToFrame(frame, speed_travel, zone_travel))
+        client.send(MoveToFrame(frame, CONF.movement.speed_travel, CONF.movement.zone_travel))
 
-    client.send(MoveToFrame(offset_placement, speed_travel, zone_travel))
-    client.send(MoveToFrame(top_bullet_frame, speed_placing, zone_pick_place))
+    client.send(MoveToFrame(offset_placement, CONF.movement.speed_travel, CONF.movement.zone_travel))
+    client.send(MoveToFrame(top_bullet_frame, CONF.movement.speed_placing, CONF.movement.zone_place))
 
     send_grip_release(client, CONF.tool.release_state)
 
-    client.send_and_wait(MoveToFrame(bullet.placement_frame, speed_placing, zone_pick_place))
+    client.send_and_wait(MoveToFrame(bullet.placement_frame, CONF.movement.speed_placing, CONF.movement.zone_place))
 
-    client.send(MoveToFrame(offset_placement, speed_travel, zone_travel))
+    client.send(MoveToFrame(offset_placement, CONF.movement.speed_travel, CONF.movement.zone_travel))
 
     # offset placement frame then safety frame
     for frame in bullet.trajectory_from:
-        client.send(MoveToFrame(frame, speed_travel, zone_travel))
+        client.send(MoveToFrame(frame, CONF.movement.speed_travel, CONF.movement.zone_travel))
 
 
-def abb_run(debug=False, target_select=None):
+def abb_run(cmd_line_args):
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
     print('\ncompas_rfc abb runner\n')
 
-    get_settings(target_select)
+    fabrication_conf.set_args(cmd_line_args)
 
-    # TODO: Add function to get latest script or previous script
+    timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M.log")
+    log_file = path.join(DEFAULT_LOG_DIR, timestamp_file)
+
+    handlers = [logging.FileHandler(log_file, mode='a')]
+
+    if fabrication_conf['verbose']:
+        handlers += [logging.StreamHandler(sys.stdout)]
+
+    logging.basicConfig(level=logging.DEBUG if fabrication_conf['debug'] else logging.INFO,
+                        format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
+                        handlers=handlers,
+                        )
+
+    logging.info('compas_rcf version: {}'.format(__version__))
+    logging.debug('argparse input: {}'.format(cmd_line_args))
+    logging.debug('config after set_args: {}'.format(fabrication_conf))
+
+    get_settings()
+    logging.info('Fabrication configuration:\n{}'.format(fabrication_conf.dump()))
 
     json_path = ui.open_file_dialog(initial_dir=DEFAULT_JSON_DIR)
+    logging.info('Fabrication data read from: {}'.format(json_path))
+
     clay_bullets = load_bullets(json_path)
+    logging.debug('{} items in clay_bullets.'.format(clay_bullets))
 
     # Create Ros Client
     ros = RosClient()
@@ -280,14 +298,16 @@ def abb_run(debug=False, target_select=None):
     # Create ABB Client
     abb = AbbClient(ros)
     abb.run()
-    print('Connected.')
+    logging.debug('Connected to controller')
 
     # Set speed, accel, tool, wobj and move to start pos
     initial_setup(abb)
 
-    for bullet in clay_bullets:
+    for i, bullet in enumerate(clay_bullets):
+        logging.debug('Bullet {} with id {}'.format(i, bullet.id))
 
         picking_frame = get_picking_frame(bullet.height)
+        logging.debug('Picking frame: {}'.format(picking_frame))
 
         # Pick bullet
         send_picking(abb, picking_frame)
@@ -295,6 +315,7 @@ def abb_run(debug=False, target_select=None):
         # Place bullet
         send_placing(abb, bullet)
 
+    logging.info("Finished program with {} bullets.".format(len(clay_bullets)))
     shutdown_procedure(abb)
 
 
@@ -302,7 +323,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--target', choices=('real', 'virtual'))
+    parser.add_argument('-t', '--target', choices=('real', 'virtual'), help="Set fabrication runner target.")
+    parser.add_argument('-v', '--verbose', action='store_true', help='Prints logging messages to console.')
+    parser.add_argument('--debug', action="store_true", help="Add DEBUG level messages to logfile, and print them on console if --verbose is set.")
 
     args = parser.parse_args()
-    abb_run(target_select=args.target)
+
+    abb_run(args)

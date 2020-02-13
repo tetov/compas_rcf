@@ -2,30 +2,33 @@
 # YAML format, https://yaml.org/spec/1.2
 # All values are required unless marked optional
 movement:
-    offset_distance: 120 # mm, last frame before placing picking is offset by
+    offset_distance: 100 # mm, last frame before placing picking is offset by
                          # this distance
     # velocities defined as mm/s
     speed_placing: 50 # mm/s
     speed_picking: 50 # mm/s
     speed_travel: 250 # mm/s
     # Either rapid variable name or mm
-    zone_pick_place: 'Fine'
+    zone_pick: 'Fine' # case doesn't matter here
+    zone_place: 'FINE'
     zone_travel: 'Z50'
 safe_joint_positions: # used at start and end of fabrication run
     # 6 joint values in degrees
     end: [ -127.0, 54.0, 9.0 , 2.0 , 30.0, 7.0 ] # 6 joint values in degrees
     start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees
 speed_values:
-    speed_override: 100 # %
+    speed_override: 100 # %, optional, default 100
     accel: 100 # mm/s^2
-    accel_ramp: 100 # %, the rate at which acceleration increases or decreases
-                    # as a percentage of the normal values
+    accel_ramp: 100 # %, optional, default 100, the rate at which acceleration
+                    # increases or decreases as a percentage of the normal values
     speed_max_tcp: 500 # mm/s
 tool:
     io_needles_pin: doDNetOut1 # name of DO
     tool_name: t_A057_ClayTool01 # name of tool
     grip_state: 1 # state (0 or 1)
     release_state: 0 # state (0 or 1)
+    wait_before_io: 2 # s, optional, default value 2
+    wait_after_io: 0.5 # s, optional, default value 0.5
 wobjs:
     # name of work objects as defined in controller
     picking_wobj_name: ob_A057_WobjPicking01
