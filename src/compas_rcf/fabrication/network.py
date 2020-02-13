@@ -34,7 +34,7 @@ class ClayStructure(Network):
 
     def _set_attributes_edges_longer_than(self, dist, **kwargs):
         if len(kwargs) < 1:
-            raise Exception('No attributes to set')
+            raise Exception("No attributes to set")
 
         keys = []
         for u, v in self.edges():
@@ -44,28 +44,28 @@ class ClayStructure(Network):
         self.set_edges_attributes(kwargs.keys(), kwargs.values(), keys=keys)
 
     def _bullet_neighboors_below(self, u):
-        z_value = self.get_vertex_attribute(u, 'z')
-        bullets_below = self.vertices_where({'z': (0, z_value)})
+        z_value = self.get_vertex_attribute(u, "z")
+        bullets_below = self.vertices_where({"z": (0, z_value)})
 
         bullets_below_keys = [(u, v) for v in bullets_below if v != u]
         for u, v in bullets_below_keys:
             if self.edge_length(u, v) <= 20:
-                self.add_edge(u, v, relation='neighboor_below', is_touching=True)
+                self.add_edge(u, v, relation="neighboor_below", is_touching=True)
 
     def network_from_clay_bullets(self, clay_bullets):
         for i, clay_bullet in enumerate(clay_bullets):
-            self.add_vertex(key=i,
-                            x=clay_bullet.plane.Origin.X,
-                            y=clay_bullet.plane.Origin.Y,
-                            z=clay_bullet.plane.Origin.Z,
-                            class_instance=clay_bullet)
-
-        # edges_by_dists = (self._edges_from_distance(i, c) for i, c in enumerate(clay_bullets))
+            self.add_vertex(
+                key=i,
+                x=clay_bullet.plane.Origin.X,
+                y=clay_bullet.plane.Origin.Y,
+                z=clay_bullet.plane.Origin.Z,
+                class_instance=clay_bullet,
+            )
 
         edges_from_order = [(i, i + 1) for i in range(len(clay_bullets) - 1)]
 
         for u, v in edges_from_order:
-            self.add_edge(u, v, relation='print_order', is_touching=True)
+            self.add_edge(u, v, relation="print_order", is_touching=True)
 
         # TODO: Better distance value
         self._set_attributes_edges_longer_than(26, is_touching=False)

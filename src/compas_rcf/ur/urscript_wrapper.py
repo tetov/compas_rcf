@@ -15,10 +15,12 @@ except ImportError:
 
 # Motion
 @format_urscript_cmd
-def movel(frame_to, accel=1.2, vel=.25, time=0, zone=0):
+def movel(frame_to, accel=1.2, vel=0.25, time=0, zone=0):
     # type: (Frame, float, float, float, float) -> str
     pose = format_pose(frame_to)
-    return "movel({:s}, a={:.2f}, v={:2f}, t={:2f} r={:2f})".format(pose, accel, vel, time, zone)
+    return "movel({:s}, a={:.2f}, v={:2f}, t={:2f} r={:2f})".format(
+        pose, accel, vel, time, zone
+    )
 
 
 @format_urscript_cmd
@@ -40,7 +42,9 @@ def movej(joint_positions, accel=1.4, vel=1.05, time=0, zone=0):
     # TODO: Check acceleration and velocity are below set limit
     _joint_positions = format_joint_positions(joint_positions)
 
-    return "movej({:s}, a={:.2f}, v={:.2f}), t={:.2f}, r={:.2f}".format(_joint_positions, accel, vel, time, zone)
+    return "movej({:s}, a={:.2f}, v={:.2f}), t={:.2f}, r={:.2f}".format(
+        _joint_positions, accel, vel, time, zone
+    )
 
 
 # Utility
@@ -56,14 +60,14 @@ def set_TCP(tcp_frame):
 @format_urscript_cmd
 def textmsg(string):
     # type: (str) -> str
-    return "textmsg(\"" + string + "\")"
+    return 'textmsg("' + string + '")'
 
 
 @format_urscript_cmd
 def popup(string):
     # type: (str) -> str
     # Popup title not implemented, neither is error or warning flags
-    return "popup(\"{}\")".format(string)
+    return 'popup("{}")'.format(string)
 
 
 @format_urscript_cmd
@@ -87,13 +91,13 @@ def sleep(seconds):
 @format_urscript_cmd
 def socket_open(server_address, server_port):
     # type: (str, int) -> str
-    return "socket_open(\"{}\", {:d})".format(server_address, server_port)
+    return 'socket_open("{}", {:d})'.format(server_address, server_port)
 
 
 @format_urscript_cmd
 def socket_send_string(text):
     # type: (str) -> str
-    return "socket_send_string(\"" + text + "\")"
+    return 'socket_send_string("' + text + '")'
 
 
 @format_urscript_cmd

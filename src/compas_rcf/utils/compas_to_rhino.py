@@ -75,7 +75,9 @@ def cgplane_to_rgplane(cgplane):  # type: (cg.Plane) -> rg.Plane
     Rhino.Geometry.Plane
         Resulting plane
     """
-    return rg.Plane(cgpoint_to_rgpoint(cgplane.point), cgvector_to_rgvector(cgplane.normal))
+    return rg.Plane(
+        cgpoint_to_rgpoint(cgplane.point), cgvector_to_rgvector(cgplane.normal)
+    )
 
 
 def cgframe_to_rgplane(frame):  # type: (cg.Frame) -> rg.Plane

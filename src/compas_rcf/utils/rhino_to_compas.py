@@ -70,7 +70,9 @@ def rgplane_to_cgplane(plane):  # type: (rg.Plane) -> cg.Plane
     compas.geometry.Plane
         Resulting plane object
     """
-    return cg.Plane(rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.Normal))
+    return cg.Plane(
+        rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.Normal)
+    )
 
 
 def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
@@ -105,13 +107,18 @@ if __name__ == "__main__":
     assert v.length > 3.7 and v.length < 3.8
 
     # rgline_cgline
-    line = rgline_to_cgline(rg.Line(rg.Point3d(3, 2, 1), rg.Vector3d(1, 1, 0), 5.))
+    line = rgline_to_cgline(rg.Line(rg.Point3d(3, 2, 1), rg.Vector3d(1, 1, 0), 5.0))
     assert isinstance(line.midpoint.z, float)
 
     # rgplane_to_cgframe
     frame = rgplane_to_cgframe(rg.Plane(rg.Point3d(1, 3, 2), rg.Vector3d(2, -1, 1)))
-    frame.quaternion.__repr__ == 'Quaternion(0.713799, 0.462707, 0.285969, 0.441152)'
+    frame.quaternion.__repr__ == "Quaternion(0.713799, 0.462707, 0.285969, 0.441152)"
 
     # rgtransform_to_matrix
     matrix = rg.Transform.ZeroTransformation
-    assert rgtransform_to_matrix(matrix) == [[0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 0., 1.]]
+    assert rgtransform_to_matrix(matrix) == [
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]

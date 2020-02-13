@@ -37,9 +37,9 @@ UR_SERVER_PORT = 30002
 
 ROBOT_L_SPEED = 0.6  # m/s
 ROBOT_ACCEL = 0.8  # m/s2
-ROBOT_SAFE_SPEED = .8
-ROBOT_J_SPEED = .8
-ZONING = 0.  # m
+ROBOT_SAFE_SPEED = 0.8
+ROBOT_J_SPEED = 0.8
+ZONING = 0.0  # m
 
 AIR_PRESSURE_DO = 0
 
@@ -58,10 +58,12 @@ UR_PROGRAM_FOOTER += "program()\n"
 
 LOG_FILE = Path.joinpath(FILE_DIR, "main_direct_send_group_04.log")
 UR_SCRIPT_LOG = Path.joinpath(FILE_DIR, "main_direct_send_group_04.ur_log.log")
-logging.basicConfig(filename=LOG_FILE,
-                    filemode='a',
-                    level=logging.DEBUG,
-                    format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s")
+logging.basicConfig(
+    filename=LOG_FILE,
+    filemode="a",
+    level=logging.DEBUG,
+    format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
+)
 
 
 def start_log() -> None:
@@ -125,7 +127,9 @@ def generate_bullet_placing_program(bullet):
     for i, frame in enumerate(bullet.pre_frames):
         script += movel(frame, accel=ROBOT_ACCEL, speed=ROBOT_L_SPEED, radius=ZONING)
 
-    script += movel(bullet.placement_frame, accel=ROBOT_ACCEL, speed=ROBOT_L_SPEED, radius=ZONING)
+    script += movel(
+        bullet.placement_frame, accel=ROBOT_ACCEL, speed=ROBOT_L_SPEED, radius=ZONING
+    )
     script += set_DO(AIR_PRESSURE_DO, True)
     script += textmsg("Air pressure on")
 
@@ -135,8 +139,8 @@ def generate_bullet_placing_program(bullet):
     script += UR_PROGRAM_FOOTER
 
     if DEBUG:
-        with open(UR_SCRIPT_LOG, mode='w') as f:
-            f.write(script.decode('utf-8'))
+        with open(UR_SCRIPT_LOG, mode="w") as f:
+            f.write(script.decode("utf-8"))
 
     return script
 
