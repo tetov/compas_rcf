@@ -72,7 +72,8 @@ def get_picking_frame(bullet_height):
     # TODO: Set up a grid to pick from
     picking_frame = Frame(Point(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0))
 
-    return get_offset_frame(picking_frame, bullet_height)
+    # TODO: Make the pressing at picking more configurable
+    return get_offset_frame(picking_frame, bullet_height * .95)
 
 
 def send_grip_release(client, do_state):

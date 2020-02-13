@@ -26,17 +26,17 @@ before_deploy:
 
 deploy:
     - provider: pages
-      cleanup: false
+      skip_cleanup: true
       keep_history: true
-      github_token: $GITHUB_TOKEN
+      token: $GITHUB_TOKEN
       local_dir: dist/docs
       target_branch: gh-pages
     - provider: pypi
-      user: "__token__"
+      username: "__token__"
       password: $PYPI_TOKEN
       distributions: "sdist bdist_wheel"
       skip_existing: true
-      cleanup: false
+      skip_cleanup: true
       on:
           tags: true
 
