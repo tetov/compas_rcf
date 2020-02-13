@@ -44,7 +44,6 @@ extras_require = {
         "sphinx > =1.6",
         'sphinx-autodoc-typehints[type_comments] >= 1.10 ; python_version > "2.7"',
         "setuptools_scm[toml]",
-        "yapf",
     ]
 }
 
@@ -78,12 +77,12 @@ setup(
         "Issues": "https://github.com/compas-dev/compas/issues",
         "Documentation": "https://compas_rcf.tetov.se/",
     },
-    packages=find_packages(),
+    packages=find_packages(where="src"),
     package_dir={"": "src"},
     include_package_data=True,
     zip_safe=False,
     install_requires=requirements,
     extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README
-    entry_points={"console_scripts": [],},
+    entry_points={"console_scripts": []},
 )

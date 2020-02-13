@@ -21,8 +21,6 @@ class ZoneDataTemplate(confuse.Template):
                 u"ZoneData must match one of {0}".format(", ".join(zone_dict.keys())),
                 view,
             )
-        print(value)
-        print(zone_dict[value.upper()])
         return zone_dict[value.upper()]
 
 
@@ -31,8 +29,8 @@ abb_rcf_conf_template = {
     "debug": confuse.TypeTemplate(bool, default=False),
     "verbose": confuse.TypeTemplate(bool, default=False),
     # is_target_real is set either by command line argument, during run or in conf file
-    "target": confuse.TypeTemplate(bool, default=None),
-    "wobjs": {"picking_wobj_name": str, "placing_wobj_name": str,},
+    "target": confuse.TypeTemplate(str, default=None),
+    "wobjs": {"picking_wobj_name": str, "placing_wobj_name": str},
     "tool": {
         "tool_name": str,
         "io_needles_pin": str,
