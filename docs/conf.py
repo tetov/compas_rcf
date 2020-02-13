@@ -16,10 +16,7 @@ version = release = __version__
 
 master_doc = "index"
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown'
-}
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 templates_path = [
     "_templates",
 ]
@@ -46,15 +43,15 @@ extensions = [
 
 # autodoc options
 autodoc_default_options = {
-    'member-order': 'bysource',
-    'special-members': '__init__',
-    'exclude-members': '__weakref__',
-    'undoc-members': True,
-    'private-members': True,
-    'show-inheritance': True,
+    "member-order": "bysource",
+    "special-members": "__init__",
+    "exclude-members": "__weakref__",
+    "undoc-members": True,
+    "private-members": True,
+    "show-inheritance": True,
 }
 
-autodoc_typehints = 'signature'
+autodoc_typehints = "signature"
 
 autodoc_member_order = "alphabetical"
 
@@ -84,7 +81,14 @@ napoleon_use_rtype = False
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
-    "compas": ("https://compas-dev.github.io/main", "https://compas-dev.github.io/main/objects.inv"),
+    "compas": (
+        "https://compas-dev.github.io/main",
+        "https://compas-dev.github.io/main/objects.inv",
+    ),
+    "compas_fab": (
+        "https://gramaziokohler.github.io/compas_fab/latest/",
+        "https://gramaziokohler.github.io/compas_fab/latest/objects.inv",
+    ),
 }
 
 # -- Options for HTML output ----------------------------------------------
