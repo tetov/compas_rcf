@@ -13,7 +13,8 @@ of COMPAS.
 
 JSON tools
 ----------
-Utility functions for loading and dumping :class:`compas_rcf.fabrication.ClayBullet` objects.
+Utility functions for loading and dumping
+:class:`compas_rcf.fabrication.ClayBullet` objects.
 
 Assorted utilities
 ------------------

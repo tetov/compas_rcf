@@ -62,8 +62,6 @@ class ClayStructure(Network):
                 class_instance=clay_bullet,
             )
 
-        # edges_by_dists = (self._edges_from_distance(i, c) for i, c in enumerate(clay_bullets))
-
         edges_from_order = [(i, i + 1) for i in range(len(clay_bullets) - 1)]
 
         for u, v in edges_from_order:

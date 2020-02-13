@@ -127,7 +127,8 @@ def move_l(plane_to, accel, vel, blend_radius=0):
     Function that returns UR script for linear movement in tool-space.
 
     Args:
-        plane_to: Rhino.Geometry Plane. A target plane for calculating pose (in UR base coordinate system)
+        plane_to: Rhino.Geometry Plane. A target plane for calculating pose
+            (in UR base coordinate system)
         accel: tool accel in m/s^2
         vel: tool speed in m/s
 
@@ -159,8 +160,10 @@ def move_l_time(plane_to, time, blend_radius=0):
     Function that returns UR script for linear movement in tool-space.
 
     Args:
-        plane_to: Rhino.Geometry Plane. A target plane for calculating pose (in UR base coordinate system)
-        time: Amount of time the movement should take, in seconds. Overrides speed and acceleration.
+        plane_to: Rhino.Geometry Plane. A target plane for calculating pose
+            (in UR base coordinate system)
+        time: Amount of time the movement should take, in seconds.
+            Overrides speed and acceleration.
 
     Returns:
         script: UR script
@@ -233,10 +236,13 @@ def move_j_pose(plane_to, accel, vel, blend_radius=0.0):
 
 def move_c(plane_to, point_via, accel, vel):
     """
-    Function that returns UR script for circular movement in tool-space. Only via planes, joint angles not wrapped
+    Function that returns UR script for circular movement in tool-space.
+
+    Only via planes, joint angles not wrapped
 
     Args:
-        plane_to:  Rhino.Geometry Plane.A target plane used for calculating pose (in UR base coordinate system)
+        plane_to:  Rhino.Geometry Plane.A target plane used for calculating pose
+            (in UR base coordinate system)
         point_via: Rhino.Geometry Point. A waypoint that movement passes through
         accel: tool accel in m/s^2
         vel: tool speed in m/s
@@ -354,7 +360,9 @@ def sleep(time):
 
 def get_forward_kin(var_name):
     """
-    Function that returns UR script for get_forward_kin(). Transformation from joint space to tool space.
+    Function that returns UR script for get_forward_kin().
+
+    Transformation from joint space to tool space.
 
     Args:
         var_name: String. name of variable to store forward kinematics information
@@ -367,7 +375,9 @@ def get_forward_kin(var_name):
 
 def get_inverse_kin(var_name, ref_plane):
     """
-    Function that returns UR script for get_forward_kin(). Transformation from joint space to tool space.
+    Function that returns UR script for get_forward_kin().
+
+    Transformation from joint space to tool space.
 
     Args:
         var_name: String. name of variable to store inverse kinematics information
@@ -389,7 +399,8 @@ def get_inverse_kin(var_name, ref_plane):
 
 def get_joint_positions(var_name):
     """
-    Function that returns UR script for get_inverse_kin(). Transformation from tool space to joint space.
+    Function that returns UR script for get_inverse_kin().
+    Transformation from tool space to joint space.
 
     Args:
         var_name: String. name of variable to store inverse kinematics information
