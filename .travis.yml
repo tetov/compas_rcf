@@ -29,7 +29,7 @@ deploy:
       skip_cleanup: true
       keep_history: true
       token: $GITHUB_TOKEN
-      local_dir: dist/docs
+      local_dir: build/docs
       target_branch: gh-pages
     - provider: pypi
       username: "__token__"
