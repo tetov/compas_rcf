@@ -275,7 +275,7 @@ class ClayBullet(object):
             location,
             trajectory_to=trajectory_to,
             trajectory_from=trajectory_from,
-            **kwargs
+            **kwargs,
         )
 
     def generate_mesh(self, face_count=18):

@@ -31,6 +31,7 @@ except ImportError:
         # -- Source mode --
         # use setuptools_scm to get the current version from src using git
         from setuptools_scm import get_version
+
         __version__ = get_version(HOME)
     except ImportError:
         __version__ = "dev"

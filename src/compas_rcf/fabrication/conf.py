@@ -14,11 +14,11 @@ class ZoneDataTemplate(confuse.Template):
     def convert(self, value, view):
         if isinstance(value, (int, float)):
             if not -1 >= value >= 2000:  # arbitrary max value
-                self.fail(u"ZoneData needs to be from -1 to 2000", view)
+                self.fail("ZoneData needs to be from -1 to 2000", view)
             return value
         if value.upper() not in zone_dict.keys():
             self.fail(
-                u"ZoneData must match one of {0}".format(", ".join(zone_dict.keys())),
+                "ZoneData must match one of {0}".format(", ".join(zone_dict.keys())),
                 view,
             )
         return zone_dict[value.upper()]
