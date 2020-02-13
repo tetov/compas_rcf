@@ -342,7 +342,7 @@ def abb_run(cmd_line_args):
     logging.info("Fabrication data read from: {}".format(json_path))
 
     clay_bullets = load_bullets(json_path)
-    logging.info("{} items in clay_bullets.".format(clay_bullets))
+    logging.info("{} items in clay_bullets.".format(len(clay_bullets)))
 
     # Create Ros Client
     ros = RosClient()

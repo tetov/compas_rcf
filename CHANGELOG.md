@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Logging added to `compas_rcf.fabrication.abb_rcf_runner`
+- Logging added to `compas_rcf.fabrication.abb_rcf_runner`.
+- Makes sure needles are retracted at start and end of `abb_rcf_runner`.
+- Hardcoded compression at pickup in `abb_rcf_runner`. Needs to be removed.
+- Added note about compas to `README.md`
+- Added note about compatibility with Python 2 and \< 3.6.
 
 ### Changed
 
@@ -17,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Travis now handles build and releasing of tagged commit, using `setuptools_scm`
   to handle version setup.
 - `setuptools_scm` replaces `MANIFEST.in` in handling what to include when building.
+- Package now requires Python \>\= 3.6 for installation.
 
 ### Removed
 
