@@ -48,4 +48,3 @@ compas\_rcf.ur.visualize\_urscript module
    :members:
    :undoc-members:
    :show-inheritance:
-

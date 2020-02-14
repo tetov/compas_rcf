@@ -50,7 +50,8 @@ class ClayBullet(object):
         id=None,
         radius=45,
         height=100,
-        compression_ratio=.5,
+        compression_ratio=0.5,
+        clay_density=2.0,
         precision=5,
         tool=None,
     ):
@@ -312,7 +313,9 @@ class ClayBullet(object):
         )
 
         @classmethod
-        def from_compressed_centroid_frame_like(cls, centroid_frame_like, compression_ratio=.5, height=100, kwargs={}):
+        def from_compressed_centroid_frame_like(
+            cls, centroid_frame_like, compression_ratio=0.5, height=100, kwargs={}
+        ):
             """Construct a :class:`ClayBullet` instance from centroid plane.
 
             Parameters
@@ -335,7 +338,9 @@ class ClayBullet(object):
             compressed_height = height * compression_ratio
             location = get_offset_frame(centroid_frame, -compressed_height / 2)
 
-            return cls(location, compression_ratio=compression_ratio, height=height, **kwargs)
+            return cls(
+                location, compression_ratio=compression_ratio, height=height, **kwargs
+            )
 
     def generate_mesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution.

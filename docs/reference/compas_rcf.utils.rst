@@ -63,4 +63,3 @@ compas\_rcf.utils.util\_funcs\_rhino module
    :members:
    :undoc-members:
    :show-inheritance:
-

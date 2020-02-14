@@ -26,4 +26,3 @@ compas\_rcf.install\_rhino module
    :members:
    :undoc-members:
    :show-inheritance:
-

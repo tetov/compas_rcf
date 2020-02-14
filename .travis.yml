@@ -46,4 +46,3 @@ deploy:
       file: dist/*
       on:
         tags: true
-
