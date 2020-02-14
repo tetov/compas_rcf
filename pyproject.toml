@@ -14,7 +14,6 @@ known_first_party = "compas_rcf"
 known_third_party = "compas,compas_fab,compas_rrc,Rhino"
 default_section = "THIRDPARTY"
 forced_separate = "test_compas"
-not_skip = "__init__.py"
 add_imports = "__future__.absolute_import,__future__.division,__future__.print_function"
 force_adds = true
 skip = "_version.py"

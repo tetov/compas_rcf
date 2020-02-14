@@ -14,6 +14,8 @@ from compas_fab.robots.ur5 import Robot
 from compas_rcf.utils.compas_to_rhino import cgframe_to_rgplane
 from compas_rcf.utils.compas_to_rhino import matrix_to_rgtransform
 
+__all__ = ["visualize_urscript"]
+
 
 def visualize_urscript(script):
     M = [

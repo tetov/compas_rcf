@@ -4,7 +4,9 @@ from __future__ import print_function
 
 import json
 
-from compas_rcf.fabrication import ClayBullet
+from compas_rcf.fabrication.clay_obj import ClayBullet
+
+all = ["load_bullets"]
 
 
 def load_bullets(file_path):

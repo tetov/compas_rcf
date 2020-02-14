@@ -22,9 +22,5 @@ When there's no other good place for a bit of code..
 
 
 """
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from .util_funcs import *  # noqa: F401,F403
+from compas_rcf.utils.json_ import *  # noqa F401,F403
+from compas_rcf.utils.util_funcs import *  # noqa F401,F403

@@ -4,6 +4,8 @@ from __future__ import print_function
 
 from compas.datastructures import Network
 
+__all__ = ["ClayStructure"]
+
 
 class ClayStructure(Network):
     def __init__(self, clay_bullets):

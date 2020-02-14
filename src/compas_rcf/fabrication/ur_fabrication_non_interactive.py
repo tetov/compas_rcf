@@ -11,6 +11,8 @@ from compas_rcf.ur import ur_standard
 from compas_rcf.ur.visualize_urscript import visualize_urscript
 from compas_rcf.utils.util_funcs import list_elem_w_index_wrap
 
+__all__ = ["ur_clay_shooting"]
+
 # UR movement
 ROBOT_L_SPEED = 0.6  # m/s
 ROBOT_ACCEL = 0.8  # m/s2

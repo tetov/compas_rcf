@@ -34,6 +34,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
+    'sphinx.ext.extlinks',
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
@@ -60,7 +61,6 @@ autoclass_content = "class"
 # autosummary options
 
 autosummary_generate = True
-autosummary_imported_members = True
 
 # napoleon options
 

@@ -12,6 +12,8 @@ from colorama import Style
 from colorama import init
 from confuse import ConfigTypeError
 
+__all__ = ["open_file_dialog", "print_conf_w_colors", "clear_screen"]
+
 root = Tk()
 root.withdraw()
 

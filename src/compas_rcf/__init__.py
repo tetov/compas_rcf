@@ -8,10 +8,6 @@ compas_rcf
 python module for MAS DFAB project Rapid Clay Formations
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 HERE = os.path.dirname(__file__)
@@ -41,4 +37,4 @@ __copyright__ = "MAS DFAB 1920 students and tutors"
 __license__ = "MIT License"
 __email__ = "anton@tetov.se"
 
-__all__ = ["HOME", "DATA", "DOCS", "TEMP"]
+__all__ = ["HOME", "DATA", "DOCS", "TEMP", "__version__"]

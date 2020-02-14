@@ -6,6 +6,8 @@ import confuse
 
 from compas_rcf.abb.helpers import zone_dict
 
+__all__ = ["ZoneDataTemplate", "abb_rcf_conf_template", "fabrication_conf"]
+
 
 class ZoneDataTemplate(confuse.Template):
     def __init__(self, default=confuse.REQUIRED):
@@ -59,22 +61,5 @@ abb_rcf_conf_template = {
         "zone_place": ZoneDataTemplate(),
     },
 }
-
-
-def get_numerical_zone_value(zone_data):
-    """Take input and return numerical zone data.
-
-    Parameters
-    ----------
-    zone_value : str, float or int
-        Either zone data in mm or one of RAPID's defined variable names for zone data
-
-    Returns
-    -------
-    float or int
-        zone data in mm
-    """
-    return zone_dict[zone_data.upper()]
-
 
 fabrication_conf = confuse.LazyConfig("FabricationRunner", __name__)

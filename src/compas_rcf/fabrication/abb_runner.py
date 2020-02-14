@@ -84,7 +84,7 @@ def send_grip_release(client, do_state):
     do_state : int (0 or 1)
         Value to set DO to
     """
-    if CONF.is_target_real:
+    if CONF.target == "real":
         client.send(WaitTime(CONF.tool.wait_before_io))
         client.send(SetDigital(CONF.tool.io_needles_pin, do_state))
         client.send(WaitTime(CONF.tool.wait_after_io))
@@ -123,7 +123,9 @@ def initial_setup(client):
     logging.debug("Acceleration values set.")
 
     # Set Max Speed
-    client.send(SetMaxSpeed(CONF.speed.speed_override, CONF.speed.speed_max_tcp))
+    client.send(
+        SetMaxSpeed(CONF.speed_values.speed_override, CONF.speed_values.speed_max_tcp)
+    )
     logging.debug("Speed set.")
 
     # Initial configuration

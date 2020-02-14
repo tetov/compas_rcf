@@ -4,14 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-
-### Added
+## \[0.1.13\] \[2020-10-14\]
 
 ### Changed
-- Fixes for tkinter file dialog in `compas_rcf.utils.ui`
-
-### Removed
+- `compas_rcf.fabrication.abb_rcf_runner` renamed to `compas_rcf.fabrication.abb_runner`.
+- Typos in `abb_runner` fixed.
+- Trying to set up imports better between modules
+- Fixes for tkinter file dialog in `compas_rcf.utils.ui`.
 
 ## \[0.1.12\] \[2020-10-13\]
 

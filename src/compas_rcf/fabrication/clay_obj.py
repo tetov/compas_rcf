@@ -20,6 +20,8 @@ from compas_rcf.utils.compas_to_rhino import cgframe_to_rgplane
 if IPY:
     import Rhino.Geometry as rg
 
+__all__ = ["ClayBullet", "check_id_collision"]
+
 
 class ClayBullet(object):
     """Simple Clay Cylinder.
