@@ -5,7 +5,7 @@ from __future__ import print_function
 from compas_rcf.ur.urscript_wrapper import set_DO
 from compas_rcf.ur.urscript_wrapper import set_standard_analog_out
 from compas_rcf.ur.urscript_wrapper import textmsg
-from compas_rcf.utils import ensure_frame
+from compas_rcf.utils.util_funcs import ensure_frame
 
 # Programs
 

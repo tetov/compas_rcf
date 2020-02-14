@@ -33,7 +33,7 @@ from compas_rrc import WaitTime
 from compas_rcf import __version__
 from compas_rcf.fabrication.conf import abb_rcf_conf_template
 from compas_rcf.fabrication.conf import fabrication_conf
-from compas_rcf.utils import get_offset_frame
+from compas_rcf.utils.util_funcs import get_offset_frame
 from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
 

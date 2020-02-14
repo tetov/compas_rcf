@@ -22,5 +22,3 @@ When there's no other good place for a bit of code..
 
 
 """
-from compas_rcf.utils.json_ import *  # noqa F401,F403
-from compas_rcf.utils.util_funcs import *  # noqa F401,F403

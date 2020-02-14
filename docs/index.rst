@@ -31,6 +31,7 @@ Documentation
    examples
    known_issues
    contributing
+   reference
    changelog
    authors
    license
