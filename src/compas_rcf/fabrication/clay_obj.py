@@ -15,6 +15,7 @@ from compas_ghpython.artists import MeshArtist
 
 from compas_rcf.utils import ensure_frame
 from compas_rcf.utils import list_elem_w_index_wrap
+from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils.compas_to_rhino import cgframe_to_rgplane
 
 if IPY:
@@ -47,9 +48,9 @@ class ClayBullet(object):
         trajectory_to=[],
         trajectory_from=[],
         id=None,
-        radius=40,
-        height=200,
-        compression_ratio=1,
+        radius=45,
+        height=100,
+        compression_ratio=.5,
         precision=5,
         tool=None,
     ):
@@ -135,6 +136,16 @@ class ClayBullet(object):
             self._trajectory_from.append(frame)
 
     @property
+    def centroid_frame(self):
+        """Get frame at middle of uncompressed bullet."""
+        return get_offset_frame(self.location, self.height)
+
+    @property
+    def compressed_centroid_frame(self):
+        """Get frame at middle of compressed bullet."""
+        return get_offset_frame(self.location, self.compressed_height)
+
+    @property
     def plane(self):
         """For Compatibility with older scripts."""
         return self.location_plane
@@ -160,24 +171,44 @@ class ClayBullet(object):
         return cgframe_to_rgplane(self.placement_frame)
 
     @property
-    def pre_planes(self):
+    def trajectory_to_planes(self):
         """Rhino.Geometry.Plane representations of pre frames.
 
         Returns
         -------
-        Rhino.Geometry.Plane
+        list of Rhino.Geometry.Plane
         """
         return [cgframe_to_rgplane(frame) for frame in self.trajectory_to]
 
     @property
-    def post_planes(self):
+    def trajectory_from_planes(self):
         """Rhino.Geometry.Plane representation of pre frames.
+
+        Returns
+        -------
+        list of Rhino.Geometry.Plane
+        """
+        return [cgframe_to_rgplane(frame) for frame in self.trajectory_from]
+
+    @property
+    def centroid_plane(self):
+        """Get plane at middle of uncompressed bullet.
 
         Returns
         -------
         Rhino.Geometry.Plane
         """
-        return [cgframe_to_rgplane(frame) for frame in self.post_planes]
+        return cgframe_to_rgplane(self.centroid_frame)
+
+    @property
+    def compressed_centroid_plane(self):
+        """Get plane at middle of compressed bullet.
+
+        Returns
+        -------
+        Rhino.Geometry.Plane
+        """
+        return cgframe_to_rgplane(self.centroid_frame)
 
     @property
     def volume(self):
@@ -279,6 +310,32 @@ class ClayBullet(object):
             trajectory_from=trajectory_from,
             **kwargs,
         )
+
+        @classmethod
+        def from_compressed_centroid_frame_like(cls, centroid_frame_like, compression_ratio=.5, height=100, kwargs={}):
+            """Construct a :class:`ClayBullet` instance from centroid plane.
+
+            Parameters
+            ----------
+            centroid_frame_like : compas.geometry.Frame or Rhino.Geometry.Plane
+                frame between bottom of clay bullet and compressed top
+            compression_ratio : float
+                The compressed height as a percentage of the original height
+            height : float
+                The height of the bullet before compression
+            kwargs
+                Other attributes
+
+            Returns
+            -------
+            :class:`ClayBullet`
+                The constructed ClayBullet instance
+            """
+            centroid_frame = ensure_frame(centroid_frame_like)
+            compressed_height = height * compression_ratio
+            location = get_offset_frame(centroid_frame, -compressed_height / 2)
+
+            return cls(location, compression_ratio=compression_ratio, height=height, **kwargs)
 
     def generate_mesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution.

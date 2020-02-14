@@ -6,11 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## \[0.1.13\] \[2020-10-14\]
 
+### Added
+* Properties `centroid_frame`, `compressed_centroid_frame`, `centroid_plane` added  `compressed_centroid_plane` to `compas_rcf.fabrication.clay_objs.ClayBullet`.
+* Classmethod `from_compressed_centroid_frame_like` added to `ClayBullet`.
+
 ### Changed
 - `compas_rcf.fabrication.abb_rcf_runner` renamed to `compas_rcf.fabrication.abb_runner`.
 - Typos in `abb_runner` fixed.
 - Trying to set up imports better between modules
 - Fixes for tkinter file dialog in `compas_rcf.utils.ui`.
+* Property `post_planes` renamed to `trajectory_from` in `ClayBullet`.
 
 ## \[0.1.12\] \[2020-10-13\]
 
