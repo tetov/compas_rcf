@@ -104,9 +104,9 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
 
 @task(
     help={
-        "rebuild": "True to clean all previously built docs before starting, otherwise False.",
-        "doctest": "True to run doctests, otherwise False.",
-        "check_links": "True to check all web links in docs for validity, otherwise False.",
+        "rebuild": "True to clean all previously built docs before starting.",
+        "doctest": "True to run doctests.",
+        "check_links": "True to check all web links in docs for validity.",
     }
 )
 def docs(ctx, doctest=False, rebuild=True, check_links=False):
