@@ -54,6 +54,7 @@ class ClayBullet(object):
         clay_density=2.0,
         precision=5,
         tool=None,
+        **kwargs,
     ):
         self.location = location
         self.trajectory_to = trajectory_to
@@ -69,6 +70,7 @@ class ClayBullet(object):
         self.height = height
         self.compression_ratio = compression_ratio
         self.tool = tool
+        self.attributes = kwargs
 
     @property
     def location(self):
@@ -272,11 +274,14 @@ class ClayBullet(object):
         return rg.Cylinder(self.circle, self.compressed_height)
 
     @property
-    def vector(self):
-        # TODO: Find better name
-        return (
-            self.plane.Normal * self.height - self.plane.Normal * self.compressed_height
-        )
+    def vector_from_bullet_zaxis(self):
+        """Vector through center of bullet.
+
+        Returns
+        -------
+        :class:`compas.geometry.Vector`
+        """
+        return (self.location.normal * self.compressed_height)
 
     @classmethod
     def from_data(cls, data):
