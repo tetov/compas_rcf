@@ -54,6 +54,7 @@ class ClayBullet(object):
         clay_density=2.0,
         precision=5,
         tool=None,
+        vkey=None,
         **kwargs,
     ):
         self.location = location
@@ -70,6 +71,7 @@ class ClayBullet(object):
         self.height = height
         self.compression_ratio = compression_ratio
         self.tool = tool
+        self.vkey = vkey
         self.attributes = kwargs
 
     @property
@@ -281,7 +283,7 @@ class ClayBullet(object):
         -------
         :class:`compas.geometry.Vector`
         """
-        return (self.location.normal * self.compressed_height)
+        return self.location.normal * self.compressed_height
 
     @classmethod
     def from_data(cls, data):
