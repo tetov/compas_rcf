@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import logging
 import sys
+import time
 from datetime import datetime
 from os import path
 
@@ -31,16 +32,24 @@ from compas_rrc import SetWorkObject
 from compas_rrc import WaitTime
 
 from compas_rcf import __version__
+from compas_rcf.abb.helpers import docker_compose_paths
+from compas_rcf.abb.helpers import ping
+from compas_rcf.abb.helpers import robot_ips
 from compas_rcf.fabrication.conf import abb_rcf_conf_template
 from compas_rcf.fabrication.conf import fabrication_conf
-from compas_rcf.utils.util_funcs import get_offset_frame
 from compas_rcf.utils import ui
+from compas_rcf.utils.docker import compose_up
 from compas_rcf.utils.json_ import load_bullets
+from compas_rcf.utils.util_funcs import get_offset_frame
 
 if sys.version_info[0] < 2:
     raise Exception("This module requires Python 3")
 else:
     import questionary
+
+################################################################################
+# Globals                                                                      #
+################################################################################
 
 ROBOT_CONTROL_FOLDER_DRIVE = "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"  # noqa E501
 
@@ -51,56 +60,9 @@ DEFAULT_LOG_DIR = path.join(ROBOT_CONTROL_FOLDER_DRIVE, "06_fabrication_logs")
 # Define external axis, will not be used but required in move cmds
 EXTERNAL_AXIS_DUMMY: list = []
 
-
-def get_picking_frame(bullet_height):
-    """Get next picking frame.
-
-    Parameters
-    ----------
-    bullet_height : float
-        Height of bullet to pick up
-
-    Returns
-    -------
-    `class`:compas.geometry.Frame
-    """
-    # TODO: Set up a grid to pick from
-    picking_frame = Frame(Point(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0))
-
-    # TODO: Make the pressing at picking more configurable
-    return get_offset_frame(picking_frame, bullet_height * 0.95)
-
-
-def send_grip_release(client, do_state):
-    """Grip or release using RCF tool, either in simulation or on real robot.
-
-    If script target is real robot this will set the digital output on the robot,
-    and if the target is virtual robot it will use RobotStudio code to visualize
-    clay bullet gripping and releasing
-
-    Parameters
-    ----------
-    client : :class:`compas_rrc.AbbClient`
-    do_state : int (0 or 1)
-        Value to set DO to
-    """
-    if CONF.target == "real":
-        client.send(WaitTime(CONF.tool.wait_before_io))
-        client.send(SetDigital(CONF.tool.io_needles_pin, do_state))
-        client.send(WaitTime(CONF.tool.wait_after_io))
-    else:
-        # Custom instruction can grip a bullet in RobotStudio
-        # note the tool tip must touch the bullet
-        if do_state == CONF.tool.grip_state:
-            client.send(CustomInstruction("r_A057_RS_ToolGrip"))
-        else:
-            client.send(CustomInstruction("r_A057_RS_ToolRelease"))
-
-    logging.debug(
-        "Signal sent to {}".format(
-            "grip" if do_state == CONF.tool.grip_state else "release"
-        )
-    )
+################################################################################
+# Programs                                                                     #
+################################################################################
 
 
 def initial_setup(client):
@@ -165,54 +127,6 @@ def shutdown_procedure(client):
     client.terminate()
 
 
-def get_settings():
-    """Print and prompts user for changes to default configuration.
-
-    Parameters
-    ----------
-    target_select : str ('real' or 'virtual')
-        Target for script, either virtual robot controller or real. From argparse.
-    """
-    init(autoreset=True)
-
-    load_or_default = questionary.select(
-        "Load config or use default?", choices=["Default", "Load"], default="Default"
-    ).ask()
-
-    if load_or_default == "Load":
-        conf_file = ui.open_file_dialog(
-            initial_dir=DEFAULT_CONF_DIR, file_type=("YAML files", "*.yaml")
-        )
-        fabrication_conf.set_file(conf_file)
-        logging.info("Configuration loaded from {}".format(conf_file))
-    else:
-        fabrication_conf.read(defaults=True, user=False)
-        logging.info("Default configuration loaded from package")
-
-    # At this point the conf is considered set, if changes needs to happen after
-    # this point CONF needs to be set again. There's probably a better way though.
-    global CONF
-    CONF = fabrication_conf.get(abb_rcf_conf_template)
-
-    if CONF.target is None:
-        question = questionary.select(
-            "Target?", choices=["Virtual robot", "Real robot"], default="Virtual robot"
-        ).ask()
-        CONF.target = "real" if question == "Real robot" else "virtual"
-
-    logging.info("Target is {} controller.".format(CONF.target.upper()))
-
-    print(Fore.CYAN + Style.BRIGHT + "Configuration")
-
-    ui.print_conf_w_colors(fabrication_conf)
-
-    conf_ok = questionary.confirm("Configuration correct?").ask()
-    if not conf_ok:
-        logging.critical("Program exited because user didn't confirm config")
-        print("Exiting.")
-        sys.exit()
-
-
 def send_picking(client, picking_frame):
     """Send movement and IO instructions to pick up a clay bullet.
 
@@ -240,15 +154,16 @@ def send_picking(client, picking_frame):
     )
 
     client.send_and_wait(
-        MoveToFrame(picking_frame, CONF.movement.speed_picking, CONF.movement.zone_pick)
+        MoveToFrame(
+            picking_frame, CONF.movement.speed_travel, CONF.movement.zone_travel
+        )
     )
-    # TODO: Try compress bullet a little bit before picking
 
     send_grip_release(client, CONF.tool.grip_state)
 
     client.send(
         MoveToFrame(
-            offset_picking, CONF.movement.speed_travel, CONF.movement.zone_travel
+            offset_picking, CONF.movement.speed_picking, CONF.movement.zone_pick
         )
     )
 
@@ -313,12 +228,126 @@ def send_placing(client, bullet):
         )
 
 
+def send_grip_release(client, do_state):
+    """Grip or release using RCF tool, either in simulation or on real robot.
+
+    If script target is real robot this will set the digital output on the robot,
+    and if the target is virtual robot it will use RobotStudio code to visualize
+    clay bullet gripping and releasing
+
+    Parameters
+    ----------
+    client : :class:`compas_rrc.AbbClient`
+    do_state : int (0 or 1)
+        Value to set DO to
+    """
+    if CONF.target == "real":
+        client.send(WaitTime(CONF.tool.wait_before_io))
+        client.send(SetDigital(CONF.tool.io_needles_pin, do_state))
+        client.send(WaitTime(CONF.tool.wait_after_io))
+    else:
+        # Custom instruction can grip a bullet in RobotStudio
+        # note the tool tip must touch the bullet
+        if do_state == CONF.tool.grip_state:
+            client.send(CustomInstruction("r_A057_RS_ToolGrip"))
+        else:
+            client.send(CustomInstruction("r_A057_RS_ToolRelease"))
+
+    logging.debug(
+        "Signal sent to {}".format(
+            "grip" if do_state == CONF.tool.grip_state else "release"
+        )
+    )
+
+
+################################################################################
+# Non programs
+################################################################################
+
+
+def get_settings():
+    """Print and prompts user for changes to default configuration.
+
+    Parameters
+    ----------
+    target_select : str ('real' or 'virtual')
+        Target for script, either virtual robot controller or real. From argparse.
+    """
+    init(autoreset=True)
+
+    load_or_default = questionary.select(
+        "Load config or use default?", choices=["Default", "Load"], default="Default"
+    ).ask()
+
+    if load_or_default == "Load":
+        conf_file = ui.open_file_dialog(
+            initial_dir=DEFAULT_CONF_DIR, file_type=("YAML files", "*.yaml")
+        )
+        fabrication_conf.set_file(conf_file)
+        logging.info("Configuration loaded from {}".format(conf_file))
+    else:
+        fabrication_conf.read(defaults=True, user=False)
+        logging.info("Default configuration loaded from package")
+
+    if not fabrication_conf["target"].exists():
+        question = questionary.select(
+            "Target?", choices=["Virtual robot", "Real robot"], default="Virtual robot"
+        ).ask()
+        print(question)
+        fabrication_conf["target"] = "real" if question == "Real robot" else "virtual"
+        print(fabrication_conf["target"])
+
+    logging.info(
+        "Target is {} controller.".format(fabrication_conf["target"].get().upper())
+    )
+
+    # At this point the conf is considered set, if changes needs to happen after
+    # this point CONF needs to be set again. There's probably a better way though.
+    global CONF
+    CONF = fabrication_conf.get(abb_rcf_conf_template)
+
+    print(Fore.CYAN + Style.BRIGHT + "Configuration")
+
+    ui.print_conf_w_colors(fabrication_conf)
+
+    conf_ok = questionary.confirm("Configuration correct?").ask()
+    if not conf_ok:
+        logging.critical("Program exited because user didn't confirm config")
+        print("Exiting.")
+        sys.exit()
+
+
+def get_picking_frame(bullet_height):
+    """Get next picking frame.
+
+    Parameters
+    ----------
+    bullet_height : float
+        Height of bullet to pick up
+
+    Returns
+    -------
+    `class`:compas.geometry.Frame
+    """
+    # TODO: Set up a grid to pick from
+    picking_frame = Frame(Point(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0))
+
+    # TODO: Make the pressing at picking more configurable
+    return get_offset_frame(picking_frame, bullet_height * 0.95)
+
+
+################################################################################
+# Script runner                                                                #
+################################################################################
 def abb_run(cmd_line_args):
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
     print("\ncompas_rfc abb runner\n")
 
     fabrication_conf.set_args(cmd_line_args)
 
+    ############################################################################
+    # Logging setup                                                            #
+    ############################################################################
     timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M.log")
     log_file = path.join(DEFAULT_LOG_DIR, timestamp_file)
 
@@ -337,26 +366,70 @@ def abb_run(cmd_line_args):
     logging.debug("argparse input: {}".format(cmd_line_args))
     logging.debug("config after set_args: {}".format(fabrication_conf))
 
+    ############################################################################
+    # CONF setup                                                              #
+    ############################################################################
     get_settings()
     logging.info("Fabrication configuration:\n{}".format(fabrication_conf.dump()))
 
+    ############################################################################
+    # Docker setup                                                            #
+    ############################################################################
+    compose_up(docker_compose_paths["base"], remove_orphans=False)
+    logging.debug("Compose up base")
+    ip = robot_ips[CONF.target]
+    compose_up(docker_compose_paths["abb_driver"], ROBOT_IP=ip)
+    logging.debug("Compose up abb_driver")
+
+    ############################################################################
+    # Load fabrication data                                                    #
+    ############################################################################
     json_path = ui.open_file_dialog(initial_dir=DEFAULT_JSON_DIR)
-    logging.info("Fabrication data read from: {}".format(json_path))
 
     clay_bullets = load_bullets(json_path)
+    logging.info("Fabrication data read from: {}".format(json_path))
     logging.info("{} items in clay_bullets.".format(len(clay_bullets)))
 
-    # Create Ros Client
+    ############################################################################
+    # Create Ros Client                                                        #
+    ############################################################################
     ros = RosClient()
 
-    # Create ABB Client
+    ############################################################################
+    # Create ABB Client                                                        #
+    ############################################################################
     abb = AbbClient(ros)
     abb.run()
-    logging.debug("Connected to controller")
+    logging.debug("Connected to ROS")
 
-    # Set speed, accel, tool, wobj and move to start pos
+    ############################################################################
+    # Connection check                                                         #
+    ############################################################################
+    ip = robot_ips[CONF.target]
+    for i in range(3):
+        try:
+            logging.debug("Pinging robot")
+            ping(abb, timeout=15)
+            logging.debug("Breaking loop after successful ping")
+            break
+        except TimeoutError:
+            logging.info("No response from controller, restarting abb-driver service.")
+            compose_up(
+                docker_compose_paths["abb_driver"], force_recreate=True, ROBOT_IP=ip
+            )
+            logging.debug("Compose up for abb_driver with robot-ip={}".format(ip))
+            time.sleep(5)
+    else:
+        raise TimeoutError("Failed to connect to robot")
+
+    ############################################################################
+    # Set speed, accel, tool, wobj and move to start pos                       #
+    ############################################################################
     initial_setup(abb)
 
+    ############################################################################
+    # Fabrication loop                                                         #
+    ############################################################################
     for i, bullet in enumerate(clay_bullets):
         logging.info("Bullet {} with id {}".format(i, bullet.id))
 
@@ -369,11 +442,16 @@ def abb_run(cmd_line_args):
         # Place bullet
         send_placing(abb, bullet)
 
+    ############################################################################
+    # Shutdown procedure                                                       #
+    ############################################################################
     logging.info("Finished program with {} bullets.".format(len(clay_bullets)))
     shutdown_procedure(abb)
 
 
 if __name__ == "__main__":
+    """Entry point and argument handling
+    """
     import argparse
 
     parser = argparse.ArgumentParser()

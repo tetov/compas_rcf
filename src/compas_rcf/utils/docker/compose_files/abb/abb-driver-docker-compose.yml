@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+  abb-driver:
+    image: gramaziokohler/compas_rrc_driver
+    container_name: abb-driver
+    environment:
+      - ROS_HOSTNAME=abb-driver
+      - ROS_MASTER_URI=http://ros-master:11311
+    command:
+      - roslaunch
+      - --wait
+      - compas_rrc_driver
+      - bringup.launch
+      - robot_ip:=${ROBOT_IP:-host.docker.internal}
+      - robot_streaming_port:=30101
+      - robot_state_port:=30201
+networks:
+    default:
+        external: true
+        name: ros-net

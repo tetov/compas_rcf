@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[0.1.17\] \[2020-02-18\]
+
+### Added
+
+-   Docker compose integration via `compas_rcf.utils.docker` to set up needed services for `compas_rcf.fabrication.abb_runner`.
+-   Added ping function to `compas_rcf.abb.helpers`, sends NoOp to controller and waits for feedback.
+
+### Changed
+
+-   Reordered functions in `abb_runner` and added comments to section of the functions.
+
 ## \[0.1.16\] \[2020-02-18\]
 
 ### Changed

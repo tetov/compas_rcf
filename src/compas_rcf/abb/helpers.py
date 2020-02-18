@@ -3,6 +3,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from compas_rrc import Noop
+from compas_rrc import FeedbackLevel
+
+from compas_rcf import HERE
+
 # Describes the valid zone data definitions.
 zone_dict = {
     "FINE": -1,
@@ -21,3 +26,27 @@ zone_dict = {
     "Z150": 150,
     "Z200": 200,
 }
+
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
+
+pkg_dir = Path(HERE)
+
+_compose_folder = pkg_dir / "utils" / "docker" / "compose_files" / "abb"
+docker_compose_paths = {
+    "base": _compose_folder / "base-docker-compose.yml",
+    "abb_driver": _compose_folder / "abb-driver-docker-compose.yml",
+}
+robot_ips = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
+
+
+def ping(client, timeout=10):
+    feedback = client.send(Noop(feedback_level=FeedbackLevel.DONE))
+
+    try:
+        return feedback.result(timeout=timeout)
+    # TODO: Ask Philippe to change this to TimeoutError
+    except Exception:
+        raise TimeoutError
