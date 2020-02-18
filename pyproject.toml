@@ -20,4 +20,4 @@ skip = "_version.py"
 
 [tool.black]
 include = '\.pyi?$'
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py27', 'py36', 'py37', 'py38']

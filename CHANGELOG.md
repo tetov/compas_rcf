@@ -9,9 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 ### Changed
+- Grasshopper example file `create_bullets_read_write_json` updated to handle
+Grasshopper trees and take vkeys as an attribute.
+- `compas_rcf.fabrication.clay_obj.ClayBullet` property setter `trajectory_to` and
+`trajectory_from` updated to handle list of planes.
+- `compas_rcf.utils.util_funcs.ensure_frame` updated to convert point to Frame with
+given point and flipped XY plane.
+- Updated config for black to also target py2.7 so it doesn't add trailing commas
+to lists. (Which IronPy 2.7 can't handle)
 
 ### Removed
-
 
 ## \[0.1.15\] [\2020-10-15\]
 
@@ -22,8 +29,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 * Property `Vector` in `ClayBullet` changed to represent the bullets center as a line.
-
-### Removed
 
 ## \[0.1.14\] \[2020-10-14\]
 

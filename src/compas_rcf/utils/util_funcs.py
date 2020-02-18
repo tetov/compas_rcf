@@ -10,6 +10,7 @@ from compas import IPY
 if IPY:
     import Rhino.Geometry as rg
     from compas_rcf.utils.rhino_to_compas import rgplane_to_cgframe
+    from compas_rcf.utils.rhino_to_compas import rgpoint_to_cgpoint
 
 
 def rand_vector(dimensions):
@@ -120,6 +121,9 @@ def ensure_frame(frame_like):
     if IPY:
         if isinstance(frame_like, rg.Plane):
             return rgplane_to_cgframe(frame_like)
+        if isinstance(frame_like, rg.Point3d):
+            pt = rgpoint_to_cgpoint(frame_like)
+            return cg.Frame(pt, cg.Vector(0, 1, 0), cg.Vector(1, 0, 0))
 
     raise TypeError(
         "Can't convert {} to compas.geometry.Frame".format(type(frame_like))
