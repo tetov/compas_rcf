@@ -27,6 +27,8 @@ requirements = [
     "questionary ~= 1.5.1",
     "colorama ~= 0.4.3",
     "confuse ~= 1.0.0",
+    "prompt-toolkit ~= 3.0.3",
+    "Pygments ~= 2.5.2",
 ]
 
 extras_require = {

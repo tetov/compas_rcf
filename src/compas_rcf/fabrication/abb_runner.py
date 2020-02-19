@@ -308,7 +308,7 @@ def get_settings():
 
     print(Fore.CYAN + Style.BRIGHT + "Configuration")
 
-    ui.print_conf_w_colors(fabrication_conf)
+    ui.pygment_yaml(fabrication_conf.dump())
 
     conf_ok = questionary.confirm("Configuration correct?").ask()
     if not conf_ok:

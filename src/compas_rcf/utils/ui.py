@@ -7,12 +7,12 @@ from os import system
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
-from colorama import Fore
-from colorama import Style
-from colorama import init
-from confuse import ConfigTypeError
+from prompt_toolkit import print_formatted_text
+from prompt_toolkit.formatted_text import PygmentsTokens
+import pygments
+from pygments.lexers.data import YamlLexer
 
-__all__ = ["open_file_dialog", "print_conf_w_colors", "clear_screen"]
+__all__ = ["open_file_dialog", "pygment_yaml", "clear_screen"]
 
 root = Tk()
 root.withdraw()
@@ -27,38 +27,9 @@ def open_file_dialog(initial_dir="/", file_type=("JSON files", "*.json")):
     return filename
 
 
-def print_conf_w_colors(conf):
-    """Prints dicts styled based on hierarchy, supports 1 level of nested dicts."""
-
-    init(autoreset=True)
-    print()
-
-    for key in conf.keys():
-        try:
-            print(Fore.BLUE + Style.BRIGHT + "* " + str(key) + ":")
-            for subkey in conf[key].keys():
-                print(
-                    Fore.GREEN
-                    + Style.DIM
-                    + "    - "
-                    + str(subkey)
-                    + ": "
-                    + Fore.YELLOW
-                    + str(conf[key][subkey])
-                )
-        except ConfigTypeError:
-            print(
-                Fore.BLUE
-                + Style.BRIGHT
-                + "* "
-                + str(key)
-                + ": "
-                + Fore.GREEN
-                + Style.DIM
-                + str(conf[key])
-            )
-
-    print()
+def pygment_yaml(yaml):
+    lexed_yaml = list(pygments.lex(yaml, lexer=YamlLexer()))
+    print_formatted_text(PygmentsTokens(lexed_yaml))
 
 
 def clear_screen():

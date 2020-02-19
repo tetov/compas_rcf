@@ -47,6 +47,8 @@ def ping(client, timeout=10):
 
     try:
         return feedback.result(timeout=timeout)
-    # TODO: Ask Philippe to change this to TimeoutError
-    except Exception:
-        raise TimeoutError
+    except Exception as e:
+        if e.message == "Timeout: future result not available":
+            raise TimeoutError(e.message)
+        else:
+            raise

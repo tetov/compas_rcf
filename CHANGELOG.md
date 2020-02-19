@@ -8,10 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+-   Dependency `prompt-toolkit` and `Pygments`.
+-   Logging to `compas_rcf.utils.docker.docker_cmds`.
+
 ### Changed
+
+-   Replaced function `compas_rcf.utils.ui.print_conf_w_colors` with `pygment_yaml`, pretty printing yaml config using prompt\_toolkit and pygments.
+-   Added check of Exception message in `compas_rcf.abb.helpers` to narrow error catching.
 
 ### Removed
 
+-   Unused functions in `compas_rcf.utils.docker.docker_cmds`.
 
 ## \[0.1.17\] \[2020-02-18\]
 
