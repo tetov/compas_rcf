@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 -   Dependency `prompt-toolkit` and `Pygments`.
 -   Logging to `compas_rcf.utils.docker.docker_cmds`.
+-   Module for converting JSON to CSV: `compas_rcf.utils.csv_`
 
 ### Changed
 
