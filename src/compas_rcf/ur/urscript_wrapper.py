@@ -4,14 +4,35 @@ from __future__ import print_function
 
 from compas.geometry import Frame
 
-from compas_rcf.ur.helpers import format_joint_positions
-from compas_rcf.ur.helpers import format_pose
-from compas_rcf.ur.helpers import format_urscript_cmd
+from compas_rcf.utils.util_funcs import ensure_frame
 
 try:
     from typing import List
 except ImportError:
     pass
+
+
+def format_joint_positions(joint_values):
+    jpos_fmt = "[" + ", ".join(["{:.4f}"] * 6) + "]"
+    return jpos_fmt.format(*joint_values)
+
+
+def format_pose(frame_like):
+    frame = ensure_frame(frame_like)
+
+    pose_data = [c / 1000.0 for c in frame.origin.data] + frame.axis_angle_vector()
+    pose_fmt = "p[" + ", ".join(["{:.4f}"] * 6) + "]"
+    return pose_fmt.format(*pose_data)
+
+
+def format_urscript_cmd(func):
+    # @wraps(func)
+    def wrapper(*arg, **kwargs):
+        cmd = "\t{}\n".format(func(*arg, **kwargs))
+        return cmd
+
+    return wrapper
+
 
 # Motion
 @format_urscript_cmd
