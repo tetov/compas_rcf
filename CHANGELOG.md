@@ -4,17 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.1.18\] \[2020-02-20\]
 
 ### Added
 
 -   Dependency `prompt-toolkit` and `Pygments`.
 -   Logging to `compas_rcf.utils.docker.docker_cmds`.
 -   `compas_rcf.fabrication.abb_runner` now dumps placed `ClayBullets` after completed run, together with attribute `placed` with time of placement in UNIX epoch.
--   Functions `send_picking` & `send_placing` in `compas_rcf.fabrication.abb_runner` are now timed using Watch from compas_rrc and the sum of their durations are stored as `ClayBullet.cycle_time`.
+-   Functions `send_picking` & `send_placing` in `compas_rcf.fabrication.abb_runner` are now timed using Watch from compas\_rrc and the sum of their durations are stored as `ClayBullet.cycle_time`.
 -   Added command line argument to `compas_rcf.fabrication.abb_runner`: `--skip-logfile`.
 -   Module for converting JSON to CSV: `compas_rcf.utils.csv_`
-
 
 ### Changed
 
