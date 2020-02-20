@@ -69,6 +69,14 @@ def rgplane_to_cgplane(plane):  # type: (rg.Plane) -> cg.Plane
     -------
     compas.geometry.Plane
         Resulting plane object
+
+    Notes
+    -----
+    Unlike a Rhino.Geometry plane the compas.geometry plane does not store xaxis
+    and yaxis vector.
+
+    From cg.Frame.from_plane() docstring:
+    "Xaxis and yaxis are arbitrarily selected based on the plane’s normal."
     """
     return cg.Plane(
         rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.Normal)
@@ -87,8 +95,10 @@ def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
     compas.geometry.Frame
         Resulting frame object
     """
-    cgplane = rgplane_to_cgplane(plane)
-    return cg.Frame.from_plane(cgplane)
+    pt = rgpoint_to_cgpoint(plane.Origin)
+    xaxis = rgvector_to_cgvector(plane.XAxis)
+    yaxis = rgvector_to_cgvector(plane.YAxis)
+    return cg.Frame(pt, xaxis, yaxis)
 
 
 def rgtransform_to_matrix(rgM):

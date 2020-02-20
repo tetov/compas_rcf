@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 -   Replaced function `compas_rcf.utils.ui.print_conf_w_colors` with `pygment_yaml`, pretty printing yaml config using prompt\_toolkit and pygments.
 -   Added check of Exception message in `compas_rcf.abb.helpers` to narrow error catching.
+-   Changed `compas_rcf.utils.rhino_to_compas.rgplane_to_cgframe` to correctly inherit X and Y axis from Rhino plane.
+-   Added a note to `rgplane_to_cgplane` to clarify that X and Y axises are note stored in compas planes.
 
 ### Removed
 
