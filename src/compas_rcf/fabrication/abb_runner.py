@@ -429,7 +429,7 @@ def abb_run(cmd_line_args):
     for i in range(3):
         try:
             logging.debug("Pinging robot")
-            ping(abb, timeout=15)
+            ping(abb, timeout=5)
             logging.debug("Breaking loop after successful ping")
             break
         except TimeoutError:
@@ -438,7 +438,7 @@ def abb_run(cmd_line_args):
                 docker_compose_paths["abb_driver"], force_recreate=True, ROBOT_IP=ip
             )
             logging.debug("Compose up for abb_driver with robot-ip={}".format(ip))
-            time.sleep(5)
+            time.sleep(10)
     else:
         raise TimeoutError("Failed to connect to robot")
 
