@@ -66,14 +66,18 @@ class ClayBullet(object):
         if id is None:
             self.id = next(self._ids)
         else:
-            self.id = str(id) + "x"
+            self.id = str(id) + "x"  # To avoid id collisions
 
         self.radius = radius
         self.height = height
         self.compression_ratio = compression_ratio
         self.tool = tool
         self.vkey = vkey
-        self.attributes = kwargs
+        if kwargs:
+            self.attributes = kwargs
+
+        self.cycle_time = None
+        self.placed = None
 
     @property
     def location(self):

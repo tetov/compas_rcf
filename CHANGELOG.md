@@ -10,12 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 -   Dependency `prompt-toolkit` and `Pygments`.
 -   Logging to `compas_rcf.utils.docker.docker_cmds`.
+-   `compas_rcf.fabrication.abb_runner` now dumps placed `ClayBullets` after completed run, together with attribute `placed` with time of placement in UNIX epoch.
+-   Functions `send_picking` & `send_placing` in `compas_rcf.fabrication.abb_runner` are now timed using Watch from compas_rrc and the sum of their durations are stored as `ClayBullet.cycle_time`.
+-   Added command line argument to `compas_rcf.fabrication.abb_runner`: `--skip-logfile`.
 -   Module for converting JSON to CSV: `compas_rcf.utils.csv_`
+
 
 ### Changed
 
 -   Replaced function `compas_rcf.utils.ui.print_conf_w_colors` with `pygment_yaml`, pretty printing yaml config using prompt\_toolkit and pygments.
 -   Added check of Exception message in `compas_rcf.abb.helpers` to narrow error catching.
+-   Paths in `compas_rcf.fabrication.abb_runner` are changed to be pathlib.Path objects.
 -   Changed `compas_rcf.utils.rhino_to_compas.rgplane_to_cgframe` to correctly inherit X and Y axis from Rhino plane.
 -   Added a note to `rgplane_to_cgplane` to clarify that X and Y axises are note stored in compas planes.
 
