@@ -33,3 +33,13 @@ wobjs:
     # name of work objects as defined in controller
     picking_wobj_name: ob_A057_WobjPicking01
     placing_wobj_name: ob_A057_WobjPlacing01
+pick:
+    origin_grid:  # grid offset from wobj in mm
+        x: 125
+        y: 125
+    xnum: 6  # number of bullets in x direction
+    ynum: 3  # number of bullets in y direction
+    grid_spacing: 125  # distance between grid crossings
+    compression_height_factor: 0.95 # controls compression before lifting
+    xaxis: [0, 1, 0] # x axis as a list
+    yaxis: [1, 0, 0] # y axis as a list

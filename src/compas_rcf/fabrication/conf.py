@@ -60,6 +60,18 @@ abb_rcf_conf_template = {
         "zone_pick": ZoneDataTemplate(),
         "zone_place": ZoneDataTemplate(),
     },
+    "pick": {
+        "origin_grid": {
+            "x": confuse.Number(default=100),
+            "y": confuse.Number(default=100),
+        },
+        "xnum": int,
+        "ynum": int,
+        "grid_spacing": float,
+        "compression_height_factor": confuse.Number(default=0.95),
+        "xaxis": confuse.Sequence([float] * 3),
+        "yaxis": confuse.Sequence([float] * 3),
+    },
 }
 
 fabrication_conf = confuse.LazyConfig("FabricationRunner", __name__)

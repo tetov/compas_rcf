@@ -78,13 +78,12 @@ def initial_setup(client):
     ----------
     client : :class:`compas_rrc.AbbClient`
     """
-
     send_grip_release(client, CONF.tool.release_state)
 
     client.send(SetTool(CONF.tool.tool_name))
     logging.debug("Tool {} set.".format(CONF.tool.tool_name))
     client.send(SetWorkObject(CONF.wobjs.placing_wobj_name))
-    logging.debug("Work object {} set.")
+    logging.debug("Work object {} set.".format(CONF.wobjs.placing_wobj_name))
 
     # Set Acceleration
     client.send(SetAcceleration(CONF.speed_values.accel, CONF.speed_values.accel_ramp))
@@ -334,23 +333,33 @@ def get_settings():
         sys.exit()
 
 
-def get_picking_frame(bullet_height):
+def pick_frame_from_grid(index, bullet_height):
     """Get next picking frame.
 
     Parameters
     ----------
+    index : int
+        Counter to iterate through picking positions.
     bullet_height : float
-        Height of bullet to pick up
+        Height of bullet to pick up.
 
     Returns
     -------
-    `class`:compas.geometry.Frame
+    list of `class`:compas.geometry.Frame
     """
-    # TODO: Set up a grid to pick from
-    picking_frame = Frame(Point(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0))
+    # If index is larger than amount on picking plate, start from zero again
+    index = index % (CONF.pick.xnum * CONF.pick.ynum)
 
-    # TODO: Make the pressing at picking more configurable
-    return get_offset_frame(picking_frame, bullet_height * 0.95)
+    xpos = index % CONF.pick.xnum
+    ypos = index // CONF.pick.xnum
+
+    x = CONF.pick.origin_grid.x + xpos * CONF.pick.grid_spacing
+    y = CONF.pick.origin_grid.y + ypos * CONF.pick.grid_spacing
+    z = bullet_height * CONF.pick.compression_height_factor
+
+    frame = Frame(Point(x, y, z), Vector(*CONF.pick.xaxis), Vector(*CONF.pick.yaxis))
+    logging.debug("Picking frame {:03d}: {}".format(index, frame))
+    return frame
 
 
 ################################################################################
@@ -450,15 +459,16 @@ def abb_run(cmd_line_args):
     ############################################################################
     # Fabrication loop                                                         #
     ############################################################################
-    placed_bullets = []
-    for i, bullet in enumerate(clay_bullets):
-        logging.info("Bullet {}/{} with id {}".format(i, len(clay_bullets), bullet.id))
 
-        picking_frame = get_picking_frame(bullet.height)
-        logging.debug("Picking frame: {}".format(picking_frame))
+    for i, bullet in enumerate(clay_bullets):
+        logging.info(
+            "Bullet {:03d}/{:03d} with id {}".format(i, len(clay_bullets), bullet.id)
+        )
+
+        pick_frame = pick_frame_from_grid(i, bullet.height)
 
         # Pick bullet
-        pick_future = send_picking(abb, picking_frame)
+        pick_future = send_picking(abb, pick_frame)
 
         # Place bullet
         place_future = send_placing(abb, bullet)
@@ -469,7 +479,6 @@ def abb_run(cmd_line_args):
         logging.debug("Cycle time was {}".format(bullet.cycle_time))
         bullet.placed = time.time()
         logging.debug("Time placed was {}".format(bullet.placed))
-        placed_bullets.append(bullet)
 
     ############################################################################
     # Shutdown procedure                                                       #
@@ -478,7 +487,7 @@ def abb_run(cmd_line_args):
     done_json = DEFAULT_JSON_DIR / "00_done" / json_path.name
 
     with done_json.open(mode="w") as fp:
-        json.dump(placed_bullets, fp, cls=ClayBulletEncoder)
+        json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
 
     logging.debug("Saved placed bullets.")
 
