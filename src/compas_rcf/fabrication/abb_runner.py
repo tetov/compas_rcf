@@ -6,12 +6,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import logging
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
-import json
 
 from colorama import Fore
 from colorama import Style
@@ -25,27 +25,27 @@ from compas_rrc import CustomInstruction
 from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 from compas_rrc import PrintText
+from compas_rrc import ReadWatch
 from compas_rrc import SetAcceleration
 from compas_rrc import SetDigital
 from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
-from compas_rrc import WaitTime
 from compas_rrc import StartWatch
 from compas_rrc import StopWatch
-from compas_rrc import ReadWatch
+from compas_rrc import WaitTime
 
 from compas_rcf import __version__
 from compas_rcf.abb.helpers import docker_compose_paths
 from compas_rcf.abb.helpers import ping
 from compas_rcf.abb.helpers import robot_ips
+from compas_rcf.fabrication.clay_obj import ClayBulletEncoder
 from compas_rcf.fabrication.conf import abb_rcf_conf_template
 from compas_rcf.fabrication.conf import fabrication_conf
 from compas_rcf.utils import ui
 from compas_rcf.utils.docker import compose_up
 from compas_rcf.utils.json_ import load_bullets
 from compas_rcf.utils.util_funcs import get_offset_frame
-from compas_rcf.fabrication.clay_obj import ClayBulletEncoder
 
 if sys.version_info[0] < 2:
     raise Exception("This module requires Python 3")
@@ -438,7 +438,7 @@ def abb_run(cmd_line_args):
     for i in range(3):
         try:
             logging.debug("Pinging robot")
-            ping(abb, timeout=5)
+            ping(abb, timeout=10)
             logging.debug("Breaking loop after successful ping")
             break
         except TimeoutError:
@@ -447,7 +447,7 @@ def abb_run(cmd_line_args):
                 docker_compose_paths["abb_driver"], force_recreate=True, ROBOT_IP=ip
             )
             logging.debug("Compose up for abb_driver with robot-ip={}".format(ip))
-            time.sleep(10)
+            time.sleep(5)
     else:
         raise TimeoutError("Failed to connect to robot")
 
@@ -459,11 +459,59 @@ def abb_run(cmd_line_args):
     ############################################################################
     # Fabrication loop                                                         #
     ############################################################################
+    json_progress_identifier = "IN_PROGRESS-"
+
+    if json_path.name.startswith(json_progress_identifier):
+        in_progress_json = json_path
+    else:
+        in_progress_json = json_path.with_name(
+            json_progress_identifier + json_path.name
+        )
+
+    skip_all_placed = None
+    place_all_placed = None
 
     for i, bullet in enumerate(clay_bullets):
-        logging.info(
-            "Bullet {:03d}/{:03d} with id {}".format(i, len(clay_bullets), bullet.id)
+        current_bullet_desc = "Bullet {:03d}/{:03d} with id {}".format(
+            i, len(clay_bullets), bullet.id
         )
+
+        if bullet.placed and not place_all_placed:
+            if skip_all_placed:
+                logging.info("Skipping " + current_bullet_desc)
+                continue
+
+            placed_prompt = questionary.select(
+                current_bullet_desc
+                + " seems to have been placed already.".format(i, bullet.id),
+                [
+                    "Skip",
+                    "Skip all marked as placed in JSON",
+                    questionary.Separator(),
+                    "Place",
+                    "Place all marked as placed in JSON",
+                ],
+            ).ask()
+
+            skip_all_placed = (
+                True if placed_prompt == "Skip all marked as placed in JSON" else None
+            )
+            place_all_placed = (
+                True if placed_prompt == "Place all marked as placed in JSON" else None
+            )
+
+            if (
+                placed_prompt == "Skip"
+                or placed_prompt == "Skip all marked as placed in JSON"
+            ):
+                logging.info("Skipping " + current_bullet_desc)
+                continue
+
+            if placed_prompt == "Place":
+                pass
+
+        abb.send(PrintText(current_bullet_desc))
+        logging.info(current_bullet_desc)
 
         pick_frame = pick_frame_from_grid(i, bullet.height)
 
@@ -480,9 +528,14 @@ def abb_run(cmd_line_args):
         bullet.placed = time.time()
         logging.debug("Time placed was {}".format(bullet.placed))
 
+        with in_progress_json.open(mode="w") as fp:
+            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+
     ############################################################################
     # Shutdown procedure                                                       #
     ############################################################################
+
+    in_progress_json.unlink()  # Remove in progress json
 
     done_json = DEFAULT_JSON_DIR / "00_done" / json_path.name
 

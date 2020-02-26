@@ -2,10 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import json
 import math
 from itertools import count
-import collections
 
 import compas.geometry as cg
 from compas import IPY
@@ -48,7 +48,7 @@ class ClayBullet(object):
         location,
         trajectory_to=[],
         trajectory_from=[],
-        id=None,
+        bullet_id=None,
         radius=45,
         height=100,
         compression_ratio=0.5,
@@ -56,6 +56,8 @@ class ClayBullet(object):
         precision=5,
         tool=None,
         vkey=None,
+        cycle_time=None,
+        placed=None,
         **kwargs
     ):
         self.location = location
@@ -63,21 +65,21 @@ class ClayBullet(object):
         self.trajectory_from = trajectory_from
 
         # sortable ID, used for fabrication sequence
-        if id is None:
-            self.id = next(self._ids)
-        else:
-            self.id = str(id) + "x"  # To avoid id collisions
+        if not bullet_id:
+            self.bullet_id = next(self._ids)
 
         self.radius = radius
         self.height = height
         self.compression_ratio = compression_ratio
         self.tool = tool
         self.vkey = vkey
-        if kwargs:
-            self.attributes = kwargs
 
-        self.cycle_time = None
-        self.placed = None
+        self.cycle_time = cycle_time
+        self.placed = placed
+
+        if kwargs:
+            for key in kwargs.keys():
+                setattr(self, key, kwargs[key])
 
     @property
     def location(self):
@@ -323,6 +325,8 @@ class ClayBullet(object):
         for frame_data in data.pop("_trajectory_from"):
             trajectory_from.append(Frame.from_data(frame_data))
 
+        bullet_id = data.pop("bullet_id", None)
+
         # Take the rest of the dictionary
         kwargs = data
 
@@ -330,6 +334,7 @@ class ClayBullet(object):
             location,
             trajectory_to=trajectory_to,
             trajectory_from=trajectory_from,
+            bullet_id=bullet_id,
             **kwargs
         )
 

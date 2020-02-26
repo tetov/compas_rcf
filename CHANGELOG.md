@@ -4,16 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-
-### Added
+## [0.1.21] [2020-02-26]
 
 ### Changed
+- `compas_rcf.fabrication.abb_runner` now prints progress updates to Flex pendant.
+- `abb_runner` now dumps list of `ClayBullets` for every bullet into file with same filename as input JSON but with IN_PROGRESS added to start.
+- `abb_runner` now checks if attribute `placed` is set on `ClayBullet` and if so asks user if it should be skipped or placed (with the option to set skip and place for all future bullets with `placed` attribute). This file is deleted when script exits cleanly.
+- `compas_rcf.utils.csv_` renamed to `csv_reports`. Instead of a conversion tool it now creates an opinionated report from JSON file. It can also handle directories and multiple files as inputs.
 
-### Removed
-
-
-## \[0.1.20\] \[2020-20-25\]
+## \[0.1.20\] \[2020-02-25\]
 
 ### Added
 
