@@ -72,6 +72,10 @@ abb_rcf_conf_template = {
         "xaxis": confuse.Sequence([float] * 3),
         "yaxis": confuse.Sequence([float] * 3),
     },
+    "docker": {
+        "timeout_ping": confuse.Number(default=10),
+        "sleep_after_up": confuse.Number(default=5),
+    },
 }
 
 fabrication_conf = confuse.LazyConfig("FabricationRunner", __name__)

@@ -11,11 +11,9 @@ import logging
 import sys
 import time
 from datetime import datetime
+from operator import attrgetter
 from pathlib import Path
 
-from colorama import Fore
-from colorama import Style
-from colorama import init
 from compas.geometry import Frame
 from compas.geometry import Point
 from compas.geometry import Vector
@@ -289,8 +287,6 @@ def get_settings():
     target_select : str ('real' or 'virtual')
         Target for script, either virtual robot controller or real. From argparse.
     """
-    init(autoreset=True)
-
     load_or_default = questionary.select(
         "Load config or use default?", choices=["Default", "Load"], default="Default"
     ).ask()
@@ -309,9 +305,7 @@ def get_settings():
         question = questionary.select(
             "Target?", choices=["Virtual robot", "Real robot"], default="Virtual robot"
         ).ask()
-        print(question)
         fabrication_conf["target"] = "real" if question == "Real robot" else "virtual"
-        print(fabrication_conf["target"])
 
     logging.info(
         "Target is {} controller.".format(fabrication_conf["target"].get().upper())
@@ -322,9 +316,7 @@ def get_settings():
     global CONF
     CONF = fabrication_conf.get(abb_rcf_conf_template)
 
-    print(Fore.CYAN + Style.BRIGHT + "Configuration")
-
-    ui.pygment_yaml(fabrication_conf.dump())
+    logging.info("Configuration \n{}".format(fabrication_conf.dump()))
 
     conf_ok = questionary.confirm("Configuration correct?").ask()
     if not conf_ok:
@@ -367,8 +359,6 @@ def pick_frame_from_grid(index, bullet_height):
 ################################################################################
 def abb_run(cmd_line_args):
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
-    print("\ncompas_rfc abb runner\n")
-
     fabrication_conf.set_args(cmd_line_args)
 
     ############################################################################
@@ -382,7 +372,7 @@ def abb_run(cmd_line_args):
     if not fabrication_conf["skip_logfile"]:
         handlers.append(logging.FileHandler(log_file, mode="a"))
 
-    if fabrication_conf["verbose"]:
+    if not fabrication_conf["quiet"]:
         handlers.append(logging.StreamHandler(sys.stdout))
 
     logging.basicConfig(
@@ -399,7 +389,6 @@ def abb_run(cmd_line_args):
     # CONF setup                                                              #
     ############################################################################
     get_settings()
-    logging.info("Fabrication configuration:\n{}".format(fabrication_conf.dump()))
 
     ############################################################################
     # Docker setup                                                            #
@@ -438,7 +427,7 @@ def abb_run(cmd_line_args):
     for i in range(3):
         try:
             logging.debug("Pinging robot")
-            ping(abb, timeout=10)
+            ping(abb, timeout=CONF.docker.timeout_ping)
             logging.debug("Breaking loop after successful ping")
             break
         except TimeoutError:
@@ -447,7 +436,7 @@ def abb_run(cmd_line_args):
                 docker_compose_paths["abb_driver"], force_recreate=True, ROBOT_IP=ip
             )
             logging.debug("Compose up for abb_driver with robot-ip={}".format(ip))
-            time.sleep(5)
+            time.sleep(CONF.docker.sleep_after_up)
     else:
         raise TimeoutError("Failed to connect to robot")
 
@@ -457,7 +446,7 @@ def abb_run(cmd_line_args):
     initial_setup(abb)
 
     ############################################################################
-    # Fabrication loop                                                         #
+    # setup in_progress JSON                                                   #
     ############################################################################
     json_progress_identifier = "IN_PROGRESS-"
 
@@ -468,47 +457,69 @@ def abb_run(cmd_line_args):
             json_progress_identifier + json_path.name
         )
 
-    skip_all_placed = None
-    place_all_placed = None
+    ############################################################################
+    # Check for placed bullets in JSON #
+    ############################################################################
 
-    for i, bullet in enumerate(clay_bullets):
-        current_bullet_desc = "Bullet {:03d}/{:03d} with id {}".format(
-            i, len(clay_bullets), bullet.id
-        )
+    maybe_placed = [bullet for bullet in clay_bullets if bullet.placed is not None]
 
-        if bullet.placed and not place_all_placed:
-            if skip_all_placed:
-                logging.info("Skipping " + current_bullet_desc)
-                continue
+    if len(maybe_placed) < 1:
+        to_place = clay_bullets[:]
+    else:
+        skip_options = questionary.select(
+            "Some or all bullet seems to have been placed already.",
+            [
+                "Skip all bullet marked as placed in JSON file.",
+                "Place all anyways.",
+                questionary.Separator(),
+                "Place some of the bullets.",
+            ],
+        ).ask()
 
-            placed_prompt = questionary.select(
-                current_bullet_desc
-                + " seems to have been placed already.".format(i, bullet.id),
-                [
-                    "Skip",
-                    "Skip all marked as placed in JSON",
-                    questionary.Separator(),
-                    "Place",
-                    "Place all marked as placed in JSON",
-                ],
+        if skip_options == "Skip all bullet marked as placed in JSON file.":
+            to_place = [bullet for bullet in clay_bullets if bullet not in maybe_placed]
+        if skip_options == "Place all anyways.":
+            to_place = clay_bullets[:]
+        if skip_options == "Place some of the bullets.":
+            skip_method = questionary.select(
+                "Select method:",
+                ["Place last N bullets again.", "Pick bullets to place again."],
             ).ask()
+            if skip_method == "Place last N bullets again.":
+                # TODO: Test
+                n_place_again = questionary.text(
+                    "Number of bullets to place again counted from last bullet",
+                    "1",
+                    lambda val: val.isdigit(),
+                ).ask()
+                last_placed = max(maybe_placed, key=attrgetter("bullet_id"))
+                last_placed_index = clay_bullets.index(last_placed)
+                to_place = clay_bullets[last_placed_index - int(n_place_again) - 1 :]
+            else:
+                to_place_selection = questionary.checkbox(
+                    "Select bullets:",
+                    [
+                        "{} (id {}), marked placed: {}".format(
+                            i, bullet.bullet_id, bullet.placed is not None
+                        )
+                        for i, bullet in enumerate(clay_bullets)
+                    ],
+                ).ask()
+                indices = [int(bullet.split()[0]) for bullet in to_place_selection]
+                to_place = [clay_bullets[i] for i in indices]
 
-            skip_all_placed = (
-                True if placed_prompt == "Skip all marked as placed in JSON" else None
-            )
-            place_all_placed = (
-                True if placed_prompt == "Place all marked as placed in JSON" else None
-            )
+        for bullet in to_place:
+            bullet.placed = None
+            bullet.cycle_time = None
 
-            if (
-                placed_prompt == "Skip"
-                or placed_prompt == "Skip all marked as placed in JSON"
-            ):
-                logging.info("Skipping " + current_bullet_desc)
-                continue
+    ############################################################################
+    # Fabrication loop                                                         #
+    ############################################################################
 
-            if placed_prompt == "Place":
-                pass
+    for i, bullet in enumerate(to_place):
+        current_bullet_desc = "Bullet {:03d}/{:03d} with id {}".format(
+            i + 1, len(to_place), bullet.bullet_id
+        )
 
         abb.send(PrintText(current_bullet_desc))
         logging.info(current_bullet_desc)
@@ -521,6 +532,7 @@ def abb_run(cmd_line_args):
         # Place bullet
         place_future = send_placing(abb, bullet)
 
+        # This both sets cycle_time and blocks script until robot finishes pick & place
         cycle_time = pick_future.result() + place_future.result()
 
         bullet.cycle_time = cycle_time
@@ -535,16 +547,23 @@ def abb_run(cmd_line_args):
     # Shutdown procedure                                                       #
     ############################################################################
 
-    in_progress_json.unlink()  # Remove in progress json
+    if len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0:
+        in_progress_json.unlink()  # Remove in progress json
 
-    done_json = DEFAULT_JSON_DIR / "00_done" / json_path.name
+        done_json = DEFAULT_JSON_DIR / "00_done" / json_path.name
 
-    with done_json.open(mode="w") as fp:
-        json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+        with done_json.open(mode="w") as fp:
+            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
 
-    logging.debug("Saved placed bullets.")
+        logging.debug("Saved placed bullets to 00_Done.")
+    else:
+        logging.debug(
+            "Bullets without placed timestamp still present, keeping {}".format(
+                in_progress_json.name
+            )
+        )
 
-    logging.info("Finished program with {} bullets.".format(len(clay_bullets)))
+    logging.info("Finished program with {} bullets.".format(len(to_place)))
     shutdown_procedure(abb)
 
 
@@ -561,15 +580,13 @@ if __name__ == "__main__":
         help="Set fabrication runner target.",
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
+        "-q",
+        "--quiet",
         action="store_true",
-        help="Prints logging messages to console.",
+        help="Don't print logging messages to console.",
     )
     parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Add DEBUG level messages to logfile, and print them on console if --verbose is set.",  # noqa E501
+        "--debug", action="store_true", help="Log DEBUG level messages."
     )
     parser.add_argument(
         "--skip-logfile", action="store_true", help="Don't send log messages to file.",

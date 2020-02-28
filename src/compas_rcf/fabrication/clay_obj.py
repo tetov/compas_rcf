@@ -67,6 +67,8 @@ class ClayBullet(object):
         # sortable ID, used for fabrication sequence
         if not bullet_id:
             self.bullet_id = next(self._ids)
+        else:
+            self.bullet_id = bullet_id
 
         self.radius = radius
         self.height = height
@@ -325,7 +327,13 @@ class ClayBullet(object):
         for frame_data in data.pop("_trajectory_from"):
             trajectory_from.append(Frame.from_data(frame_data))
 
-        bullet_id = data.pop("bullet_id", None)
+        # To check for old attr name for id
+        if "bullet_id" in data.keys():
+            bullet_id = data.pop("bullet_id")
+        elif "id" in data.keys():
+            bullet_id = data.pop("id")
+        else:
+            bullet_id = None
 
         # Take the rest of the dictionary
         kwargs = data

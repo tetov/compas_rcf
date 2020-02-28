@@ -43,3 +43,6 @@ pick:
     compression_height_factor: 0.95 # controls compression before lifting
     xaxis: [0, 1, 0] # x axis as a list
     yaxis: [1, 0, 0] # y axis as a list
+docker:
+    timeout_ping: 10
+    sleep_after_up: 5
