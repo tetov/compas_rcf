@@ -7,10 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## Unreleased
 
 ### Added
+- Prompt to confirm start of fabrication added to `compas_rcf.fabrication.abb_runner.abb_run`, replacing confirmation in `get_settings`.
+
 
 ### Changed
 
 ### Removed
+
+- Prompt to confirm settings removed in `compas_rcf.fabrication.abb_runner.get_settings" in favour of a later confirmation of the whole setup in `abb_run`.
 
 
 ## \[0.1.22\] \[2020-02-28\]

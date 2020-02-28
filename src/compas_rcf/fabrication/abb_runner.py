@@ -318,12 +318,6 @@ def get_settings():
 
     logging.info("Configuration \n{}".format(fabrication_conf.dump()))
 
-    conf_ok = questionary.confirm("Configuration correct?").ask()
-    if not conf_ok:
-        logging.critical("Program exited because user didn't confirm config")
-        print("Exiting.")
-        sys.exit()
-
 
 def pick_frame_from_grid(index, bullet_height):
     """Get next picking frame.
@@ -441,11 +435,6 @@ def abb_run(cmd_line_args):
         raise TimeoutError("Failed to connect to robot")
 
     ############################################################################
-    # Set speed, accel, tool, wobj and move to start pos                       #
-    ############################################################################
-    initial_setup(abb)
-
-    ############################################################################
     # setup in_progress JSON                                                   #
     ############################################################################
     json_progress_identifier = "IN_PROGRESS-"
@@ -466,6 +455,16 @@ def abb_run(cmd_line_args):
     if len(maybe_placed) < 1:
         to_place = clay_bullets[:]
     else:
+
+        last_placed = max(maybe_placed, key=attrgetter("bullet_id"))
+        last_placed_index = clay_bullets.index(last_placed)
+
+        logging.info(
+            "Last bullet placed was {:03}/{:03} with id {}.".format(
+                last_placed_index, len(clay_bullets), last_placed.bullet_id
+            )
+        )
+
         skip_options = questionary.select(
             "Some or all bullet seems to have been placed already.",
             [
@@ -487,18 +486,21 @@ def abb_run(cmd_line_args):
             ).ask()
             if skip_method == "Place last N bullets again.":
                 n_place_again = questionary.text(
-                    "Number of bullets to place again counted from last bullet",
+                    "Number of bullets from last to place again?",
                     "1",
-                    lambda val: val.isdigit(),
+                    lambda val: val.isdigit() and -1 < int(val) < last_placed_index,
                 ).ask()
-                last_placed = max(maybe_placed, key=attrgetter("bullet_id"))
-                last_placed_index = clay_bullets.index(last_placed)
                 to_place = clay_bullets[last_placed_index - int(n_place_again) + 1 :]
+                logging.info(
+                    "Placing last {} bullets again. First bullet will be id {}.".format(
+                        n_place_again, to_place[0].bullet_id,
+                    )
+                )
             else:
                 to_place_selection = questionary.checkbox(
                     "Select bullets:",
                     [
-                        "{} (id {}), marked placed: {}".format(
+                        "{:03} (id {}), marked placed: {}".format(
                             i, bullet.bullet_id, bullet.placed is not None
                         )
                         for i, bullet in enumerate(clay_bullets)
@@ -507,16 +509,26 @@ def abb_run(cmd_line_args):
                 indices = [int(bullet.split()[0]) for bullet in to_place_selection]
                 to_place = [clay_bullets[i] for i in indices]
 
-        for bullet in to_place:
-            bullet.placed = None
-            bullet.cycle_time = None
+    if not questionary.confirm("Ready to start program?").ask():
+        logging.critical("Program exited because user didn't confirm start.")
+        print("Exiting.")
+        sys.exit()
+
+    ############################################################################
+    # Set speed, accel, tool, wobj and move to start pos                       #
+    ############################################################################
+    initial_setup(abb)
+
+    for bullet in to_place:
+        bullet.placed = None
+        bullet.cycle_time = None
 
     ############################################################################
     # Fabrication loop                                                         #
     ############################################################################
 
     for i, bullet in enumerate(to_place):
-        current_bullet_desc = "Bullet {:03d}/{:03d} with id {}".format(
+        current_bullet_desc = "Bullet {:03}/{:03} with id {}".format(
             i + 1, len(to_place), bullet.bullet_id
         )
 
@@ -547,9 +559,9 @@ def abb_run(cmd_line_args):
     ############################################################################
 
     if len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0:
-        in_progress_json.unlink()  # Remove in progress json
-
         done_json = DEFAULT_JSON_DIR / "00_done" / json_path.name
+
+        in_progress_json.rename(done_json)
 
         with done_json.open(mode="w") as fp:
             json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
