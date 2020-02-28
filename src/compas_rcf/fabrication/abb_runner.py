@@ -486,7 +486,6 @@ def abb_run(cmd_line_args):
                 ["Place last N bullets again.", "Pick bullets to place again."],
             ).ask()
             if skip_method == "Place last N bullets again.":
-                # TODO: Test
                 n_place_again = questionary.text(
                     "Number of bullets to place again counted from last bullet",
                     "1",
@@ -494,7 +493,7 @@ def abb_run(cmd_line_args):
                 ).ask()
                 last_placed = max(maybe_placed, key=attrgetter("bullet_id"))
                 last_placed_index = clay_bullets.index(last_placed)
-                to_place = clay_bullets[last_placed_index - int(n_place_again) - 1 :]
+                to_place = clay_bullets[last_placed_index - int(n_place_again) + 1 :]
             else:
                 to_place_selection = questionary.checkbox(
                     "Select bullets:",
