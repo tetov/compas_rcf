@@ -3,38 +3,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from compas_rrc import Noop
+import logging
+import time
+
 from compas_rrc import FeedbackLevel
+from compas_rrc import Noop
 
 from compas_rcf import HERE
+from compas_rcf.docker import compose_up
+from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
 
-# Describes the valid zone data definitions.
-zone_dict = {
-    "FINE": -1,
-    "Z0": 0,
-    "Z1": 1,
-    "Z5": 5,
-    "Z10": 10,
-    "Z15": 15,
-    "Z20": 20,
-    "Z30": 30,
-    "Z40": 40,
-    "Z50": 50,
-    "Z60": 60,
-    "Z80": 80,
-    "Z100": 100,
-    "Z150": 150,
-    "Z200": 200,
-}
 
 try:
     from pathlib import Path
 except ImportError:
     from pathlib2 import Path
 
+log = logging.getLogger(__name__)
+
 pkg_dir = Path(HERE)
 
-_compose_folder = pkg_dir / "utils" / "docker" / "compose_files" / "abb"
+_compose_folder = pkg_dir / "docker" / "compose_files" / "abb"
 docker_compose_paths = {
     "base": _compose_folder / "base-docker-compose.yml",
     "abb_driver": _compose_folder / "abb-driver-docker-compose.yml",
@@ -52,3 +41,23 @@ def ping(client, timeout=10):
             raise TimeoutError(e.args)
         else:
             raise
+
+
+def connection_check(client):
+    """Connection check."""
+    ip = robot_ips[fab_conf["target"].get()]
+    for i in range(3):
+        try:
+            log.debug("Pinging robot")
+            ping(client, timeout=fab_conf["docker"]["timeout_ping"].get())
+            log.debug("Breaking loop after successful ping")
+            break
+        except TimeoutError:
+            log.info("No response from controller, restarting abb-driver service.")
+            compose_up(
+                docker_compose_paths["abb_driver"], force_recreate=True, ROBOT_IP=ip
+            )
+            log.debug("Compose up for abb_driver with robot-ip={}".format(ip))
+            time.sleep(fab_conf["docker"]["sleep_after_up"].get())
+    else:
+        raise TimeoutError("Failed to connect to robot")

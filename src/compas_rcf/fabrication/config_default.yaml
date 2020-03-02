@@ -46,3 +46,7 @@ pick:
 docker:
     timeout_ping: 10
     sleep_after_up: 5
+paths:
+    json_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\04_fabrication_data_jsons
+    conf_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\05_fabrication_confs
+    log_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\06_fabrication_logs

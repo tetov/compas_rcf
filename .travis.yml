@@ -31,6 +31,8 @@ deploy:
       token: $GITHUB_TOKEN
       local_dir: build/docs
       target_branch: gh-pages
+      on:
+        branch: master
     - provider: pypi
       username: "__token__"
       password: $PYPI_TOKEN

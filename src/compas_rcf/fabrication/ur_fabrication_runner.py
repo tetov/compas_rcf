@@ -1,5 +1,6 @@
 """Not ready yet
 """
+# flake8: noqa
 
 from __future__ import absolute_import
 from __future__ import division
@@ -18,7 +19,6 @@ from compas_rcf.ur.urscript_wrapper import socket_close
 from compas_rcf.ur.urscript_wrapper import socket_open
 from compas_rcf.ur.urscript_wrapper import socket_send_string
 from compas_rcf.ur.urscript_wrapper import textmsg
-from compas_rcf.utils.database import get_bullets
 
 # ===============================================================
 

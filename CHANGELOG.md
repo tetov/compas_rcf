@@ -4,18 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.2.0\] \[2020-03-02\]
 
 ### Added
-- Prompt to confirm start of fabrication added to `compas_rcf.fabrication.abb_runner.abb_run`, replacing confirmation in `get_settings`.
 
+-   Prompt to confirm start of fabrication added to `compas_rcf.fabrication.abb_runner.abb_run`, replacing confirmation in `get_settings`.
 
 ### Changed
 
+-   Docstring changes in `compas_rcf.utils.compas_to_rhino` and `rhino_to_compas`.
+-   Redone the reference pages in the docs and fixed import problems.
+-   Replaced usage of `AttrDict` from `confuse.Configuration` in `compas_rcf.fabrication.abb_runner` to use the original `confuse.Configuration` object. E.g. `fab_conf["target"].get()` instead of `fab_conf.target`. This is to make the use of the `Configuration` object uniform across modules.
+-   `ZONE_DICT` moved from `compas_rcf.abb.helpers` to `compas_rcf.fabrication.conf`, mainly due to weird import errors.
+-   `confuse.Template` object `confuse.Path` vendorised from upstream master and put in `compas_rcf.fabrication.conf`.
+-   Renamed `logging` to `log` in `compas_rcf.fabrication.abb_runner` to make usage of the `logging` object uniform across modules.
+-   Added logging to `compas_rcf.abb.helpers`, `compas_rcf.fabrication.conf`, `compas_rcf.abb.programs`,
+-   Directories set up previously by globals in `compas_rcf.fabrication.abb_runner` is now accessible using the configuration file. The old globals are now the default value in the configuration.
+-   Moved submodule `docker` from `compas_rcf.utils.docker` to `compas_rcf.docker` including its submodules and Docker-Compose files.
+-   Refactored connection check from `compas_rcf.fabrication.abb_runner` to its own function: `compas_rcf.abb.helpers.connection_check`.
+-   Refactored logging setup from `compas_rcf.fabrication.abb_runner.abb_runner` to it's own function: `compas_rcf.fabrication.abb_runner.logging_setup`.
+-   Refactored fabrication data analysis and prompts for skipping or placing bullets in `compas_rcf.fabrication.abb_runner.abb_runner` to its own function: `compas_rcf.fabrication.abb_runner.setup_fab_data`.
+-   Refactored `compas_rcf.fabrication.abb_runner.get_setup` to `compas_rcf.fabrication.conf.interactive_conf_setup`.
+-   Moved `compas_rcf.fabrication.abb_runner.initial_setup` to: `compas_rcf.abb.programs.pre_procedure`.
+-   Moved `compas_rcf.fabrication.abb_runner.shutdown_procedure` to: `compas_rcf.abb.programs.post_procedure`.
+-   Moved `compas_rcf.fabrication.abb_runner.send_picking` to: `compas_rcf.abb.programs.pick_bullet`.
+-   Moved `compas_rcf.fabrication.abb_runner.send_placing` to: `compas_rcf.abb.programs.place_bullet`.
+-   Moved `compas_rcf.fabrication.abb_runner.send_grip_release` to: `compas_rcf.abb.programs.grip_and_release`.
+-   Logging setup is now run in the `if __name__ = "__main__"` part of `compas_rcf.fabrication.abb_runner`.
+
 ### Removed
 
-- Prompt to confirm settings removed in `compas_rcf.fabrication.abb_runner.get_settings" in favour of a later confirmation of the whole setup in `abb_run`.
-
+-   Prompt to confirm settings removed in `compas_rcf.fabrication.abb_runner.get_settings" in favour of a later confirmation of the whole setup in`abb\_run\`.
 
 ## \[0.1.22\] \[2020-02-28\]
 

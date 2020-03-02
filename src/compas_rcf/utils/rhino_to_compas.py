@@ -1,4 +1,5 @@
 """Most of these are in compas >=0.15 but compas_fab is not there yet."""
+# flake8: noqa: F821
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -7,9 +8,8 @@ import compas.geometry as cg
 import Rhino.Geometry as rg
 
 
-def rgpoint_to_cgpoint(pt):  # type: (rg.Point3d) -> cg.Point
-    """Convenience function to convert Rhino.Geometry.Point3d object to the
-       corresponding COMPAS object
+def rgpoint_to_cgpoint(pt):  # type: (Rhino.Geometry.Point3d) -> compas.geometry.Point
+    """Convert Rhino.Geometry.Point3d to compas.geometry.Point.
 
     Parameters
     ----------
@@ -24,9 +24,10 @@ def rgpoint_to_cgpoint(pt):  # type: (rg.Point3d) -> cg.Point
     return cg.Point(pt.X, pt.Y, pt.Z)
 
 
-def rgvector_to_cgvector(v):  # type: (rg.Point3d) -> cg.Vector
-    """Convenience function to convert Rhino.Geometry.Vector3d object to the
-       corresponding COMPAS object
+def rgvector_to_cgvector(
+    v,
+):  # type: (Rhino.Geometry.Vector3d) -> compas.geometry.Vector
+    """Convert Rhino.Geometry.Vector3d to compas.geometry.Vector.
 
     Parameters
     ----------
@@ -41,9 +42,8 @@ def rgvector_to_cgvector(v):  # type: (rg.Point3d) -> cg.Vector
     return cg.Vector(v.X, v.Y, v.Z)
 
 
-def rgline_to_cgline(line):  # type: (rg.Line) -> cg.Line
-    """Convenience function to convert Rhino.Geometry.Line object to the
-       corresponding COMPAS object
+def rgline_to_cgline(line):  # type: (Rhino.Geometry.Line) -> compas.geometry.Line
+    """Convert Rhino.Geometry.Line to compas.geometry.Line.
 
     Parameters
     ----------
@@ -58,13 +58,14 @@ def rgline_to_cgline(line):  # type: (rg.Line) -> cg.Line
     return cg.Line(rgpoint_to_cgpoint(line.From), rgpoint_to_cgpoint(line.To))
 
 
-def rgplane_to_cgplane(plane):  # type: (rg.Plane) -> cg.Plane
-    """Convenience function to convert Rhino.Geometry.Plane object to the
-       corresponding compas.geometry object
+def rgplane_to_cgplane(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometry.Plane
+    """Convert Rhino.Geometry.Plane to compas.geometry.Plane.
+
     Parameters
     ----------
     Rhino.Geometry.Plane
         Plane object to convert
+
     Returns
     -------
     compas.geometry.Plane
@@ -80,13 +81,14 @@ def rgplane_to_cgplane(plane):  # type: (rg.Plane) -> cg.Plane
     )
 
 
-def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
-    """Convenience function to convert Rhino.Geometry.Plane object to a
-       compas.geometry.Frame object
+def rgplane_to_cgframe(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometry.Frame
+    """Convert Rhino.Geometry.Plane to compas.geometry.Frame.
+
     Parameters
     ----------
     Rhino.Geometry.Plane
         Plane object to convert
+
     Returns
     -------
     compas.geometry.Frame
@@ -99,6 +101,16 @@ def rgplane_to_cgframe(plane):  # type: (rg.Plane) -> cg.Frame
 
 
 def rgtransform_to_matrix(rgM):
+    """Convert :class:`Rhino.Geometry.Transform` to transformation matrix.
+
+    Parameters
+    ----------
+    rgM : :class:`Rhino.Geometry.Transform`
+
+    Returns
+    -------
+    list of lists of floats
+    """
     M = [[rgM.Item[i, j] for j in range(4)] for i in range(4)]
     return M
 

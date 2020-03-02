@@ -3,7 +3,6 @@
 # If your documentation needs a minimal Sphinx version, state it here.
 #
 # needs_sphinx = "1.0"
-
 from compas_rcf import __version__
 import sphinx_compas_theme
 
@@ -48,12 +47,16 @@ autodoc_default_options = {
     "special-members": "__init__",
     "exclude-members": "__weakref__",
     "undoc-members": True,
-    "private-members": True,
     "show-inheritance": True,
 }
 
 autodoc_typehints = "signature"
-autodoc_mock_imports = ["Rhino", "tkinter"]
+autodoc_mock_imports = [
+    "Rhino",
+    "tkinter",
+    "compas_rcf.fabrication.conf",
+    "compas_rcf.abb.helpers",
+]
 autodoc_member_order = "alphabetical"
 
 autoclass_content = "class"
@@ -101,6 +104,7 @@ html_theme_options = {
     "package_name": "compas_rcf",
     "package_title": project,
     "package_version": release,
+    "package_repo": "https://github.com/tetov/compas_rcf",
 }
 
 html_context: dict = {}
