@@ -108,7 +108,7 @@ def pick_bullet(client, picking_frame):
     picking_frame : compas.geometry.Frame
         Target frame to pick up bullet
     """
-    if fab_conf["target"] == "virtual":
+    if fab_conf["target"].get() == "virtual":
         # Custom instruction create a clay bullet in RobotStudio
         # TODO: Create bullet at picking point
         client.send(CustomInstruction("r_A057_RS_Create_Bullet"))
@@ -250,7 +250,7 @@ def grip_and_release(client, do_state):
     do_state : int (0 or 1)
         Value to set DO to
     """
-    if fab_conf["target"] == "real":
+    if fab_conf["target"].get() == "real":
         client.send(WaitTime(fab_conf["tool"]["wait_before_io"].as_number()))
         client.send(SetDigital(fab_conf["tool"]["io_needles_pin"].as_str(), do_state))
         client.send(WaitTime(fab_conf["tool"]["wait_after_io"].as_number()))
