@@ -1,7 +1,7 @@
-compas\_rcf.fabrication.abb\_runner module
+compas\_rcf.abb\_runner module
 ==========================================
 
-.. automodule:: compas_rcf.fabrication.abb_runner
+.. automodule:: compas_rcf.abb_runner
    :members:
    :undoc-members:
    :show-inheritance:

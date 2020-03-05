@@ -7,8 +7,6 @@ import logging
 import confuse
 import questionary
 
-from compas_rcf.utils import ui
-
 import pathlib
 
 __all__ = ["FABRICATION_CONF"]
@@ -137,6 +135,8 @@ FABRICATION_CONF = confuse.LazyConfig("FabricationRunner", modname=__name__)
 
 
 def interactive_conf_setup():
+    from compas_rcf.utils import ui
+
     """Print and prompts user for changes to default configuration."""
     conf_sources = ["Default.", "Load."]
 

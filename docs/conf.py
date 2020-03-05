@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 # If your documentation needs a minimal Sphinx version, state it here.
+import sphinx_compas_theme
+
 #
 # needs_sphinx = "1.0"
 from compas_rcf import __version__
-import sphinx_compas_theme
 
 # -- General configuration ------------------------------------------------
 
@@ -54,8 +60,6 @@ autodoc_typehints = "signature"
 autodoc_mock_imports = [
     "Rhino",
     "tkinter",
-    "compas_rcf.fabrication.conf",
-    "compas_rcf.abb.helpers",
 ]
 autodoc_member_order = "alphabetical"
 
@@ -84,7 +88,7 @@ napoleon_use_rtype = False
 # intersphinx options
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/", None),
+    "python": ("https://docs.python.org/3/", "https://docs.python.org/3/objects.inv"),
     "compas": (
         "https://compas-dev.github.io/main",
         "https://compas-dev.github.io/main/objects.inv",
