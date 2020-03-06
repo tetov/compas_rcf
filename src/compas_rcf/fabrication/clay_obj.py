@@ -16,7 +16,7 @@ from compas_ghpython.artists import MeshArtist
 
 from compas_rcf.utils.util_funcs import ensure_frame
 from compas_rcf.utils.util_funcs import get_offset_frame
-from compas_rcf.utils.util_funcs import list_elem_w_index_wrap
+from compas_rcf.utils.util_funcs import wrap_list
 
 if IPY:
     import Rhino.Geometry as rg
@@ -30,14 +30,20 @@ class ClayBullet(object):
 
     Parameters
     ----------
-    location: Rhino.Geometry.Plane, compas.geometry.Plane, compas.geometry.Frame
-
+    location : :class:`Rhino.Geometry.Plane`, :class:`compas.geometry.Frame`
+        Bottom center plane of clay volume.
+    trajectory_to : list of :class:`Plane` or :class:`Frame`
+    trajectory_from : list of :class:`Plane` or :class:`Frame`
+    bullet_id : int, optional
+        Unique identifier
     radius : float, optional
         The radius of the initial cylinder.
     height : float, optional
         The height of the initial cylinder.
     compression_ratio : float (>0, <=1), optional
-        The ratio of compression applied to the initial cylinder.
+        The compression height ratio applied to the initial cylinder.
+    clay_density : float, optional
+        Density of clay in g/mm^3
     """
 
     # creates id-s for objects
@@ -255,13 +261,23 @@ class ClayBullet(object):
 
     @property
     def weight(self):
+        """Weight of clay bullet in g
+
+        Returns
+        -------
+        float
+        """
+        return self.density * self.volume
+
+    @property
+    def weight_kg(self):
         """Weight of clay bullet in kg
 
         Returns
         -------
         float
         """
-        return self.density * self.volume_m3
+        return self.weight * 1000
 
     @property
     def compressed_radius(self):
@@ -446,14 +462,14 @@ class ClayBullet(object):
             # create new faces
             for vkeys, ckey in zip(outer_verts_polygons, centroid_verts):
                 for i, vkey in enumerate(vkeys):
-                    next_vkey = list_elem_w_index_wrap(vkeys, i + 1)
+                    next_vkey = wrap_list(vkeys, i + 1)
                     mesh.add_face([ckey, vkey, next_vkey])
 
         # generate faces between polygons
         vertex_for_vertex = zip(*outer_verts_polygons)
 
         for i, mirror_corners_1 in enumerate(vertex_for_vertex):
-            mirror_corners_2 = list_elem_w_index_wrap(vertex_for_vertex, i + 1)
+            mirror_corners_2 = wrap_list(vertex_for_vertex, i + 1)
             mesh.add_face(mirror_corners_1 + mirror_corners_2[::-1])
 
         # to Rhino.Geometry and clean it up

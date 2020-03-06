@@ -21,6 +21,18 @@ log = logging.getLogger(__name__)
 class RapidToolData(object):
     """Create Rapid ToolData
 
+    Parameters
+    ----------
+    tcp_coord : list of floats
+        Coordinate of tool center point
+    tcp_quaternion : list of floats
+        Rotation of tool center plane in quaternions
+    cog_coord : list of floats, optional
+        Coordinates of center of gravity of tool
+    name : str, optional
+    weight : float, optional
+        Tool weight in kg
+
     Note
     ----
     Axes of moment and inertia not implemented
@@ -59,9 +71,26 @@ class RapidToolData(object):
         return cgframe_to_rgplane(self.tcp_frame)
 
     @classmethod
-    def from_frame_point(cls, frame, cog_pt=None, **kwargs):
-        tcp_coord = frame.point.data
-        tcp_quaternion = frame.quaternion.wxyz
+    def from_frame_point(cls, tcp_frame, cog_pt=None, **kwargs):
+        """Create RapidToolData object from :class:`compas.Geometry.Primitive` objects.
+
+        Parameters
+        ----------
+        tcp_frame : :class:`compas.geometry.Frame`
+            Frame at tool center plane.
+        cog_pt : :class:`compas.geometry.Point`, optional
+            Point at tool center of gravity.
+        name : str, optional
+        weight : float, optional
+            Tool weight in kg
+
+        Returns
+        -------
+        :class:`RapidToolData`
+
+        """
+        tcp_coord = tcp_frame.point.data
+        tcp_quaternion = tcp_frame.quaternion.wxyz
 
         if cog_pt:
             cog_coord = cog_pt.data
@@ -72,8 +101,26 @@ class RapidToolData(object):
 
     @classmethod
     def from_plane_point(cls, tcp_plane, cog_pt=None, **kwargs):
-        tcp_frame = ensure_frame(tcp_plane)
-        if cog_pt:
-            cog_pt = rgpoint_to_cgpoint(cog_pt)
+        """Create RapidToolData object from :class:`Rhino.Geometry.GeometryBase` objects.
 
-        return cls.from_frame_point(tcp_frame, cog_pt=cog_pt, **kwargs)
+        Parameters
+        ----------
+        tcp_plane : :class:`Rhino.Geometry.Plane`
+            Plane at tool center plane.
+        cog_pt : :class:`Rhino.Geometry.Point3d`, optional
+            Point at tool center of gravity.
+        name : str, optional
+        weight : float, optional
+            Tool weight in kg
+
+        Returns
+        -------
+        :class:`RapidToolData`
+
+        """
+        tcp_frame = ensure_frame(tcp_plane)
+
+        if "cog_pt" in kwargs.keys():
+            kwargs["cog_pt"] = rgpoint_to_cgpoint(kwargs["cog_pt"])
+
+        return cls.from_frame_point(tcp_frame, **kwargs)

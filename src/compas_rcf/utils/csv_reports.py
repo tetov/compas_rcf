@@ -48,7 +48,7 @@ def main(args):
             "placed",
             "location",
             "tool",
-            "weight",
+            "weight_kg",
         ]
 
         with csv_file.open(mode="w", encoding="utf8", newline="") as out_file:
@@ -91,7 +91,7 @@ def main(args):
                 row.append(bullet.tool)
 
                 try:
-                    row.append(bullet.weight)
+                    row.append(bullet.weight_kg)
                 except AttributeError:
                     row.append(None)
 

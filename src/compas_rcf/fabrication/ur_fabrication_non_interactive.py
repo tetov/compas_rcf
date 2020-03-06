@@ -9,7 +9,7 @@ import Rhino.Geometry as rg
 from compas_rcf.ur import comm
 from compas_rcf.ur import ur_standard
 from compas_rcf.ur.visualize_urscript import visualize_urscript
-from compas_rcf.utils.util_funcs import list_elem_w_index_wrap
+from compas_rcf.utils.util_funcs import wrap_list
 
 __all__ = ["ur_clay_shooting"]
 
@@ -188,7 +188,7 @@ def ur_clay_shooting(
     for i, placing_plane in enumerate(placing_planes):
         instruction = []
 
-        picking_plane = list_elem_w_index_wrap(picking_planes, i)
+        picking_plane = wrap_list(picking_planes, i)
         instruction.append(picking_plane)
 
         instruction.append(placing_plane)
@@ -197,7 +197,7 @@ def ur_clay_shooting(
 
         for key, value in push_conf.iteritems():
             if value is not None:
-                list_elem = list_elem_w_index_wrap(value, i)
+                list_elem = wrap_list(value, i)
                 plane_push_conf.update({key: list_elem})
             else:
                 plane_push_conf.update({key: None})

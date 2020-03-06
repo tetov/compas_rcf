@@ -9,8 +9,8 @@ from compas import IPY
 
 if IPY:
     import Rhino.Geometry as rg
-    from compas_rcf.utils.rhino_to_compas import rgplane_to_cgframe
-    from compas_rcf.utils.rhino_to_compas import rgpoint_to_cgpoint
+    from compas_rcf.rhino import rgplane_to_cgframe
+    from compas_rcf.rhino import rgpoint_to_cgpoint
 
 
 def rand_vector(dimensions):
@@ -87,7 +87,15 @@ def shift_list(seq, shift=1):
     return seq[-shift:] + seq[:-shift]
 
 
-def list_elem_w_index_wrap(l, i):
+def wrap_list(l, i):
+    """Return value at index, wrapping if necessary.
+
+    Parameters
+    ----------
+    l : list
+    i : int
+        Index.
+    """
     return l[i % len(l)]
 
 
