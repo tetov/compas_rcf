@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.2.2\] \[2020-03-06\]
 
 ### Added
 
@@ -19,10 +19,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 *   Module `compas_rcf.utils.csv_reports` now adds more data from `ClayBullet` instances.
 *   `compas_rcf.install_rhino`, `compas_rcf.utils.compas_to_rhino` and `compas_rcf.rhino_to_compas` now moved to new package `compas_rcf.rhino` to more clearly show where an environment with Rhino is necessary. `install_rhino` is however still available from `compas_rcf.install_rhino`.
 *   Renamed `compas_rcf.utils.util_funcs.list_elem_w_index_wrap` to `wrap_list`.
-
-### Removed
-
-
 
 ## \[0.2.1\] \[2020-03-04\]
 
