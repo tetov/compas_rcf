@@ -38,3 +38,5 @@ __license__ = "MIT License"
 __email__ = "anton@tetov.se"
 
 __all__ = ["HOME", "DATA", "DOCS", "TEMP", "__version__"]
+
+from .rhino import install as install_rhino  # noqa: F401,F403

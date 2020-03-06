@@ -3,8 +3,12 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-from subprocess import run
 import logging
+
+from compas import IPY
+
+if not IPY:
+    from subprocess import run
 
 log = logging.getLogger(__name__)
 

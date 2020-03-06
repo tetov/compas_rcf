@@ -27,7 +27,7 @@ tool:
     tool_name: t_A057_ClayTool01 # name of tool
     grip_state: 1 # state (0 or 1)
     release_state: 0 # state (0 or 1)
-    wait_before_io: 2 # s, optional, default value 2
+    wait_before_io: 0.5 # s, optional, default value 2
     wait_after_io: 0.5 # s, optional, default value 0.5
 wobjs:
     # name of work objects as defined in controller

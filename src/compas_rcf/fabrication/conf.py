@@ -7,7 +7,11 @@ import logging
 import confuse
 import questionary
 
-import pathlib
+try:
+    import pathlib
+except ImportError:
+    import pathlib2 as pathlib
+
 
 __all__ = ["FABRICATION_CONF"]
 

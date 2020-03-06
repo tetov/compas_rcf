@@ -14,13 +14,13 @@ from compas.geometry import Frame
 from compas.geometry import Translation
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.utils.compas_to_rhino import cgframe_to_rgplane
 from compas_rcf.utils.util_funcs import ensure_frame
 from compas_rcf.utils.util_funcs import get_offset_frame
 from compas_rcf.utils.util_funcs import list_elem_w_index_wrap
 
 if IPY:
     import Rhino.Geometry as rg
+    from compas_rcf.rhino import cgframe_to_rgplane
 
 # __all__ = ["ClayBullet", "check_id_collision", "ClayBulletEncoder"]
 
@@ -252,6 +252,16 @@ class ClayBullet(object):
         float
         """
         return self.volume * 1e-9
+
+    @property
+    def weight(self):
+        """Weight of clay bullet in kg
+
+        Returns
+        -------
+        float
+        """
+        return self.density * self.volume_m3
 
     @property
     def compressed_radius(self):

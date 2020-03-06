@@ -4,60 +4,76 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import time
 
-from compas_rrc import FeedbackLevel
-from compas_rrc import Noop
+from compas import IPY
+from compas.geometry import Frame
 
-from compas_rcf import HERE
-from compas_rcf.docker import compose_up
-from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
+from compas_rcf.utils.util_funcs import ensure_frame
 
+if IPY:
+    from compas_rcf.rhino import rgpoint_to_cgpoint
+    from compas_rcf.rhino import cgframe_to_rgplane
 
-try:
-    from pathlib import Path
-except ImportError:
-    from pathlib2 import Path
 
 log = logging.getLogger(__name__)
 
-pkg_dir = Path(HERE)
 
-_compose_folder = pkg_dir / "docker" / "compose_files" / "abb"
-docker_compose_paths = {
-    "base": _compose_folder / "base-docker-compose.yml",
-    "abb_driver": _compose_folder / "abb-driver-docker-compose.yml",
-}
-robot_ips = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
+class RapidToolData(object):
+    """Create Rapid ToolData
 
+    Note
+    ----
+    Axes of moment and inertia not implemented
+    """
 
-def ping(client, timeout=10):
-    feedback = client.send(Noop(feedback_level=FeedbackLevel.DONE))
+    RAPID_DECLARATION_PART = "TASK PERS tooldata {}"
+    RAPID_TCP_PART = (
+        ":=[TRUE,[[{:.8f}, {:.8f}, {:.8f}],[{:.8f}, {:.8f}, {:.8f}, {:.8f}]], "
+    )
+    RAPID_COG_PART = "[{:.5f},[{:.8f}, {:.8f}, {:.8f}], [1, 0, 0, 0], 0, 0, 0]];"
 
-    try:
-        return feedback.result(timeout=timeout)
-    except Exception as e:
-        if e.args[0] == "Timeout: future result not available":
-            raise TimeoutError(e.args)
+    def __init__(
+        self, tcp_coord, tcp_quaternion, cog_coord=[0, 0, 0], name="tool", weight=5.0
+    ):
+        self.tcp_coord = tcp_coord
+        self.tcp_quaternion = tcp_quaternion
+        self.cog_coord = cog_coord
+        self.name = name
+        self.weight = weight
+
+    def __repr__(self):
+        tcp_xyzwxyz = [float(x) for x in self.tcp_coord + self.tcp_quaternion]
+        load_data = [float(x) for x in [self.weight] + self.cog_coord]
+
+        declaration = self.RAPID_DECLARATION_PART.format(self.name)
+        tcp = self.RAPID_TCP_PART.format(*tcp_xyzwxyz)
+        load_data = self.RAPID_COG_PART.format(*load_data)
+        return declaration + tcp + load_data
+
+    @property
+    def tcp_frame(self):
+        return Frame.from_quaternion(self.tcp_quaternion, point=self.tcp_coord)
+
+    @property
+    def tcp_plane(self):
+        return cgframe_to_rgplane(self.tcp_frame)
+
+    @classmethod
+    def from_frame_point(cls, frame, cog_pt=None, **kwargs):
+        tcp_coord = frame.point.data
+        tcp_quaternion = frame.quaternion.wxyz
+
+        if cog_pt:
+            cog_coord = cog_pt.data
         else:
-            raise
+            cog_coord = [0, 0, 0]
 
+        return cls(tcp_coord, tcp_quaternion, cog_coord=cog_coord, **kwargs)
 
-def connection_check(client):
-    """Connection check."""
-    ip = robot_ips[fab_conf["target"].get()]
-    for i in range(3):
-        try:
-            log.debug("Pinging robot")
-            ping(client, timeout=fab_conf["docker"]["timeout_ping"].get())
-            log.debug("Breaking loop after successful ping")
-            break
-        except TimeoutError:
-            log.info("No response from controller, restarting abb-driver service.")
-            compose_up(
-                docker_compose_paths["abb_driver"], force_recreate=True, ROBOT_IP=ip
-            )
-            log.debug("Compose up for abb_driver with robot-ip={}".format(ip))
-            time.sleep(fab_conf["docker"]["sleep_after_up"].get())
-    else:
-        raise TimeoutError("Failed to connect to robot")
+    @classmethod
+    def from_plane_point(cls, tcp_plane, cog_pt=None, **kwargs):
+        tcp_frame = ensure_frame(tcp_plane)
+        if cog_pt:
+            cog_pt = rgpoint_to_cgpoint(cog_pt)
+
+        return cls.from_frame_point(tcp_frame, cog_pt=cog_pt, **kwargs)

@@ -6,8 +6,9 @@ from __future__ import print_function
 import argparse
 import csv
 import datetime
-import json
 from pathlib import Path
+
+from compas_rcf.utils.json_ import load_bullets
 
 
 def main(args):
@@ -23,6 +24,10 @@ def main(args):
                     json_files.append(child)
         elif pathobj.suffix == ".json":
             json_files.append(pathobj)
+        else:
+            raise ValueError(
+                "File needs to be a json file and have .json as the extension."
+            )
 
     for json_file in json_files:
 
@@ -32,8 +37,7 @@ def main(args):
             print("{} already exists, skipping.".format(csv_file))
             continue
 
-        with json_file.open(mode="r") as fp:
-            json_obj = json.load(fp)
+        clay_bullets = load_bullets(json_file)
 
         columns = [
             "id",
@@ -44,49 +48,52 @@ def main(args):
             "placed",
             "location",
             "tool",
+            "weight",
         ]
 
         with csv_file.open(mode="w", encoding="utf8", newline="") as out_file:
             csv_w = csv.writer(out_file)
             csv_w.writerow(columns)
 
-            for bullet in json_obj:
+            for bullet in clay_bullets:
                 row = []
 
                 # get bullet_id or id
                 try:
-                    row.append(bullet["bullet_id"])
-                except KeyError:
-                    row.append(bullet["id"])
+                    row.append(bullet.bullet_id)
+                except AttributeError:
+                    row.append(bullet.id)
 
-                row.append(bullet["radius"])
-                row.append(bullet["height"])
+                row.append(bullet.radius)
+                row.append(bullet.height)
 
-                if "density" in bullet.keys():
-                    row.append(bullet["density"])
-                else:
+                try:
+                    if bullet.density:
+                        row.append(bullet.density)
+                except AttributeError:
                     try:
-                        row.append(bullet["attributes"]["density"])
-                    except KeyError:
-                        row.append("")
+                        row.append(bullet.attributes["density"])
+                    except (AttributeError, KeyError):
+                        row.append(None)
 
-                if "cycle_time" in bullet.keys():
-                    row.append(bullet["cycle_time"])
-                else:
-                    row.append("")
+                row.append(bullet.cycle_time)
 
-                if "placed" in bullet.keys():
-                    time_obj = datetime.datetime.fromtimestamp(bullet["placed"])
+                if bullet.placed:
+                    time_obj = datetime.datetime.fromtimestamp(bullet.placed)
                     time_str = time_obj.isoformat()
                     row.append(time_str)
                 else:
-                    row.append("")
+                    row.append(None)
 
                 pt_fmt = ",".join(["{:.3f}"] * 3)
-                row.append(pt_fmt.format(*bullet["_location"]["point"]))
+                row.append(pt_fmt.format(*bullet.location.point))
 
-                if "tool" in bullet.keys():
-                    row.append(bullet["tool"])
+                row.append(bullet.tool)
+
+                try:
+                    row.append(bullet.weight)
+                except AttributeError:
+                    row.append(None)
 
                 csv_w.writerow(row)
 

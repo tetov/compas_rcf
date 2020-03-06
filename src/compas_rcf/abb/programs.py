@@ -136,7 +136,7 @@ def pick_bullet(client, picking_frame):
         MoveToFrame(
             picking_frame,
             fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+            fab_conf["movement"]["zone_pick"].get(ZoneDataTemplate()),
         )
     )
 

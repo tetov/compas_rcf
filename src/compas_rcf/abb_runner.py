@@ -22,13 +22,13 @@ from compas_rrc import AbbClient
 from compas_rrc import PrintText
 
 from compas_rcf import __version__
-from compas_rcf.abb import connection_check
-from compas_rcf.abb import docker_compose_paths
-from compas_rcf.abb import pick_bullet
-from compas_rcf.abb import place_bullet
-from compas_rcf.abb import post_procedure
-from compas_rcf.abb import pre_procedure
-from compas_rcf.abb import robot_ips
+from compas_rcf.abb.connectivity import DOCKER_COMPOSE_PATHS
+from compas_rcf.abb.connectivity import ROBOT_IPS
+from compas_rcf.abb.connectivity import connection_check
+from compas_rcf.abb.programs import pick_bullet
+from compas_rcf.abb.programs import place_bullet
+from compas_rcf.abb.programs import post_procedure
+from compas_rcf.abb.programs import pre_procedure
 from compas_rcf.docker import compose_up
 from compas_rcf.fabrication.clay_obj import ClayBulletEncoder
 from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
@@ -177,7 +177,7 @@ def setup_fab_data(clay_bullets):
 ################################################################################
 # Script runner                                                                #
 ################################################################################
-def abb_run():
+def main():
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
 
     # CONF setup
@@ -186,10 +186,10 @@ def abb_run():
     ############################################################################
     # Docker setup                                                            #
     ############################################################################
-    compose_up(docker_compose_paths["base"], remove_orphans=False)
+    compose_up(DOCKER_COMPOSE_PATHS["base"], remove_orphans=False)
     log.debug("Compose up base")
-    ip = robot_ips[fab_conf["target"].as_str()]
-    compose_up(docker_compose_paths["abb_driver"], ROBOT_IP=ip)
+    ip = ROBOT_IPS[fab_conf["target"].as_str()]
+    compose_up(DOCKER_COMPOSE_PATHS["abb_driver"], ROBOT_IP=ip)
     log.debug("Compose up abb_driver")
 
     ############################################################################
@@ -300,7 +300,7 @@ def abb_run():
 
 
 if __name__ == "__main__":
-    """Entry point and argument handling."""
+    """Entry point, logging setup and argument handling."""
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -333,4 +333,4 @@ if __name__ == "__main__":
     log.debug("argparse input: {}".format(args))
     log.debug("config after set_args: {}".format(fab_conf))
 
-    abb_run()
+    main()
