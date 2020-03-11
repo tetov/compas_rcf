@@ -5,22 +5,28 @@ from __future__ import print_function
 
 import logging
 import time
-from pathlib import Path
+from os.path import join
+from sys import version_info
 
 from compas_rrc import FeedbackLevel
 from compas_rrc import Noop
 
 from compas_rcf import HERE
 from compas_rcf.docker import compose_up
-from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
 
-pkg_dir = Path(HERE)
+if version_info.major > 2:
+    from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
 
-_compose_folder = pkg_dir / "docker" / "compose_files" / "abb"
+_path_from_pkg = ["docker", "compose_files", "abb"]
+_compose_folder = join(HERE, *_path_from_pkg)
+_base_name = "master-bridge-docker-compose.yml"
+_driver_name = "abb-driver-docker-compose.yml"
+
 DOCKER_COMPOSE_PATHS = {
-    "base": _compose_folder / "master-bridge-docker-compose.yml",
-    "driver": _compose_folder / "abb-driver-docker-compose.yml",
+    "base": join(_compose_folder, _base_name),
+    "driver": join(_compose_folder, _driver_name),
 }
+
 ROBOT_IPS = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
 
 

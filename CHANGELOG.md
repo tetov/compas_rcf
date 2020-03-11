@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+* Draft of grasshopper example showcasing robot control using `compas_rrc`.
+
 ### Changed
+
+* Replaced `pathlib` with `os.path` in `compas_rcf.abb.connectivity` for Python 2 compatibility.
 
 ### Removed
 
