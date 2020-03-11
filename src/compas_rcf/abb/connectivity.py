@@ -18,8 +18,8 @@ pkg_dir = Path(HERE)
 
 _compose_folder = pkg_dir / "docker" / "compose_files" / "abb"
 DOCKER_COMPOSE_PATHS = {
-    "base": _compose_folder / "base-docker-compose.yml",
-    "abb_driver": _compose_folder / "abb-driver-docker-compose.yml",
+    "base": _compose_folder / "master-bridge-docker-compose.yml",
+    "driver": _compose_folder / "abb-driver-docker-compose.yml",
 }
 ROBOT_IPS = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
 
@@ -40,8 +40,8 @@ def ping(client, timeout=10):
 
 
 def connection_check(client):
-    """Connection check."""
-    ip = ROBOT_IPS[fab_conf["target"].get()]
+    """Check connection to ABB controller."""
+    env_vars = {"ROBOT_IP": ROBOT_IPS[fab_conf["target"].as_str()]}
     for i in range(3):
         try:
             log.debug("Pinging robot")
@@ -51,9 +51,13 @@ def connection_check(client):
         except TimeoutError:
             log.info("No response from controller, restarting abb-driver service.")
             compose_up(
-                DOCKER_COMPOSE_PATHS["abb_driver"], force_recreate=True, ROBOT_IP=ip
+                DOCKER_COMPOSE_PATHS["driver"], force_recreate=True, env_vars=env_vars,
             )
-            log.debug("Compose up for abb_driver with robot-ip={}".format(ip))
+            log.debug(
+                "Compose up for abb_driver with robot-ip={}".format(
+                    env_vars["ROBOT_IP"]
+                )
+            )
             time.sleep(fab_conf["docker"]["sleep_after_up"].get())
     else:
         raise TimeoutError("Failed to connect to robot")

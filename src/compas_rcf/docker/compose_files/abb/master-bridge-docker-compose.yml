@@ -1,0 +1,31 @@
+version: '3.5'
+services:
+    ros-master:
+        image: gramaziokohler/compas_rrc_driver
+        container_name: ros-master
+        environment:
+            - ROS_HOSTNAME=ros-master
+            - ROS_MASTER_URI=http://ros-master:11311
+        ports:
+            - "11311:11311"
+        command:
+            - roscore
+
+    ros-bridge-driver:
+        image: gramaziokohler/compas_rrc_driver
+        container_name: ros-bridge-driver
+        environment:
+            - ROS_HOSTNAME=ros-bridge-driver
+            - ROS_MASTER_URI=http://ros-master:11311
+        ports:
+            - "9090:9090"
+        command:
+            - roslaunch
+            - --wait
+            - rosbridge_server
+            - rosbridge_websocket.launch
+            - unregister_timeout:=28800      # This horribly long timeout of 8 hours is to workaround this issue: https://github.com/RobotWebTools/rosbridge_suite/issues/138
+
+networks:
+    default:
+        name: ros-net

@@ -102,6 +102,8 @@ def cgframe_to_rgplane(frame):  # type: (compas.geometry.Frame) -> Rhino.Geometr
 def matrix_to_rgtransform(M):
     """Create :class:`Rhino.Geometry.Transform` from a transformation matrix.
 
+    Use `compas_ghpython.xforms instead`.
+
     Parameters
     ----------
     M : list of lists of floats

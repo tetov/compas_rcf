@@ -103,6 +103,8 @@ def rgplane_to_cgframe(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometr
 def rgtransform_to_matrix(rgM):
     """Convert :class:`Rhino.Geometry.Transform` to transformation matrix.
 
+    Use `compas_ghpython.xforms instead`.
+
     Parameters
     ----------
     rgM : :class:`Rhino.Geometry.Transform`

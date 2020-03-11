@@ -186,10 +186,10 @@ def main():
     ############################################################################
     # Docker setup                                                            #
     ############################################################################
-    compose_up(DOCKER_COMPOSE_PATHS["base"], remove_orphans=False)
-    log.debug("Compose up base")
-    ip = ROBOT_IPS[fab_conf["target"].as_str()]
-    compose_up(DOCKER_COMPOSE_PATHS["abb_driver"], ROBOT_IP=ip)
+    compose_up(DOCKER_COMPOSE_PATHS["base"], check_output=True, remove_orphans=False)
+    log.debug("Compose up master and bridge")
+    ip = {"ROBOT_IP": ROBOT_IPS[fab_conf["target"].as_str()]}
+    compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
     log.debug("Compose up abb_driver")
 
     ############################################################################

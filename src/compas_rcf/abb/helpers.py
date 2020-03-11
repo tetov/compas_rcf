@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import math
 
 from compas import IPY
 from compas.geometry import Frame
@@ -11,7 +12,6 @@ from compas.geometry import Frame
 from compas_rcf.utils.util_funcs import ensure_frame
 
 if IPY:
-    from compas_rcf.rhino import rgpoint_to_cgpoint
     from compas_rcf.rhino import cgframe_to_rgplane
 
 
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 
 class RapidToolData(object):
-    """Create Rapid ToolData
+    """Create Rapid ToolData.
 
     Parameters
     ----------
@@ -38,29 +38,30 @@ class RapidToolData(object):
     Axes of moment and inertia not implemented
     """
 
-    RAPID_DECLARATION_PART = "TASK PERS tooldata {}"
-    RAPID_TCP_PART = (
-        ":=[TRUE,[[{:.8f}, {:.8f}, {:.8f}],[{:.8f}, {:.8f}, {:.8f}, {:.8f}]], "
+    RAPID_TOOLDATA_FORMAT = (
+        "TASK PERS tooldata {}"
+        + ":=[TRUE,[[{},{},{}],[{},{},{},{}]],"
+        + "[{},[{},{},{}],[1,0,0,0],0,0,0]];"
     )
-    RAPID_COG_PART = "[{:.5f},[{:.8f}, {:.8f}, {:.8f}], [1, 0, 0, 0], 0, 0, 0]];"
 
     def __init__(
-        self, tcp_coord, tcp_quaternion, cog_coord=[0, 0, 0], name="tool", weight=5.0
+        self,
+        tcp_coord,
+        tcp_quaternion,
+        cog_coord=[0, 0, 100],
+        name="tool",
+        weight=5.0,
+        tolerance=1e-6,
     ):
         self.tcp_coord = tcp_coord
         self.tcp_quaternion = tcp_quaternion
         self.cog_coord = cog_coord
         self.name = name
         self.weight = weight
+        self.tolerance = tolerance
 
     def __repr__(self):
-        tcp_xyzwxyz = [float(x) for x in self.tcp_coord + self.tcp_quaternion]
-        load_data = [float(x) for x in [self.weight] + self.cog_coord]
-
-        declaration = self.RAPID_DECLARATION_PART.format(self.name)
-        tcp = self.RAPID_TCP_PART.format(*tcp_xyzwxyz)
-        load_data = self.RAPID_COG_PART.format(*load_data)
-        return declaration + tcp + load_data
+        return self.get_rapid_tooldata()
 
     @property
     def tcp_frame(self):
@@ -93,11 +94,9 @@ class RapidToolData(object):
         tcp_quaternion = tcp_frame.quaternion.wxyz
 
         if cog_pt:
-            cog_coord = cog_pt.data
-        else:
-            cog_coord = [0, 0, 0]
+            kwargs.update({"cog_coord": cog_pt.data})
 
-        return cls(tcp_coord, tcp_quaternion, cog_coord=cog_coord, **kwargs)
+        return cls(tcp_coord, tcp_quaternion, **kwargs)
 
     @classmethod
     def from_plane_point(cls, tcp_plane, cog_pt=None, **kwargs):
@@ -118,9 +117,43 @@ class RapidToolData(object):
         :class:`RapidToolData`
 
         """
+        tcp_coord = [tcp_plane.Origin.X, tcp_plane.Origin.Y, tcp_plane.Origin.Z]
+
         tcp_frame = ensure_frame(tcp_plane)
+        tcp_quaternion = tcp_frame.quaternion.wxyz
 
-        if "cog_pt" in kwargs.keys():
-            kwargs["cog_pt"] = rgpoint_to_cgpoint(kwargs["cog_pt"])
+        if cog_pt:
+            cog_coord = [cog_pt.X, cog_pt.Y, cog_pt.Z]
+            kwargs.update({"cog_coord": cog_coord})
 
-        return cls.from_frame_point(tcp_frame, **kwargs)
+        return cls(tcp_coord, tcp_quaternion, **kwargs)
+
+    def get_rapid_tooldata(self):
+        """Generate Rapid tooldata.
+
+        Returns
+        -------
+        str
+        """
+        data = self.tcp_coord + self.tcp_quaternion + [self.weight] + self.cog_coord
+        formatted_data = [self._float_str(x) for x in data]
+
+        return self.RAPID_TOOLDATA_FORMAT.format(self.name, *formatted_data)
+
+    def _float_str(self, n):
+        """Format float as string with given tolerance.
+
+        Arguments
+        ---------
+        n : float or int
+            Number to format
+
+
+        Returns
+        -------
+        str
+        """
+        # Get tolerance as number of decimals
+        tol = -1 * math.floor(math.log(self.tolerance, 10))
+
+        return "{:.{tol}f}".format(float(n), tol=int(tol))
