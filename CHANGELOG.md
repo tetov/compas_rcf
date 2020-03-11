@@ -4,14 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.2.3\] \[2020-03-11\]
 
 ### Added
 
+* `compas_rcf.abb.helpers.RapidToolData` now takes optional tolerance for tooldata values.
+* `compas_rcf.docker.docker_cmds._run` is a new helper function for docker commands that works in both Python 2 and 3.
+* `compose_up` has a new keyword `check_output` that toggles return code check of `subprocess` call.
+* `compose_down` added to `compas_rcf.docker`
+
 ### Changed
 
-### Removed
-
+* `base-docker-compose.yml` in `src/compas_rcf/docker/compose_files/abb` renamed to `master-bridge-docker-compose.yml`
+* `dict` key `abb_driver` in `compas_rcf.abb.connectivity.DOCKER_COMPOSE_PATHS` renamed to `driver`.
+* `env_vars` in `compas_rcf.abb.connectivity.connection_check` is now a stand alone keyword argument instead of being picked up from `**kwargs`.
+* `RapidTooldata.from_plane_point` creates a `RapidTooldata` object without using `from_frame_point`.
 
 ## \[0.2.2\] \[2020-03-06\]
 
