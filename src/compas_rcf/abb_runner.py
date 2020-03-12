@@ -83,6 +83,7 @@ def pick_frame_from_grid(index, bullet_height):
 
 
 def logging_setup():
+    """Configure logging for module and imported modules."""
     timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M_rcf_abb.log")
     log_file = fab_conf["paths"]["log_dir"].get(Path()) / timestamp_file
 
@@ -179,7 +180,6 @@ def setup_fab_data(clay_bullets):
 ################################################################################
 def main():
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
-
     # CONF setup
     interactive_conf_setup()
 
@@ -217,14 +217,19 @@ def main():
     ############################################################################
     # setup in_progress JSON                                                   #
     ############################################################################
-    json_progress_identifier = "IN_PROGRESS-"
+    if not fab_conf["skip_progress_file"]:
+        json_progress_identifier = "IN_PROGRESS-"
 
-    if json_path.name.startswith(json_progress_identifier):
-        in_progress_json = json_path
-    else:
-        in_progress_json = json_path.with_name(
-            json_progress_identifier + json_path.name
-        )
+        if json_path.name.startswith(json_progress_identifier):
+            in_progress_json = json_path
+        else:
+            in_progress_json = json_path.with_name(
+                json_progress_identifier + json_path.name
+            )
+
+    ############################################################################
+    # Fabrication loop                                                         #
+    ############################################################################
 
     to_place = setup_fab_data(clay_bullets)
 
@@ -239,10 +244,6 @@ def main():
     for bullet in to_place:
         bullet.placed = None
         bullet.cycle_time = None
-
-    ############################################################################
-    # Fabrication loop                                                         #
-    ############################################################################
 
     for i, bullet in enumerate(to_place):
         current_bullet_desc = "Bullet {:03}/{:03} with id {}.".format(
@@ -260,12 +261,14 @@ def main():
         # Place bullet
         place_future = place_bullet(abb, bullet)
 
+        # Write progress to json while waiting for robot
+        if not fab_conf["skip_progress_file"].get():
+            with in_progress_json.open(mode="w") as fp:
+                json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+            log.debug("Wrote clay_bullets to {}".format(in_progress_json.name))
+
         # This blocks until cycle is finished
         cycle_time = pick_future.result() + place_future.result()
-
-        # Write progress to json while waiting for robot
-        with in_progress_json.open(mode="w") as fp:
-            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
 
         bullet.cycle_time = cycle_time
         log.debug("Cycle time was {}".format(bullet.cycle_time))
@@ -276,7 +279,16 @@ def main():
     # Shutdown procedure                                                       #
     ############################################################################
 
-    if len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0:
+    # Write progress of last run of loop
+    if not fab_conf["skip_progress_file"].get():
+        with in_progress_json.open(mode="w") as fp:
+            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+        log.debug("Wrote clay_bullets to {}".format(in_progress_json.name))
+
+    if (
+        len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0
+        and fab_conf["skip_progress_file"].get()
+    ):
         done_file_name = json_path.name.replace(json_progress_identifier, "")
         done_json = (
             fab_conf["paths"]["json_dir"].get(Path()) / "00_done" / done_file_name
@@ -322,6 +334,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--skip-logfile", action="store_true", help="Don't send log messages to file.",
+    )
+    parser.add_argument(
+        "--skip-progress-file",
+        action="store_true",
+        help="Skip writing progress to json during run.",
     )
 
     args = parser.parse_args()
