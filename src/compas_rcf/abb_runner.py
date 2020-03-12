@@ -263,13 +263,14 @@ def main():
         # This blocks until cycle is finished
         cycle_time = pick_future.result() + place_future.result()
 
+        # Write progress to json while waiting for robot
+        with in_progress_json.open(mode="w") as fp:
+            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+
         bullet.cycle_time = cycle_time
         log.debug("Cycle time was {}".format(bullet.cycle_time))
         bullet.placed = time.time()
         log.debug("Time placed was {}".format(bullet.placed))
-
-        with in_progress_json.open(mode="w") as fp:
-            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
 
     ############################################################################
     # Shutdown procedure                                                       #

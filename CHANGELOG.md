@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * `dict` key `abb_driver` in `compas_rcf.abb.connectivity.DOCKER_COMPOSE_PATHS` renamed to `driver`.
 * `env_vars` in `compas_rcf.abb.connectivity.connection_check` is now a stand alone keyword argument instead of being picked up from `**kwargs`.
 * `RapidTooldata.from_plane_point` creates a `RapidTooldata` object without using `from_frame_point`.
+* `compas_rcf.abb_runner` now writes progress to json while waiting for robot, to make sure the robot isn't idle between loops.
 
 ## \[0.2.2\] \[2020-03-06\]
 
