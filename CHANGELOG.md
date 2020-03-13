@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.2.4\] \[2020-03-13\]
 
 ### Added
 
@@ -15,9 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 * Replaced `pathlib` with `os.path` in `compas_rcf.abb.connectivity` for Python 2 compatibility.
 * `compas_rcf.abb_runner` now writes progress to json while waiting for robot, to make sure the robot isn't idle between loops.
-
-### Removed
-
+* Some improvements to the `compas_rcf.utils.csv_reports` module, more data points and more informative headers.
 
 ## \[0.2.3\] \[2020-03-11\]
 
