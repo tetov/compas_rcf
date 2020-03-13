@@ -261,6 +261,8 @@ def main():
         # Place bullet
         place_future = place_bullet(abb, bullet)
 
+        bullet.placed = 1  # set placed to temporary value to mark it as "placed"
+
         # Write progress to json while waiting for robot
         if not fab_conf["skip_progress_file"].get():
             with in_progress_json.open(mode="w") as fp:
