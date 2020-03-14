@@ -19,8 +19,8 @@ if version_info.major > 2:
 
 _path_from_pkg = ["docker", "compose_files", "abb"]
 _compose_folder = join(HERE, *_path_from_pkg)
-_base_name = "master-bridge-docker-compose.yml"
-_driver_name = "abb-driver-docker-compose.yml"
+_base_name = "driver-base-docker-compose.yml"
+_driver_name = "driver-docker-compose.yml"
 
 DOCKER_COMPOSE_PATHS = {
     "base": join(_compose_folder, _base_name),

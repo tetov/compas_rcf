@@ -289,7 +289,7 @@ def main():
 
     if (
         len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0
-        and fab_conf["skip_progress_file"].get()
+        and not fab_conf["skip_progress_file"].get()
     ):
         done_file_name = json_path.name.replace(json_progress_identifier, "")
         done_json = (
@@ -302,7 +302,7 @@ def main():
             json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
 
         log.debug("Saved placed bullets to 00_Done.")
-    else:
+    elif not fab_conf["skip_progress_file"].get():
         log.debug(
             "Bullets without placed timestamp still present, keeping {}".format(
                 in_progress_json.name
