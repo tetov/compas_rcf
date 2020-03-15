@@ -142,3 +142,4 @@ docs/api/generated/
 _version.py
 
 /temp
+.vimrc
