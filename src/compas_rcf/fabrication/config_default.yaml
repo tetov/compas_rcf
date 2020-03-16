@@ -29,6 +29,7 @@ tool:
     release_state: 0 # state (0 or 1)
     wait_before_io: 0.5 # s, optional, default value 2
     wait_after_io: 0.5 # s, optional, default value 0.5
+    capacity: 1 # number of bullets tool can pick up
 wobjs:
     # name of work objects as defined in controller
     picking_wobj_name: ob_A057_WobjPicking01
@@ -50,3 +51,4 @@ paths:
     json_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\04_fabrication_data_jsons
     conf_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\05_fabrication_confs
     log_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\06_fabrication_logs
+    pick_conf_dir: G:\Shared drives\2020_MAS\T2_P1\02_Groups\Phase2\rcf_fabrication\02_robot_control\11_picking_confs

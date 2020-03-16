@@ -55,11 +55,12 @@ class ZoneDataTemplate(confuse.Template):
 
 
 ROBOT_CONTROL_FOLDER_DRIVE = pathlib.Path(
-    "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"  # noqa E501
+    "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"  # noqa: E501
 )
 DEFAULT_CONF_DIR = ROBOT_CONTROL_FOLDER_DRIVE / "05_fabrication_confs"
 DEFAULT_JSON_DIR = ROBOT_CONTROL_FOLDER_DRIVE / "04_fabrication_data_jsons"
 DEFAULT_LOG_DIR = ROBOT_CONTROL_FOLDER_DRIVE / "06_fabrication_logs"
+DEFAULT_PICK_CONF_DIR = ROBOT_CONTROL_FOLDER_DRIVE / "11_picking_confs"
 
 
 class Path(confuse.Filename):
@@ -86,8 +87,9 @@ abb_rcf_conf_template = {
     "target": confuse.TypeTemplate(str, default=None),
     "paths": {
         "json_dir": confuse.Filename(default=str(DEFAULT_JSON_DIR)),
-        "conf_dir": confuse.Filename(default=str(DEFAULT_JSON_DIR)),
+        "conf_dir": confuse.Filename(default=str(DEFAULT_CONF_DIR)),
         "log_dir": confuse.Filename(default=str(DEFAULT_LOG_DIR)),
+        "pick_conf_dir": confuse.Filename(default=str(DEFAULT_PICK_CONF_DIR)),
     },
     "wobjs": {"picking_wobj_name": str, "placing_wobj_name": str},
     "tool": {
@@ -97,6 +99,7 @@ abb_rcf_conf_template = {
         "release_state": int,
         "wait_before_io": confuse.Number(default=2),
         "wait_after_io": confuse.Number(default=0.5),
+        "capacity": confuse.Number(default=1),
     },
     "speed_values": {
         "speed_override": confuse.Number(default=100),
@@ -118,16 +121,19 @@ abb_rcf_conf_template = {
         "zone_place": ZoneDataTemplate(),
     },
     "pick": {
-        "origin_grid": {
-            "x": confuse.Number(default=100),
-            "y": confuse.Number(default=100),
+        "setup": confuse.OneOf(["rcs", "wobj", None], default=None),
+        "wobj_pickingconf": {
+            "origin_grid": {
+                "x": confuse.Number(default=0.0),
+                "y": confuse.Number(default=0.0),
+            },
+            "xnum": confuse.Number(default=2),
+            "ynum": confuse.Number(default=5),
+            "grid_spacing": confuse.Number(default=125.0),
+            "compression_height_factor": confuse.Number(default=0.95),
+            "xaxis": confuse.Sequence([float] * 3),
+            "yaxis": confuse.Sequence([float] * 3),
         },
-        "xnum": int,
-        "ynum": int,
-        "grid_spacing": float,
-        "compression_height_factor": confuse.Number(default=0.95),
-        "xaxis": confuse.Sequence([float] * 3),
-        "yaxis": confuse.Sequence([float] * 3),
     },
     "docker": {
         "timeout_ping": confuse.Number(default=10),
@@ -160,6 +166,7 @@ def interactive_conf_setup():
 
     if select_conf_source == "Load.":
         conf_file = ui.open_file_dialog(
+            title="Select fabrication configuration file",
             initial_dir=FABRICATION_CONF["paths"]["conf_dir"].get(Path()),
             file_type=("YAML files", "*.yaml"),
         )
@@ -183,6 +190,13 @@ def interactive_conf_setup():
     log.info(
         "Target is {} controller.".format(FABRICATION_CONF["target"].get().upper())
     )
+
+    if not FABRICATION_CONF["pick"]["setup"].exists():
+        question = questionary.select(
+            "Pick using a work object and parameters in fabrication configuration or use a separate configuration file defining frames in RCS?",  # noqa: E501
+            choices=["WOBJ", "RCS"],
+        ).ask()
+        FABRICATION_CONF["pick"]["setup"] = question.lower()
 
     # Validate conf
     FABRICATION_CONF.get(abb_rcf_conf_template)

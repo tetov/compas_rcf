@@ -112,6 +112,7 @@ def pick_bullet(client, picking_frame):
         # Custom instruction create a clay bullet in RobotStudio
         # TODO: Create bullet at picking point
         client.send(CustomInstruction("r_A057_RS_Create_Bullet"))
+    log.debug("Picking bullet at frame {}".format(picking_frame))
 
     # change work object before picking
     client.send(SetWorkObject(fab_conf["wobjs"]["picking_wobj_name"].get()))

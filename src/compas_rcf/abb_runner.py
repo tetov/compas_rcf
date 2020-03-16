@@ -8,15 +8,11 @@ from __future__ import print_function
 
 import json
 import logging as log
-import pathlib
 import sys
 import time
 from datetime import datetime
 from operator import attrgetter
 
-from compas.geometry import Frame
-from compas.geometry import Point
-from compas.geometry import Vector
 from compas_fab.backends.ros import RosClient
 from compas_rrc import AbbClient
 from compas_rrc import PrintText
@@ -34,6 +30,7 @@ from compas_rcf.fabrication.clay_obj import ClayBulletEncoder
 from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
 from compas_rcf.fabrication.conf import Path
 from compas_rcf.fabrication.conf import interactive_conf_setup
+from compas_rcf.fabrication.pick_setup import PickSetup
 from compas_rcf.utils import ui
 from compas_rcf.utils.json_ import load_bullets
 
@@ -41,45 +38,6 @@ if sys.version_info[0] < 2:
     raise Exception("This module requires Python 3")
 else:
     import questionary
-
-
-def pick_frame_from_grid(index, bullet_height):
-    """Get next picking frame.
-
-    Parameters
-    ----------
-    index : int
-        Counter to iterate through picking positions.
-    bullet_height : float
-        Height of bullet to pick up.
-
-    Returns
-    -------
-    list of `class`:compas.geometry.Frame
-    """
-    # If index is larger than amount on picking plate, start from zero again
-    index = index % (fab_conf["pick"]["xnum"].get() * fab_conf["pick"]["ynum"].get())
-
-    xpos = index % fab_conf["pick"]["xnum"].get()
-    ypos = index // fab_conf["pick"]["xnum"].get()
-
-    x = (
-        fab_conf["pick"]["origin_grid"]["x"].get()
-        + xpos * fab_conf["pick"]["grid_spacing"].get()
-    )
-    y = (
-        fab_conf["pick"]["origin_grid"]["y"].get()
-        + ypos * fab_conf["pick"]["grid_spacing"].get()
-    )
-    z = bullet_height * fab_conf["pick"]["compression_height_factor"].get()
-
-    frame = Frame(
-        Point(x, y, z),
-        Vector(*fab_conf["pick"]["xaxis"].get()),
-        Vector(*fab_conf["pick"]["yaxis"].get()),
-    )
-    log.debug("Picking frame {:03d}: {}".format(index, frame))
-    return frame
 
 
 def logging_setup():
@@ -195,10 +153,26 @@ def main():
     ############################################################################
     # Load fabrication data                                                    #
     ############################################################################
-    json_path = pathlib.Path(ui.open_file_dialog(fab_conf["paths"]["json_dir"].get()))
+    json_path = ui.open_file_dialog(
+        title="Select fabrication data json",
+        initial_dir=fab_conf["paths"]["json_dir"].get(),
+        return_pathobj=True,
+    )
     clay_bullets = load_bullets(json_path)
     log.info("Fabrication data read from: {}".format(json_path))
     log.info("{} items in clay_bullets.".format(len(clay_bullets)))
+
+    if fab_conf["pick"]["setup"].get() == "rcs":
+        pick_setup_json = ui.open_file_dialog(
+            title="Select picking setup json",
+            initial_dir=fab_conf["paths"]["pick_conf_dir"].get(),
+            return_pathobj=True,
+        )
+        with pick_setup_json.open(mode="r") as fp:
+            pick_setup_dict = json.load(fp)
+        pick_setup = PickSetup.from_data(pick_setup_dict)
+    else:
+        pick_setup = PickSetup.from_fab_conf()
 
     ############################################################################
     # Create Ros Client                                                        #
@@ -245,6 +219,7 @@ def main():
         bullet.placed = None
         bullet.cycle_time = None
 
+    # TODO: Use chunk of list based on tool capacity here
     for i, bullet in enumerate(to_place):
         current_bullet_desc = "Bullet {:03}/{:03} with id {}.".format(
             i, len(to_place) - 1, bullet.bullet_id
@@ -253,7 +228,18 @@ def main():
         abb.send(PrintText(current_bullet_desc))
         log.info(current_bullet_desc)
 
-        pick_frame = pick_frame_from_grid(i, bullet.height)
+        if hasattr(bullet, "plate_index"):
+            plate_id = bullet.plate_index
+        else:
+            plate_id = 0
+
+        pick_frame = pick_setup.get_next_frames(
+            bullet.height, plate_id=plate_id, n=fab_conf["tool"]["capacity"].get()
+        )
+
+        # TODO: Temp fix
+        if len(pick_frame):
+            pick_frame = pick_frame[0]
 
         # Pick bullet
         pick_future = pick_bullet(abb, pick_frame)
@@ -320,10 +306,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-t",
-        "--target",
-        choices=["real", "virtual"],
-        help="Set fabrication runner target.",
+        "-t", "--target", help="Set fabrication runner target.",
+    )
+    parser.add_argument(
+        "-p",
+        "--pick-setup",
+        help="Set method of defining picking frames.",
+        dest="pick.setup",
     )
     parser.add_argument(
         "-q",
@@ -345,7 +334,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    fab_conf.set_args(args)
+    fab_conf.set_args(args, dots=True)
 
     logging_setup()
 
