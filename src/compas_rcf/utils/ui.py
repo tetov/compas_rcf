@@ -7,10 +7,18 @@ from os import system
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
+import pygments
 from prompt_toolkit import print_formatted_text
 from prompt_toolkit.formatted_text import PygmentsTokens
-import pygments
 from pygments.lexers.data import YamlLexer
+
+try:
+    from pathlib import Path
+except ImportError:
+    try:
+        from pathlib2 import Path
+    except ImportError:
+        pass
 
 __all__ = ["open_file_dialog", "pygment_yaml", "clear_screen"]
 
@@ -18,12 +26,19 @@ root = Tk()
 root.withdraw()
 
 
-def open_file_dialog(initial_dir="/", file_type=("JSON files", "*.json")):
+def open_file_dialog(
+    title="Select file",
+    initial_dir="/",
+    file_type=("JSON files", "*.json"),
+    return_pathobj=False,
+):
     filename = askopenfilename(
         initialdir=initial_dir,
-        title="Select file",
+        title=title,
         filetypes=(file_type, ("all files", "*.*")),
     )
+    if return_pathobj:
+        filename = Path(filename)
     return filename
 
 

@@ -43,6 +43,7 @@ def main(args):
             "id",
             "radius (mm)",
             "height (mm)",
+            "compression-height-ratio",
             "density (kg/l)",
             "cycle_time (s)",
             "time placed (in UTC)",
@@ -66,6 +67,7 @@ def main(args):
 
                 row.append(bullet.radius)
                 row.append(bullet.height)
+                row.append(bullet.compression_ratio)
 
                 try:
                     if bullet.density:

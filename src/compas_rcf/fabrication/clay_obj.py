@@ -260,16 +260,6 @@ class ClayBullet(object):
         return self.volume * 1e-9
 
     @property
-    def weight(self):
-        """Weight of clay bullet in g
-
-        Returns
-        -------
-        float
-        """
-        return self.density * self.volume
-
-    @property
     def weight_kg(self):
         """Weight of clay bullet in kg
 
@@ -277,7 +267,17 @@ class ClayBullet(object):
         -------
         float
         """
-        return self.weight * 1000
+        return self.density * self.volume * 1e-6
+
+    @property
+    def weight(self):
+        """Weight of clay bullet in g
+
+        Returns
+        -------
+        float
+        """
+        return self.weight_kg * 1000
 
     @property
     def compressed_radius(self):
