@@ -25,10 +25,7 @@ requirements = [
     "compas_fab ~= 0.10.2",
     "compas_rrc ~= 0.2.2",
     "questionary ~= 1.5.1",
-    "colorama ~= 0.4.3",
     "confuse ~= 1.0.0",
-    "prompt-toolkit ~= 3.0.3",
-    "Pygments ~= 2.5.2",
 ]
 
 extras_require = {
@@ -44,7 +41,6 @@ extras_require = {
         "recommonmark >=0.6",
         "sphinx_compas_theme >= 0.4",
         "sphinx > =1.6",
-        'sphinx-autodoc-typehints[type_comments] >= 1.10 ; python_version > "2.7"',
         "setuptools_scm[toml]",
     ]
 }

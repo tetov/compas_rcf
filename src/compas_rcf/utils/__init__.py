@@ -5,19 +5,27 @@ compas_rcf.utils
 
 .. currentmodule:: compas_rcf.utils
 
-JSON tools
-----------
-Utility functions for loading and dumping
-:class:`compas_rcf.fabrication.ClayBullet` objects.
+UI utilities
+============
 
-Assorted utilities
-------------------
-When there's no other good place for a bit of code..
+.. autosummary::
+    :toctree: generated/
 
-.. toctree::
+    open_file_dialog
 
-   compas_rcf.utils.csv_reports
-   compas_rcf.utils.json_
-   compas_rcf.utils.ui
-   compas_rcf.utils.util_funcs
+General utilities
+=================
+
+.. autosummary::
+    :toctree: generated/
+
+    wrap_list
+    ensure_frame
+    get_offset_frame
 """
+from compas import IPY
+
+from .util_funcs import *  # noqa: F401,F403
+
+if not IPY:
+    from .ui import *  # noqa: F401,F403

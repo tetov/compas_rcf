@@ -9,9 +9,9 @@ In short, this is how that works.
 
 ### Setup
 
-**Important:** All code related to fabrication with ABB industrial robots requires [compas_rrc](https://bitbucket.com/eth-rfl/compas_rrc) which is hosted in a private repository.
+**Important:** All code related to fabrication with ABB industrial robots requires [compas_rrc](https://bitbucket.org/ethrfl/compas_rrc/) which is hosted in a private repository.
 
-1. Fork [the repository](https://github.com/compas_rcf) and clone the fork.
+1. Fork [the repository](https://github.com/tetov/compas_rcf) and clone the fork.
 
 2. (Optional) Create a virtual environment using your tool of choice (e.g. `virtualenv`, `conda`, etc).
 
@@ -39,13 +39,13 @@ In short, this is how that works.
    pip install -e .[dev]
    ```
 
-   If you have authentication issues with BitBucket (for compas_rrc) [Try installing
-   the new Git Credential manager for Windows](https://compas_rcf.tetov.se/known_issues.html#authentication-problems-with-bitbucket-1)
+   If you have authentication issues with BitBucket (for `compas_rrc`) [Try installing
+   the new Git Credential manager for Windows](https://compas_rcf.tetov.se/known_issues.html)
 
 4. (Optional) Make package accessible in Rhino and Grasshopper
 
    ```bash
-   python -m compas_rcf.install_rhino
+   python -m compas_rcf.rhino.install
    ```
 
 ### Make a pull request
@@ -79,7 +79,7 @@ command line to ease recurring operations:
 
 ## Bug reports
 
-When [reporting a bug](https://github.com/compas_rcf/issues) please include:
+When [reporting a bug](https://github.com/tetov/compas_rcf/issues) please include:
 
 * Operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting.
@@ -87,7 +87,7 @@ When [reporting a bug](https://github.com/compas_rcf/issues) please include:
 
 ## Feature requests
 
-When [proposing a new feature](https://github.com/compas_rcf/issues) please include:
+When [proposing a new feature](https://github.com/tetov/compas_rcf/issues) please include:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.

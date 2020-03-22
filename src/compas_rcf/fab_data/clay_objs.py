@@ -1,50 +1,56 @@
+"""Data representation of discrete fabrication elements."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import collections
-import json
 import math
 from itertools import count
 
-import compas.geometry as cg
 from compas import IPY
 from compas.datastructures import Mesh as cg_Mesh
+from compas.datastructures import Network
 from compas.geometry import Frame
 from compas.geometry import Translation
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.utils.util_funcs import ensure_frame
-from compas_rcf.utils.util_funcs import get_offset_frame
-from compas_rcf.utils.util_funcs import wrap_list
+from compas_rcf.utils import ensure_frame
+from compas_rcf.utils import get_offset_frame
+from compas_rcf.utils import wrap_list
 
 if IPY:
     import Rhino.Geometry as rg
     from compas_rcf.rhino import cgframe_to_rgplane
 
-# __all__ = ["ClayBullet", "check_id_collision", "ClayBulletEncoder"]
-
 
 class ClayBullet(object):
-    """Simple Clay Cylinder.
+    """Describes a clay cylinder, this project's building element.
 
     Parameters
     ----------
-    location : :class:`Rhino.Geometry.Plane`, :class:`compas.geometry.Frame`
-        Bottom center plane of clay volume.
-    trajectory_to : list of :class:`Plane` or :class:`Frame`
-    trajectory_from : list of :class:`Plane` or :class:`Frame`
-    bullet_id : int, optional
-        Unique identifier
-    radius : float, optional
+    location : :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
+        Bottom centroid frame of clay volume.
+    trajectory_to : :class:`list` of :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
+        Frames defining path to take to place location.
+    trajectory_from : :class:`list` of :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
+        Frames defining path from place location to pick location.
+    bullet_id : :class:`int`, optional
+        Unique identifier.
+    radius : :class:`float`, optional
         The radius of the initial cylinder.
-    height : float, optional
+    height : :class:`float`, optional
         The height of the initial cylinder.
-    compression_ratio : float (>0, <=1), optional
+    compression_ratio : :class:`float` (>0, <=1), optional
         The compression height ratio applied to the initial cylinder.
-    clay_density : float, optional
-        Density of clay in g/mm^3
-    """
+    clay_density : :class:`float`, optional
+        Density of clay in g/mm\ :sup:`3`
+    cycle_time : :class:`float`, optional
+        Cycle time from pick to place and back.
+    placed : :class:`int`, optional
+        Time in epoch (seconds from 1970) of bullet placement.
+    kwargs : :class:`dict`, optional
+        Any other attributes needed.
+    """  # noqa: E501
 
     # creates id-s for objects
     _ids = count(0)
@@ -59,9 +65,6 @@ class ClayBullet(object):
         height=100,
         compression_ratio=0.5,
         clay_density=2.0,
-        precision=5,
-        tool=None,
-        vkey=None,
         cycle_time=None,
         placed=None,
         **kwargs
@@ -79,8 +82,6 @@ class ClayBullet(object):
         self.radius = radius
         self.height = height
         self.compression_ratio = compression_ratio
-        self.tool = tool
-        self.vkey = vkey
 
         self.cycle_time = cycle_time
         self.placed = placed
@@ -101,7 +102,7 @@ class ClayBullet(object):
 
     @location.setter
     def location(self, frame_like):
-        """Ensure that location is stored as compas.geometry.Frame object."""
+        """Ensure that location is stored as :class:`compas.geometry.Frame` object."""
         self._location = ensure_frame(frame_like)
 
     @property
@@ -131,7 +132,7 @@ class ClayBullet(object):
 
     @trajectory_to.setter
     def trajectory_to(self, frame_list):
-        """Ensure that trajectory_to are stored as compas.geometry.Frame objects."""
+        """Ensure trajectory_to elements are :class:`compas.geometry.Frame` objects."""
         self._trajectory_to = []
 
         if isinstance(frame_list, collections.Sequence):
@@ -154,7 +155,7 @@ class ClayBullet(object):
 
     @trajectory_from.setter
     def trajectory_from(self, frame_list):
-        """Ensure that trajectory_from are stored as compas.geometry.Frame objects."""
+        """Ensure trajectory_from elements are :class:`compas.geometry.Frame` objects."""  # noqa: E501
         self._trajectory_from = []
         if isinstance(frame_list, collections.Sequence):
             for frame_like in frame_list:
@@ -176,46 +177,46 @@ class ClayBullet(object):
 
     @property
     def plane(self):
-        """For Compatibility with older scripts."""
+        """For compatibility with older scripts."""
         return self.location_plane
 
     @property
     def location_plane(self):
-        """Rhino.Geometry.Plane representation of location frame.
+        """:class:`Rhino.Geometry.Plane` representation of location frame.
 
         Returns
         -------
-        Rhino.Geometry.Plane
+        :class:`Rhino.Geometry.Plane`
         """
         return cgframe_to_rgplane(self.location)
 
     @property
     def placement_plane(self):
-        """Rhino.Geometry.Plane representation of placement frame.
+        """:class:`Rhino.Geometry.Plane` representation of placement frame.
 
         Returns
         -------
-        Rhino.Geometry.Plane
+        :class:`Rhino.Geometry.Plane`
         """
         return cgframe_to_rgplane(self.placement_frame)
 
     @property
     def trajectory_to_planes(self):
-        """Rhino.Geometry.Plane representations of pre frames.
+        """:class:`Rhino.Geometry.Plane` representations of trajectory_to frames.
 
         Returns
         -------
-        list of Rhino.Geometry.Plane
+        :class:`list` of :class:`Rhino.Geometry.Plane`
         """
         return [cgframe_to_rgplane(frame) for frame in self.trajectory_to]
 
     @property
     def trajectory_from_planes(self):
-        """Rhino.Geometry.Plane representation of pre frames.
+        """:class:`Rhino.Geometry.Plane` representations of trajectory_from frames.
 
         Returns
         -------
-        list of Rhino.Geometry.Plane
+        :class:`list` of :class:`Rhino.Geometry.Plane`
         """
         return [cgframe_to_rgplane(frame) for frame in self.trajectory_from]
 
@@ -225,7 +226,7 @@ class ClayBullet(object):
 
         Returns
         -------
-        Rhino.Geometry.Plane
+        :class:`Rhino.Geometry.Plane`
         """
         return cgframe_to_rgplane(self.centroid_frame)
 
@@ -235,13 +236,13 @@ class ClayBullet(object):
 
         Returns
         -------
-        Rhino.Geometry.Plane
+        :class:`Rhino.Geometry.Plane`
         """
         return cgframe_to_rgplane(self.centroid_frame)
 
     @property
     def volume(self):
-        """Volume of clay bullet in mm^3.
+        r"""Volume of clay bullet in mm\ :sup:`3`\ .
 
         Returns
         -------
@@ -251,7 +252,7 @@ class ClayBullet(object):
 
     @property
     def volume_m3(self):
-        """Volume of clay bullet in m^3.
+        r"""Volume of clay bullet in m\ :sup:`3`\ .
 
         Returns
         -------
@@ -261,7 +262,7 @@ class ClayBullet(object):
 
     @property
     def weight_kg(self):
-        """Weight of clay bullet in kg
+        """Weight of clay bullet in kg.
 
         Returns
         -------
@@ -271,7 +272,7 @@ class ClayBullet(object):
 
     @property
     def weight(self):
-        """Weight of clay bullet in g
+        """Weight of clay bullet in g.
 
         Returns
         -------
@@ -301,21 +302,21 @@ class ClayBullet(object):
 
     @property
     def circle(self):
-        """Rhino.Geometry.Circle representing bullet footprint.
+        """:class:`Rhino.Geometry.Circle` representing bullet footprint.
 
         Returns
         -------
-        Rhino.Geometry.Circle
+        :class:`Rhino.Geometry.Circle`
         """
         return rg.Circle(self.location_plane, self.compressed_radius)
 
     @property
     def cylinder(self):
-        """Rhino.Geometry.Cylinder representing bullet.
+        """:class:`Rhino.Geometry.Cylinder` representing bullet.
 
         Returns
         -------
-        Rhino.Geometry.Cylinder
+        :class:`Rhino.Geometry.Cylinder`
         """
         return rg.Cylinder(self.circle, self.compressed_height)
 
@@ -372,48 +373,48 @@ class ClayBullet(object):
             **kwargs
         )
 
-        @classmethod
-        def from_compressed_centroid_frame_like(
-            cls, centroid_frame_like, compression_ratio=0.5, height=100, kwargs={}
-        ):
-            """Construct a :class:`ClayBullet` instance from centroid plane.
+    @classmethod
+    def from_compressed_centroid_frame_like(
+        cls, centroid_frame_like, compression_ratio=0.5, height=100, kwargs={}
+    ):
+        """Construct a :class:`ClayBullet` instance from centroid plane.
 
-            Parameters
-            ----------
-            centroid_frame_like : compas.geometry.Frame or Rhino.Geometry.Plane
-                frame between bottom of clay bullet and compressed top
-            compression_ratio : float
-                The compressed height as a percentage of the original height
-            height : float
-                The height of the bullet before compression
-            kwargs
-                Other attributes
+        Parameters
+        ----------
+        centroid_frame_like : :class:`compas.geometry.Frame` or :class:`Rhino.Geometry.Plane`
+            Frame between bottom of clay bullet and compressed top.
+        compression_ratio : :class:`float`
+            The compressed height as a percentage of the original height.
+        height : :class:`float`
+            The height of the bullet before compression.
+        kwargs : :class:`dict`
+            Other attributes.
 
-            Returns
-            -------
-            :class:`ClayBullet`
-                The constructed ClayBullet instance
-            """
-            centroid_frame = ensure_frame(centroid_frame_like)
-            compressed_height = height * compression_ratio
-            location = get_offset_frame(centroid_frame, -compressed_height / 2)
+        Returns
+        -------
+        :class:`ClayBullet`
+            The constructed ClayBullet instance
+        """  # noqa: E501
+        centroid_frame = ensure_frame(centroid_frame_like)
+        compressed_height = height * compression_ratio
+        location = get_offset_frame(centroid_frame, -compressed_height / 2)
 
-            return cls(
-                location, compression_ratio=compression_ratio, height=height, **kwargs
-            )
+        return cls(
+            location, compression_ratio=compression_ratio, height=height, **kwargs
+        )
 
     def generate_mesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution.
 
         Parameters
         ----------
-        face_count : int, optional
+        face_count : :class:`int`, optional
             Desired number of faces, by default 18
             Used as a guide for the resolution of the mesh cylinder
 
         Returns
         -------
-        Rhino.Geometry.Mesh
+        :class:`Rhino.Geometry.Mesh`
         """
         if face_count < 6:
             sides = 3
@@ -505,16 +506,70 @@ def check_id_collision(clay_bullets):
         set_of_ids.add(id)
 
 
-class ClayBulletEncoder(json.JSONEncoder):
-    """JSON encoder for :class:`ClayBullet`.
+class ClayStructure(Network):
+    def __init__(self, clay_bullets):
+        super(ClayStructure, self).__init__()
+        self._clay_bullets = clay_bullets
+        self.network_from_clay_bullets(self._clay_bullets)
+        self.update_default_edge_attributes(relation=None)
+        self.update_default_edge_attributes(is_touching=False)
 
-    Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
-    """
+    @property
+    def clay_bullets(self):
+        return self.vertices
 
-    def default(self, obj):
-        if isinstance(obj, ClayBullet):
-            return obj.__dict__
-        if isinstance(obj, cg.Primitive):
-            return obj.to_data()
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+    @property
+    def average_compressed_radius(self):
+        sum_ = sum([bullet.compressed_radius for bullet in self._clay_bullets])
+        return sum_ / len(self._clay_bullets)
+
+    def _edges_from_distance(self, i, clay_bullet):
+        edges = []
+        for j, other_bullet in enumerate(self._clay_bullets):
+            if i == j:
+                continue
+            dist = clay_bullet.plane.Origin.DistanceTo(other_bullet.plane.Origin)
+            if dist <= clay_bullet.compressed_radius + other_bullet.compressed_radius:
+                edges.append((i, j))  # equivalent to set.update()
+        return edges
+
+    def _set_attributes_edges_longer_than(self, dist, **kwargs):
+        if len(kwargs) < 1:
+            raise Exception("No attributes to set")
+
+        keys = []
+        for u, v in self.edges():
+            if self.edge_length(u, v) >= dist:
+                keys.append((u, v))
+
+        self.set_edges_attributes(kwargs.keys(), kwargs.values(), keys=keys)
+
+    def _bullet_neighboors_below(self, u):
+        z_value = self.get_vertex_attribute(u, "z")
+        bullets_below = self.vertices_where({"z": (0, z_value)})
+
+        bullets_below_keys = [(u, v) for v in bullets_below if v != u]
+        for u, v in bullets_below_keys:
+            if self.edge_length(u, v) <= 20:
+                self.add_edge(u, v, relation="neighboor_below", is_touching=True)
+
+    def network_from_clay_bullets(self, clay_bullets):
+        for i, clay_bullet in enumerate(clay_bullets):
+            self.add_vertex(
+                key=i,
+                x=clay_bullet.plane.Origin.X,
+                y=clay_bullet.plane.Origin.Y,
+                z=clay_bullet.plane.Origin.Z,
+                class_instance=clay_bullet,
+            )
+
+        edges_from_order = [(i, i + 1) for i in range(len(clay_bullets) - 1)]
+
+        for u, v in edges_from_order:
+            self.add_edge(u, v, relation="print_order", is_touching=True)
+
+        # TODO: Better distance value
+        self._set_attributes_edges_longer_than(26, is_touching=False)
+
+        for i in range(len(self._clay_bullets)):
+            self._bullet_neighboors_below(i)

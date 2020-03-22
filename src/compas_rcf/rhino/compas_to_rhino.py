@@ -4,8 +4,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from compas import IPY
 import compas.geometry as cg
+from compas import IPY
 
 if IPY:
     import Rhino.Geometry as rg
@@ -16,7 +16,7 @@ def cgpoint_to_rgpoint(pt):  # type: (compas.geometry.Point) -> Rhino.Geometry.P
 
     Parameters
     ----------
-    :class:`compas.geometry.Point`
+    pt : :class:`compas.geometry.Point`
         Point object to convert.
 
     Returns
@@ -34,7 +34,7 @@ def cgvector_to_rgvector(
 
     Parameters
     ----------
-    :class:`compas.geometry.Vector`
+    v : :class:`compas.geometry.Vector`
         Vector object to convert.
 
     Returns
@@ -42,7 +42,6 @@ def cgvector_to_rgvector(
     :class:`Rhino.Geometry.Vector3d`
         Resulting Vector3d object.
     """
-    # TODO: Implement in compas
     return rg.Vector3d(*v.data)
 
 
@@ -51,7 +50,7 @@ def cgline_to_rgline(line):  # type: (compas.geometry.Line) -> Rhino.Geometry.Li
 
     Parameters
     ----------
-    :class:`compas.geometry.Line`
+    line : :class:`compas.geometry.Line`
         Point object to convert.
 
     Returns
@@ -69,7 +68,7 @@ def cgplane_to_rgplane(
 
     Parameters
     ----------
-    :class:`compas.geometry.Plane`
+    cgplane : :class:`compas.geometry.Plane`
         Plane to convert.
 
     Returns
@@ -87,7 +86,7 @@ def cgframe_to_rgplane(frame):  # type: (compas.geometry.Frame) -> Rhino.Geometr
 
     Parameters
     ----------
-    :class:`compas.geometry.Frame`
+    frame : :class:`compas.geometry.Frame`
         Frame to convert.
 
     Returns
@@ -102,11 +101,9 @@ def cgframe_to_rgplane(frame):  # type: (compas.geometry.Frame) -> Rhino.Geometr
 def matrix_to_rgtransform(M):
     """Create :class:`Rhino.Geometry.Transform` from a transformation matrix.
 
-    Use `compas_ghpython.xforms instead`.
-
     Parameters
     ----------
-    M : list of lists of floats
+    M : :class:`list` of :class:`list` of :class:`float`
         Transformation matrix.
 
     Returns

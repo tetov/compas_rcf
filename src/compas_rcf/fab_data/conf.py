@@ -1,3 +1,4 @@
+"""Configuration setup for fabrication runs."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -7,37 +8,22 @@ import logging
 import confuse
 import questionary
 
+from compas_rcf.abb import ZONE_DICT
+
 try:
     import pathlib
 except ImportError:
     import pathlib2 as pathlib
 
+__all__ = ["fab_conf", "interactive_conf_setup", "ZoneDataTemplate"]
 
-__all__ = ["FABRICATION_CONF"]
 
 log = logging.getLogger(__name__)
 
-# Describes the valid zone data definitions.
-ZONE_DICT = {
-    "FINE": -1,
-    "Z0": 0,
-    "Z1": 1,
-    "Z5": 5,
-    "Z10": 10,
-    "Z15": 15,
-    "Z20": 20,
-    "Z30": 30,
-    "Z40": 40,
-    "Z50": 50,
-    "Z60": 60,
-    "Z80": 80,
-    "Z100": 100,
-    "Z150": 150,
-    "Z200": 200,
-}
-
 
 class ZoneDataTemplate(confuse.Template):
+    """:class:`confuse.Template` for ABB zonedata."""
+
     def __init__(self, default=confuse.REQUIRED):
         super(ZoneDataTemplate, self).__init__(default=default)
 
@@ -55,7 +41,7 @@ class ZoneDataTemplate(confuse.Template):
 
 
 ROBOT_CONTROL_FOLDER_DRIVE = pathlib.Path(
-    "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"  # noqa E501
+    "G:\\Shared drives\\2020_MAS\\T2_P1\\02_Groups\\Phase2\\rcf_fabrication\\02_robot_control"  # noqa: E501
 )
 DEFAULT_CONF_DIR = ROBOT_CONTROL_FOLDER_DRIVE / "05_fabrication_confs"
 DEFAULT_JSON_DIR = ROBOT_CONTROL_FOLDER_DRIVE / "04_fabrication_data_jsons"
@@ -78,7 +64,7 @@ class Path(confuse.Filename):
         return pathlib.Path(super(Path, self).value(view, template))
 
 
-abb_rcf_conf_template = {
+ABB_RCF_CONF_TEMPLATE = {
     # Two following is set by command line arguments
     "debug": confuse.TypeTemplate(bool, default=False),
     "verbose": confuse.TypeTemplate(bool, default=False),
@@ -135,11 +121,12 @@ abb_rcf_conf_template = {
     },
 }
 
-FABRICATION_CONF = confuse.LazyConfig("FabricationRunner", modname=__name__)
+fab_conf = confuse.LazyConfig("FabricationRunner", modname=__name__)
 
 
 def interactive_conf_setup():
-    from compas_rcf.utils import ui
+    """Prompts user for fabrication settings."""
+    from compas_rcf.utils import open_file_dialog
 
     """Print and prompts user for changes to default configuration."""
     conf_sources = ["Default.", "Load."]
@@ -159,32 +146,31 @@ def interactive_conf_setup():
     """
 
     if select_conf_source == "Load.":
-        conf_file = ui.open_file_dialog(
-            initial_dir=FABRICATION_CONF["paths"]["conf_dir"].get(Path()),
+        conf_file = open_file_dialog(
+            title="Specify configuration file",
+            initial_dir=fab_conf["paths"]["conf_dir"].get(Path()),
             file_type=("YAML files", "*.yaml"),
         )
         # If file dialog is cancelled load default conf
         if conf_file == "":
             select_conf_source = "Default."
         else:
-            FABRICATION_CONF.set_file(conf_file)
+            fab_conf.set_file(conf_file)
             log.info("Configuration loaded from {}".format(conf_file))
 
     if select_conf_source == "Default.":
-        FABRICATION_CONF.read(defaults=True, user=False)
+        fab_conf.read(defaults=True, user=False)
         log.info("Default configuration loaded from package")
 
-    if not FABRICATION_CONF["target"].exists():
+    if not fab_conf["target"].exists():
         question = questionary.select(
             "Target?", choices=["Virtual robot", "Real robot"], default="Virtual robot"
         ).ask()
-        FABRICATION_CONF["target"] = "real" if question == "Real robot" else "virtual"
+        fab_conf["target"] = "real" if question == "Real robot" else "virtual"
 
-    log.info(
-        "Target is {} controller.".format(FABRICATION_CONF["target"].get().upper())
-    )
+    log.info("Target is {} controller.".format(fab_conf["target"].get().upper()))
 
     # Validate conf
-    FABRICATION_CONF.get(abb_rcf_conf_template)
+    fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
-    log.info("Configuration \n{}".format(FABRICATION_CONF.dump()))
+    log.debug("Configuration \n{}".format(fab_conf.dump()))
