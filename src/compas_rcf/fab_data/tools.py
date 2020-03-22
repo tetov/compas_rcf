@@ -1,17 +1,32 @@
-"""Format CSV reports from JSON files."""
+"""Tools for fab data."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import csv
 import datetime
-from pathlib import Path
+import json
 
-from compas_rcf.utils.json_ import load_bullets
+import compas.geometry as cg
+
+from compas_rcf.fab_data.clay_objs import ClayBullet
+
+try:
+    from pathlib import Path
+except ImportError:
+    try:
+        from pathlib2 import Path
+    except ImportError:
+        pass
+
+__all__ = ["csv_reports", "ClayBulletEncoder", "load_bullets"]
 
 
-def main(args):
+def csv_reports(args):
+    """Convert fabrication data json files to CSV files.
+
+    Use by running ``python -m compas_rcf.fab_data.csv_report``
+    """
     json_files = []
 
     for file_path in args.json_files:
@@ -100,17 +115,38 @@ def main(args):
                 csv_w.writerow(row)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Format CSV reports from JSON files")
-    parser.add_argument(
-        "json_files",
-        action="append",
-        help="JSON files or directory containing JSON files to convert",
-    )
-    parser.add_argument(
-        "--clobber", action="store_true", help="Overwrite existing files"
-    )
+class ClayBulletEncoder(json.JSONEncoder):
+    """JSON encoder for :class:`ClayBullet`.
 
-    args = parser.parse_args()
+    Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
+    """
 
-    main(args)
+    def default(self, obj):
+        if isinstance(obj, ClayBullet):
+            return obj.__dict__
+        if isinstance(obj, cg.Primitive):
+            return obj.to_data()
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
+
+def load_bullets(file_path):
+    """Load fabrication data from JSON file.
+
+    Parameters
+    ----------
+    file_path : :class:`os.PathLike` or :class:`str`
+        JSON file to load data from.
+
+    Returns
+    -------
+    :class:`list` of :class:`ClayBullet`
+    """
+    with open(str(file_path), mode="r") as fp:
+        json_string = json.load(fp)
+
+    clay_bullets = []
+    for dict_ in json_string:
+        clay_bullets.append(ClayBullet.from_data(dict_))
+
+    return clay_bullets

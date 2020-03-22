@@ -1,2 +1,1 @@
-compas\_rcf.utils package
-=========================
+.. automodule:: compas_rcf.utils

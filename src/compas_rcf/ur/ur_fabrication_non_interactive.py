@@ -153,8 +153,8 @@ def ur_clay_shooting(
     placing_index=0,
 ):
 
-    reload(comm)  # noqa E0602
-    reload(ur_standard)  # noqa E0602
+    reload(comm)  # noqa: F821
+    reload(ur_standard)  # noqa: F821
 
     # extract planes if input is ClayBullets
     if not is_elems_rgPlane(placing_planes):

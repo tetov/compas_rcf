@@ -7,15 +7,38 @@ compas_rcf
 
 python module for MAS DFAB project Rapid Clay Formations
 
+Fabrication data setup and configuration
+----------------------------------------
+
+.. toctree::
+   :maxdepth: 3
+
+   compas_rcf.fab_data
+
+Robot system specific code
+--------------------------
+
+.. toctree::
+   :maxdepth: 3
+
+   compas_rcf.abb
+   compas_rcf.ur
+
+Tools
+-----
+
+.. toctree::
+   :maxdepth: 3
+
+   compas_rcf.docker
+   compas_rcf.rhino
+   compas_rcf.utils
 """
 import os
 
 HERE = os.path.dirname(__file__)
 
 HOME = os.path.abspath(os.path.join(HERE, "../../"))
-DATA = os.path.abspath(os.path.join(HOME, "data"))
-DOCS = os.path.abspath(os.path.join(HOME, "docs"))
-TEMP = os.path.abspath(os.path.join(HOME, "temp"))
 
 # from https://smarie.github.io/python-getversion/#package-versioning-best-practices
 try:
@@ -38,5 +61,3 @@ __license__ = "MIT License"
 __email__ = "anton@tetov.se"
 
 __all__ = ["HOME", "DATA", "DOCS", "TEMP", "__version__"]
-
-from .rhino import install as install_rhino  # noqa: F401,F403

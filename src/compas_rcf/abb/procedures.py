@@ -1,10 +1,10 @@
+"""Procedures for pick and place operations on ABB robot arms."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import logging
 
-from compas_rrc import CustomInstruction
 from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 from compas_rrc import PrintText
@@ -18,9 +18,17 @@ from compas_rrc import StartWatch
 from compas_rrc import StopWatch
 from compas_rrc import WaitTime
 
-from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
-from compas_rcf.fabrication.conf import ZoneDataTemplate
-from compas_rcf.utils.util_funcs import get_offset_frame
+from compas_rcf.fab_data import ZoneDataTemplate
+from compas_rcf.fab_data import fab_conf
+from compas_rcf.utils import get_offset_frame
+
+__all__ = [
+    "pre_procedure",
+    "post_procedure",
+    "pick_bullet",
+    "place_bullet",
+    "grip_and_release",
+]
 
 log = logging.getLogger(__name__)
 
@@ -31,11 +39,21 @@ EXTERNAL_AXIS_DUMMY: list = []
 def pre_procedure(client):
     """Pre fabrication setup, speed, acceleration, tool, work object and initial pose.
 
+    Uses ``fab_conf`` set up using
+    :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
+
     Parameters
     ----------
     client : :class:`compas_rrc.AbbClient`
+        Client connected to controller procedure should be sent to.
     """
-    grip_and_release(client, fab_conf["tool"]["release_state"].get(int))
+    grip_and_release(
+        client,
+        fab_conf["tool"]["io_needles_pin"].get(),
+        fab_conf["tool"]["release_state"].get(),
+        wait_before=fab_conf["tool"]["wait_before_io"].get(),
+        wait_after=fab_conf["tool"]["wait_after_io"].get(),
+    )
 
     client.send(SetTool(fab_conf["tool"]["tool_name"].as_str()))
     log.debug("Tool {} set.".format(fab_conf["tool"]["tool_name"].get()))
@@ -77,11 +95,20 @@ def pre_procedure(client):
 def post_procedure(client):
     """Post fabrication procedure, end pose and closing and termination of client.
 
+    Uses ``fab_conf`` set up using
+    :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
+
     Parameters
     ----------
     client : :class:`compas_rrc.AbbClient`
     """
-    grip_and_release(client, fab_conf["tool"]["release_state"].get(int))
+    grip_and_release(
+        client,
+        fab_conf["tool"]["io_needles_pin"].get(),
+        fab_conf["tool"]["release_state"].get(),
+        wait_before=fab_conf["tool"]["wait_before_io"].get(),
+        wait_after=fab_conf["tool"]["wait_after_io"].get(),
+    )
 
     client.send(
         MoveToJoints(
@@ -102,17 +129,21 @@ def post_procedure(client):
 def pick_bullet(client, picking_frame):
     """Send movement and IO instructions to pick up a clay bullet.
 
+    Uses ``fab_conf`` set up using
+    :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
+
     Parameters
     ----------
     client : :class:`compas_rrc.AbbClient`
-    picking_frame : compas.geometry.Frame
+    picking_frame : :class:`compas.geometry.Frame`
         Target frame to pick up bullet
-    """
-    if fab_conf["target"].get() == "virtual":
-        # Custom instruction create a clay bullet in RobotStudio
-        # TODO: Create bullet at picking point
-        client.send(CustomInstruction("r_A057_RS_Create_Bullet"))
 
+    Returns
+    -------
+    :class:`compas_rrc.FutureResult`
+        Object which blocks while waiting for feedback from robot. Calling result on
+        this object will return the time the procedure took.
+    """
     # change work object before picking
     client.send(SetWorkObject(fab_conf["wobjs"]["picking_wobj_name"].get()))
 
@@ -140,7 +171,13 @@ def pick_bullet(client, picking_frame):
         )
     )
 
-    grip_and_release(client, fab_conf["tool"]["grip_state"].get(int))
+    grip_and_release(
+        client,
+        fab_conf["tool"]["io_needles_pin"].get(),
+        fab_conf["tool"]["grip_state"].get(),
+        wait_before=fab_conf["tool"]["wait_before_io"].get(),
+        wait_after=fab_conf["tool"]["wait_after_io"].get(),
+    )
 
     client.send(
         MoveToFrame(
@@ -158,11 +195,21 @@ def pick_bullet(client, picking_frame):
 def place_bullet(client, bullet):
     """Send movement and IO instructions to place a clay bullet.
 
+    Uses ``fab_conf`` set up using
+    :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
+
     Parameters
     ----------
     client : :class:`compas_rrc.AbbClient`
-    picking_frame : compas.geometry.Frame
-        Target frame to pick up bullet
+        Client connected to controller procedure should be sent to.
+    bullet : :class:`compas_rcf.fab_data.ClayBullet`
+        Bullet to place.
+
+    Returns
+    -------
+    :class:`compas_rrc.FutureResult`
+        Object which blocks while waiting for feedback from robot. Calling result on
+        this object will return the time the procedure took.
     """
     log.debug("Location frame: {}".format(bullet.location))
 
@@ -204,7 +251,13 @@ def place_bullet(client, bullet):
         )
     )
 
-    grip_and_release(client, fab_conf["tool"]["release_state"].get(int))
+    grip_and_release(
+        client,
+        fab_conf["tool"]["io_needles_pin"].get(),
+        fab_conf["tool"]["release_state"].get(),
+        wait_before=fab_conf["tool"]["wait_before_io"].get(),
+        wait_after=fab_conf["tool"]["wait_after_io"].get(),
+    )
 
     client.send(
         MoveToFrame(
@@ -237,33 +290,24 @@ def place_bullet(client, bullet):
     return client.send(ReadWatch())
 
 
-def grip_and_release(client, do_state):
+def grip_and_release(client, do_name, do_state, wait_before=1.0, wait_after=1.0):
     """Grip or release using RCF tool, either in simulation or on real robot.
-
-    If script target is real robot this will set the digital output on the robot,
-    and if the target is virtual robot it will use RobotStudio code to visualize
-    clay bullet gripping and releasing
 
     Parameters
     ----------
     client : :class:`compas_rrc.AbbClient`
-    do_state : int (0 or 1)
+        Client connected to controller procedure should be sent to.
+    io_name : :class:`str`
+        Name of DO as defined on controller.
+    do_state : :class:`bool` or :class:`int` (0 or 1)
         Value to set DO to
+    wait_before : :class:`float`, optional
+        Time to wait in position before setting DO state. Defaults to ``1.``
+    wait_after : :class:`float`, optional
+        Time to wait in position after setting DO state. Defaults to ``1.``
     """
-    if fab_conf["target"].get() == "real":
-        client.send(WaitTime(fab_conf["tool"]["wait_before_io"].as_number()))
-        client.send(SetDigital(fab_conf["tool"]["io_needles_pin"].as_str(), do_state))
-        client.send(WaitTime(fab_conf["tool"]["wait_after_io"].as_number()))
-    else:
-        # Custom instruction can grip a bullet in RobotStudio
-        # note the tool tip must touch the bullet
-        if do_state == fab_conf["tool"]["grip_state"].get(int):
-            client.send(CustomInstruction("r_A057_RS_ToolGrip"))
-        else:
-            client.send(CustomInstruction("r_A057_RS_ToolRelease"))
+    client.send(WaitTime(wait_before))
+    client.send(SetDigital(do_name, do_state))
+    client.send(WaitTime(wait_after))
 
-    log.debug(
-        "Signal sent to {}".format(
-            "grip" if do_state == fab_conf["tool"]["grip_state"].get(int) else "release"
-        )
-    )
+    log.debug("IO {} set to {}.".format(do_name, do_state))

@@ -1,6 +1,6 @@
 """Fabrication runner for Rapid Clay Fabrication project for fullscale structure.
 
-Run from command line using :code:`python -m compas_rcf.abb_rcf_runner`
+Run from command line using :code:`python -m compas_rcf.abb.run`
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import json
 import logging as log
-import pathlib
 import sys
 import time
 from datetime import datetime
@@ -22,20 +21,20 @@ from compas_rrc import AbbClient
 from compas_rrc import PrintText
 
 from compas_rcf import __version__
-from compas_rcf.abb.connectivity import DOCKER_COMPOSE_PATHS
-from compas_rcf.abb.connectivity import ROBOT_IPS
-from compas_rcf.abb.connectivity import connection_check
-from compas_rcf.abb.programs import pick_bullet
-from compas_rcf.abb.programs import place_bullet
-from compas_rcf.abb.programs import post_procedure
-from compas_rcf.abb.programs import pre_procedure
+from compas_rcf.abb import DOCKER_COMPOSE_PATHS
+from compas_rcf.abb import ROBOT_IPS
+from compas_rcf.abb import check_reconnect
+from compas_rcf.abb import pick_bullet
+from compas_rcf.abb import place_bullet
+from compas_rcf.abb import post_procedure
+from compas_rcf.abb import pre_procedure
 from compas_rcf.docker import compose_up
-from compas_rcf.fabrication.clay_obj import ClayBulletEncoder
-from compas_rcf.fabrication.conf import FABRICATION_CONF as fab_conf
-from compas_rcf.fabrication.conf import Path
-from compas_rcf.fabrication.conf import interactive_conf_setup
-from compas_rcf.utils import ui
-from compas_rcf.utils.json_ import load_bullets
+from compas_rcf.fab_data import ClayBulletEncoder
+from compas_rcf.fab_data import fab_conf
+from compas_rcf.fab_data import interactive_conf_setup
+from compas_rcf.fab_data import load_bullets
+from compas_rcf.fab_data.conf import Path
+from compas_rcf.utils import open_file_dialog
 
 if sys.version_info[0] < 2:
     raise Exception("This module requires Python 3")
@@ -195,7 +194,12 @@ def main():
     ############################################################################
     # Load fabrication data                                                    #
     ############################################################################
-    json_path = pathlib.Path(ui.open_file_dialog(fab_conf["paths"]["json_dir"].get()))
+    json_path = open_file_dialog(
+        title="Specify fabrication file",
+        initial_dir=fab_conf["paths"]["json_dir"].get(),
+        file_type=("JSON files", "*.json"),
+        return_pathobj=True,
+    )
     clay_bullets = load_bullets(json_path)
     log.info("Fabrication data read from: {}".format(json_path))
     log.info("{} items in clay_bullets.".format(len(clay_bullets)))
@@ -212,7 +216,12 @@ def main():
     abb.run()
     log.debug("Connected to ROS")
 
-    connection_check(abb)
+    check_reconnect(
+        abb,
+        target=fab_conf["target"].get(),
+        timeout_ping=fab_conf["docker"]["timeout_ping"].get(),
+        wait_after_up=fab_conf["docker"]["sleep_after_up"].get(),
+    )
 
     ############################################################################
     # setup in_progress JSON                                                   #

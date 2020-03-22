@@ -28,7 +28,7 @@ Documentation
    :titlesonly:
 
    getting_started
-   examples
+   usage
    known_issues
    contributing
    reference
