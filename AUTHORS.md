@@ -20,7 +20,7 @@ Project is part of the [MAS programme in Architecture and Digital Fabrication](h
 * Eliott Sounigo
 * Clemente Rémy [github](https://github.com/clementeremy/)
 * Chanon Techathuvanun [github](https://github.com/ctechathuvanun/)
-* Psing-Hsun Tsai [github](https://github.com/PingHsunTsai/)
+* Ping-Hsun Tsai [github](https://github.com/PingHsunTsai/)
 
 ## Tutors
 
