@@ -15,10 +15,6 @@ except ImportError:
         pass
 
 
-root = Tk()
-root.withdraw()
-
-
 def open_file_dialog(
     title="Select file",
     initial_dir="/",
@@ -45,6 +41,9 @@ def open_file_dialog(
     -------
     :class:`str` or :class:`pathlib.Path`
     """
+    root = Tk()
+    root.withdraw()
+
     filename = askopenfilename(
         initialdir=str(initial_dir),
         title=title,

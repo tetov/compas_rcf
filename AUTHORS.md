@@ -14,7 +14,7 @@ Project is part of the [MAS programme in Architecture and Digital Fabrication](h
 * László Mangliár [github](https://github.com/railgnam/)
 * Dinorah Martinez Schulte
 * Edurne Morales [github](https://github.com/edurnemorales/)
-* Maria Pia
+* Maria Pia Assaf [github](https://github.com/Piaassaf) [email](mailto:pia.assaf@gmail.com)
 * Emmanuelle Sallin [github](https://github.com/esallin/)
 * Indra Santosa [github](https://github.com/isantosa/)
 * Eliott Sounigo
