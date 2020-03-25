@@ -13,8 +13,8 @@ from compas.geometry import Frame
 from compas_rrc import FeedbackLevel
 from compas_rrc import Noop
 
-from compas_rcf import HERE
-from compas_rcf.docker import compose_up
+from compas_rcf import HOME
+from compas_rcf.docker import restart_container
 from compas_rcf.utils import ensure_frame
 
 if IPY:
@@ -23,6 +23,7 @@ if IPY:
 __all__ = [
     "ZONE_DICT",
     "DOCKER_COMPOSE_PATHS",
+    "DRIVER_CONTAINER_NAME",
     "ROBOT_IPS",
     "ping",
     "check_reconnect",
@@ -50,15 +51,17 @@ ZONE_DICT = {
     "Z200": 200,
 }
 
-_path_from_pkg = ["docker", "compose_files", "abb"]
-_compose_folder = join(HERE, *_path_from_pkg)
-_base_name = "driver-base-docker-compose.yml"
-_driver_name = "driver-docker-compose.yml"
+_compose_dir = join(HOME, "docker-compose")
+_compose_file_name = "docker-compose.yml"
+_driver_compose_dir = "abb-driver"
+_planner_compose_dir = "abb-planner"
 
 DOCKER_COMPOSE_PATHS = {
-    "base": join(_compose_folder, _base_name),
-    "driver": join(_compose_folder, _driver_name),
+    "driver": join(_compose_dir, _driver_compose_dir, _compose_file_name),
+    "planner": join(_compose_dir, _planner_compose_dir, _compose_file_name),
 }
+
+DRIVER_CONTAINER_NAME = "abb-driver"
 
 ROBOT_IPS = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
 
@@ -89,15 +92,15 @@ def ping(client, timeout=10):
             raise
 
 
-def check_reconnect(client, target="virtual", timeout_ping=5, wait_after_up=2):
+def check_reconnect(
+    client, driver_container_name="abb-driver", timeout_ping=5, wait_after_up=2,
+):
     """Check connection to ABB controller and restart abb-driver if necessary.
 
     Parameters
     ----------
     client : :class:`compas_rrc.AbbClient`
         Client connected to controller.
-    target : :class:`str`, optional
-        One of ``"virtual"`` or ``"real"``. Defaults to ``"virtual"``.
     timeout_ping : :class:`float`, optional
         Timeout for ping response.
     wait_after_up : :class:`float`, optional
@@ -108,8 +111,6 @@ def check_reconnect(client, target="virtual", timeout_ping=5, wait_after_up=2):
     :exc:`TimeoutError`
         If no reply is returned before timeout.
     """
-    env_vars = {"ROBOT_IP": ROBOT_IPS[target]}
-
     for i in range(3):
         try:
             log.debug("Pinging robot")
@@ -118,17 +119,10 @@ def check_reconnect(client, target="virtual", timeout_ping=5, wait_after_up=2):
             break
         except TimeoutError:
             log.info("No response from controller, restarting abb-driver service.")
-            compose_up(
-                DOCKER_COMPOSE_PATHS["driver"], force_recreate=True, env_vars=env_vars,
-            )
-            log.debug(
-                "Compose up for abb_driver with robot-ip={}".format(
-                    env_vars["ROBOT_IP"]
-                )
-            )
+            restart_container(driver_container_name)
             time.sleep(wait_after_up)
     else:
-        raise TimeoutError("Failed to connect to robot")
+        raise TimeoutError("Failed to connect to robot.")
 
 
 class RapidToolData(object):

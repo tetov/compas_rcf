@@ -22,6 +22,7 @@ from compas_rrc import PrintText
 
 from compas_rcf import __version__
 from compas_rcf.abb import DOCKER_COMPOSE_PATHS
+from compas_rcf.abb import DRIVER_CONTAINER_NAME
 from compas_rcf.abb import ROBOT_IPS
 from compas_rcf.abb import check_reconnect
 from compas_rcf.abb import pick_bullet
@@ -185,11 +186,9 @@ def main():
     ############################################################################
     # Docker setup                                                            #
     ############################################################################
-    compose_up(DOCKER_COMPOSE_PATHS["base"], check_output=True, remove_orphans=False)
-    log.debug("Compose up master and bridge")
     ip = {"ROBOT_IP": ROBOT_IPS[fab_conf["target"].as_str()]}
     compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
-    log.debug("Compose up abb_driver")
+    log.debug("Driver services are running.")
 
     ############################################################################
     # Load fabrication data                                                    #
@@ -218,7 +217,7 @@ def main():
 
     check_reconnect(
         abb,
-        target=fab_conf["target"].get(),
+        driver_container_name=DRIVER_CONTAINER_NAME,
         timeout_ping=fab_conf["docker"]["timeout_ping"].get(),
         wait_after_up=fab_conf["docker"]["sleep_after_up"].get(),
     )

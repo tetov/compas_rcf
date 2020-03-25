@@ -132,7 +132,8 @@ dmypy.json
 .vscode/*
 *.code-workspace
 
-docker/ursim/programs
+# Docker volumes
+docker-compose/**/volume/*
 
 # generated docs
 docs/__build/
