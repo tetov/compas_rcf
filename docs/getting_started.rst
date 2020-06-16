@@ -7,7 +7,7 @@ Installation
 
 .. note::
     All code related to fabrication with ABB industrial robots requires
-    `compas_rrc <https://bitbucket.com/eth-rfl/compas_rrc>`__ which is hosted in a private repository.
+    `compas_rrc <https://bitbucket.org/ethrfl/compas_rrc/>`__ which is hosted in a private repository.
 
 #.  (Optional) Create a virtual environment using your tool of choice
     (e.g. ``virtualenv``, ``conda``, etc).
@@ -43,7 +43,7 @@ Installation
 
     .. code:: bash
 
-       python -m compas_rcf.install_rhino
+       python -m compas_rcf.rhino.install
 
 Update
 ======

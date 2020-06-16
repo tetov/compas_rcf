@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+### Changed
+
+* Compose files simplified and moved to repo root.
+* `compas_rcf.docker.restart_container` added.
+
+### Removed
+
+## \[0.3.0\] \[2020-03-22\]
+
+### Added
+
+* ABB robot control example added to grasshopper examples.
+* ``compas_rcf.abb.run`` documented under Usage in docs.
+
+### Changed
+
+* Second level imports implemented. So ``compas_rcf.fab_data.clay_objs.ClayBullet`` can be imported as ``compas_rcf.fab_data.ClayBullet``.
+* Examples renamed to Usage in documentation.
+* ``compas_rcf.fabrication`` renamed to ``compas_rcf.fab_data``.
+* ``compas_rcf.fabrication.clay_obj`` renamed to ``compas_rcf.fab_data.clay_objs``.
+* ``compas_rcf.fab_data.clay_objs.ClayBulletEncoder`` now moved to ``compas_rcf.fab_data.tools``.
+* ``compas_rcf.utils.json_`` and ``compas_rcf.utils.csv_reports`` merged and moved to ``compas_rcf.fab_data.tools``. ``csv_reports`` can be run using ``compas_rcf.fab_data.csv_report``.
+* ``compas_rcf.fab_data.network`` merged with ``compas_rcf.fab_data.clay_objs``.
+* ``compas_rcf.abb_rcf_runner`` moved to ``compas_rcf.abb.run``.
+* ``compas_rcf.abb.programs`` renamed to ``compas_rcf.abb.procedure``.
+* Renamed ``compas_rcf.abb.connectivity.check_connection`` to ``compas_rcf.abb.connectivity.check_reconnect``
+* Merged ``compas_rcf.abb.helpers`` and ``compas_rcf.abb.connectivity`` to ``helpers``. So ``DOCKER_COMPOSE_PATHS``, ``ROBOT_IPS``, ``ping`` and ``check_reconnect`` can now be found in ``helpers``.
+* ``compas_rcf``
+* ``compas_rcf.fabrication.conf.ZONE_DICT`` moved to ``compas_rcf.abb.helpers.ZONE_DICT``
+* A lot of changes to package structure. Might be documented here more later.
+
+### Removed
+
+* ``sphinx_autodoc_typehints`` plugin since not all of the code has type hints, but there's annotations in docstrings for most.
+* Unused functions in ``compas_rcf.utils.util_funcs``.
+
 ## \[0.2.4\] \[2020-03-13\]
 
 ### Added

@@ -9,16 +9,16 @@ import Rhino.Geometry as rg
 
 
 def rgpoint_to_cgpoint(pt):  # type: (Rhino.Geometry.Point3d) -> compas.geometry.Point
-    """Convert Rhino.Geometry.Point3d to compas.geometry.Point.
+    """Convert :class:`Rhino.Geometry.Point3d` to :class:`compas.geometry.Point`.
 
     Parameters
     ----------
-    Rhino.Geometry.Point3d
+    pt : :class:`Rhino.Geometry.Point3d`
         Plane object to convert
 
     Returns
     -------
-    compas.geometry.Point
+    :class:`compas.geometry.Point`
         Resulting point object
     """
     return cg.Point(pt.X, pt.Y, pt.Z)
@@ -27,54 +27,54 @@ def rgpoint_to_cgpoint(pt):  # type: (Rhino.Geometry.Point3d) -> compas.geometry
 def rgvector_to_cgvector(
     v,
 ):  # type: (Rhino.Geometry.Vector3d) -> compas.geometry.Vector
-    """Convert Rhino.Geometry.Vector3d to compas.geometry.Vector.
+    """Convert :class:`Rhino.Geometry.Vector3d` to :class:`compas.geometry.Vector`.
 
     Parameters
     ----------
-    Rhino.Geometry.Vector3d
+    v : :class:`Rhino.Geometry.Vector3d`
         Vector object to convert
 
     Returns
     -------
-    compas.geometry.Vector
+    :class:`compas.geometry.Vector`
         Resulting vector object
     """
     return cg.Vector(v.X, v.Y, v.Z)
 
 
 def rgline_to_cgline(line):  # type: (Rhino.Geometry.Line) -> compas.geometry.Line
-    """Convert Rhino.Geometry.Line to compas.geometry.Line.
+    """Convert :class:`Rhino.Geometry.Line` to :class:`compas.geometry.Line`.
 
     Parameters
     ----------
-    Rhino.Geometry.Line
+    line : :class:`Rhino.Geometry.Line`
         Line object to convert
 
     Returns
     -------
-    compas.geometry.Line
+    :class:`compas.geometry.Line`
         Resulting line object
     """
     return cg.Line(rgpoint_to_cgpoint(line.From), rgpoint_to_cgpoint(line.To))
 
 
 def rgplane_to_cgplane(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometry.Plane
-    """Convert Rhino.Geometry.Plane to compas.geometry.Plane.
+    """Convert :class:`Rhino.Geometry.Plane` to :class:`compas.geometry.Plane`.
 
     Parameters
     ----------
-    Rhino.Geometry.Plane
+    plane : :class:`Rhino.Geometry.Plane`
         Plane object to convert
 
     Returns
     -------
-    compas.geometry.Plane
+    :class:`compas.geometry.Plane`
         Resulting plane object
 
     Notes
     -----
-    Unlike a Rhino.Geometry plane the compas.geometry plane does not store xaxis
-    and yaxis vector. See :meth:`compas.geometry.Frame.from_plane` docstring.
+    Unlike a :class:`Rhino.Geometry.Plane` the :class:`compas.geometry.Plane`
+    does not store X-axis and Y-axis vectors. See :meth:`compas.geometry.Frame.from_plane` docstring.
     """
     return cg.Plane(
         rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.Normal)
@@ -82,16 +82,16 @@ def rgplane_to_cgplane(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometr
 
 
 def rgplane_to_cgframe(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometry.Frame
-    """Convert Rhino.Geometry.Plane to compas.geometry.Frame.
+    """Convert :class:`Rhino.Geometry.Plane` to :class:`compas.geometry.Frame`.
 
     Parameters
     ----------
-    Rhino.Geometry.Plane
+    plane : :class:`Rhino.Geometry.Plane`
         Plane object to convert
 
     Returns
     -------
-    compas.geometry.Frame
+    :class:`compas.geometry.Frame`
         Resulting frame object
     """
     pt = rgpoint_to_cgpoint(plane.Origin)
@@ -103,15 +103,13 @@ def rgplane_to_cgframe(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometr
 def rgtransform_to_matrix(rgM):
     """Convert :class:`Rhino.Geometry.Transform` to transformation matrix.
 
-    Use `compas_ghpython.xforms instead`.
-
     Parameters
     ----------
     rgM : :class:`Rhino.Geometry.Transform`
 
     Returns
     -------
-    list of lists of floats
+    :class:`list` of :class:`list` of :class:`float`.
     """
     M = [[rgM.Item[i, j] for j in range(4)] for i in range(4)]
     return M
