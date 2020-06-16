@@ -66,9 +66,8 @@ Transformations
    matrix_to_rgtransform
    rgtransform_to_matrix
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from compas import IPY
 
-from .compas_to_rhino import *  # noqa: F401,F403
-from .rhino_to_compas import *  # noqa: F401,F403
+if IPY:  # checking for IPY to allow module install to work outside Rhino
+    from .compas_to_rhino import *  # noqa: F401,F403
+    from .rhino_to_compas import *  # noqa: F401,F403

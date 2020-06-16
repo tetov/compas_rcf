@@ -126,7 +126,7 @@ fab_conf = confuse.LazyConfig("FabricationRunner", modname=__name__)
 
 def interactive_conf_setup():
     """Prompts user for fabrication settings."""
-    from compas_rcf.utils import open_file_dialog
+    from compas_rcf.ui import open_file_dialog
 
     """Print and prompts user for changes to default configuration."""
     conf_sources = ["Default.", "Load."]

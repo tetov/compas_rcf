@@ -13,9 +13,9 @@ from compas.geometry import Frame
 from compas_rrc import FeedbackLevel
 from compas_rrc import Noop
 
+from compas_rcf.utils import ensure_frame
 from compas_rcf import HOME
 from compas_rcf.docker import restart_container
-from compas_rcf.utils import ensure_frame
 
 if IPY:
     from compas_rcf.rhino import cgframe_to_rgplane

@@ -22,7 +22,6 @@ Robot system specific code
    :maxdepth: 3
 
    compas_rcf.abb
-   compas_rcf.ur
 
 Tools
 -----
@@ -33,12 +32,13 @@ Tools
    compas_rcf.docker
    compas_rcf.rhino
    compas_rcf.utils
+   compas_rcf.ui
 """
 import os
 
 HERE = os.path.dirname(__file__)
 
-HOME = os.path.abspath(os.path.join(HERE, "../../"))
+HOME = os.path.abspath(os.path.join(HERE, "../.."))
 
 # from https://smarie.github.io/python-getversion/#package-versioning-best-practices
 try:
@@ -60,4 +60,4 @@ __copyright__ = "MAS DFAB 1920 students and tutors"
 __license__ = "MIT License"
 __email__ = "anton@tetov.se"
 
-__all__ = ["HOME", "DATA", "DOCS", "TEMP", "__version__"]
+__all__ = ["HOME", "HERE", "__version__"]
