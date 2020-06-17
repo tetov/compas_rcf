@@ -59,5 +59,3 @@ __author__ = "Anton T Johansson"
 __copyright__ = "MAS DFAB 1920 students and tutors"
 __license__ = "MIT License"
 __email__ = "anton@tetov.se"
-
-__all__ = ["HOME", "HERE", "__version__"]

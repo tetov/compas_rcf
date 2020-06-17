@@ -9,20 +9,20 @@ Grasshopper examples
 ClayBullet object creator and JSON read, write and edit
 =======================================================
 
-.. figure:: ./create_edit_fab_data_preview.png
+.. figure:: ./../../grasshopper/create_edit_fab_data_preview.png
    :figclass: figure
    :class: figure-img img-fluid
 
-   :download:`create_edit_fab_data.gh <./create_edit_fab_data.gh>`.
+   :download:`create_edit_fab_data.gh <./../../grasshopper/create_edit_fab_data.gh>`.
 
 Create Rapid tooldata from Rhino Geometry
 =========================================
 
-.. figure:: ./create_rapid_tooldata_preview.png
+.. figure:: ./../../grasshopper/create_rapid_tooldata_preview.png
    :figclass: figure
    :class: figure-img img-fluid
 
-   :download:`create_rapid_tooldata.gh <./create_rapid_tooldata.gh>`.
+   :download:`create_rapid_tooldata.gh <./../../grasshopper/create_rapid_tooldata.gh>`.
 
 Send commands to ABB controller
 ===============================
@@ -30,8 +30,8 @@ Send commands to ABB controller
 .. note::
    Requires Docker Desktop and ``abb-driver`` docker image from ``compas_rrc``.
 
-.. figure:: ./abb_robot_control_preview.png
+.. figure:: ./../../grasshopper/abb_robot_control_preview.png
    :figclass: figure
    :class: figure-img img-fluid
 
-   :download:`abb_robot_control.gh <./create_edit_fab_data.gh>`.
+   :download:`abb_robot_control.gh <./../../grasshopper/abb_robot_control.gh>`.
