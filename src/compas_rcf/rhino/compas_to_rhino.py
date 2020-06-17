@@ -1,14 +1,16 @@
 """Most of these are in compas >=0.15 but compas_fab is not there yet."""
-# flake8: noqa: F821
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import compas
 import compas.geometry as cg
-from compas import IPY
 
-if IPY:
+try:
+    import Rhino
     import Rhino.Geometry as rg
+except ImportError:
+    compas.raise_if_ironpython()
 
 
 def cgpoint_to_rgpoint(pt):  # type: (compas.geometry.Point) -> Rhino.Geometry.Point3d

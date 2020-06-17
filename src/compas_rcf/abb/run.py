@@ -33,7 +33,7 @@ from compas_rcf.fab_data import interactive_conf_setup
 from compas_rcf.fab_data import load_bullets
 from compas_rcf.fab_data.conf import Path
 from compas_rcf.fab_data.pick_setup import PickSetup
-from compas_rcf.utils import open_file_dialog
+from compas_rcf.ui import open_file_dialog
 
 if sys.version_info[0] < 2:
     raise Exception("This module requires Python 3")

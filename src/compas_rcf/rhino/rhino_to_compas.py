@@ -1,14 +1,20 @@
 """Most of these are in compas >=0.15 but compas_fab is not there yet."""
-# flake8: noqa: F821
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import compas
 import compas.geometry as cg
-import Rhino.Geometry as rg
+
+try:
+    import Rhino
+    import Rhino.Geometry as rg
+except ImportError:
+    compas.raise_if_ironpython()
 
 
-def rgpoint_to_cgpoint(pt):  # type: (Rhino.Geometry.Point3d) -> compas.geometry.Point
+def rgpoint_to_cgpoint(pt):
+    # type: (Rhino.Geometry.Point3d) -> compas.geometry.Point
     """Convert :class:`Rhino.Geometry.Point3d` to :class:`compas.geometry.Point`.
 
     Parameters
@@ -24,9 +30,8 @@ def rgpoint_to_cgpoint(pt):  # type: (Rhino.Geometry.Point3d) -> compas.geometry
     return cg.Point(pt.X, pt.Y, pt.Z)
 
 
-def rgvector_to_cgvector(
-    v,
-):  # type: (Rhino.Geometry.Vector3d) -> compas.geometry.Vector
+def rgvector_to_cgvector(v):
+    # type: (Rhino.Geometry.Vector3d) -> compas.geometry.Vector
     """Convert :class:`Rhino.Geometry.Vector3d` to :class:`compas.geometry.Vector`.
 
     Parameters
@@ -42,7 +47,8 @@ def rgvector_to_cgvector(
     return cg.Vector(v.X, v.Y, v.Z)
 
 
-def rgline_to_cgline(line):  # type: (Rhino.Geometry.Line) -> compas.geometry.Line
+def rgline_to_cgline(line):
+    # type: (Rhino.Geometry.Line) -> compas.geometry.Line
     """Convert :class:`Rhino.Geometry.Line` to :class:`compas.geometry.Line`.
 
     Parameters
@@ -58,7 +64,8 @@ def rgline_to_cgline(line):  # type: (Rhino.Geometry.Line) -> compas.geometry.Li
     return cg.Line(rgpoint_to_cgpoint(line.From), rgpoint_to_cgpoint(line.To))
 
 
-def rgplane_to_cgplane(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometry.Plane
+def rgplane_to_cgplane(plane):
+    # type: (Rhino.Geometry.Plane) -> compas.geometry.Plane
     """Convert :class:`Rhino.Geometry.Plane` to :class:`compas.geometry.Plane`.
 
     Parameters
@@ -74,14 +81,16 @@ def rgplane_to_cgplane(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometr
     Notes
     -----
     Unlike a :class:`Rhino.Geometry.Plane` the :class:`compas.geometry.Plane`
-    does not store X-axis and Y-axis vectors. See :meth:`compas.geometry.Frame.from_plane` docstring.
+    does not store X-axis and Y-axis vectors. See
+    :meth:`compas.geometry.Frame.from_plane` docstring.
     """
     return cg.Plane(
         rgpoint_to_cgpoint(plane.Origin), rgvector_to_cgvector(plane.Normal)
     )
 
 
-def rgplane_to_cgframe(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometry.Frame
+def rgplane_to_cgframe(plane):
+    # type: (Rhino.Geometry.Plane) -> compas.geometry.Frame
     """Convert :class:`Rhino.Geometry.Plane` to :class:`compas.geometry.Frame`.
 
     Parameters
@@ -101,6 +110,7 @@ def rgplane_to_cgframe(plane):  # type: (Rhino.Geometry.Plane) -> compas.geometr
 
 
 def rgtransform_to_matrix(rgM):
+    # type: (Rhino.Geometry.Transform) -> list
     """Convert :class:`Rhino.Geometry.Transform` to transformation matrix.
 
     Parameters

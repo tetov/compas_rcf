@@ -1,4 +1,20 @@
-"""Docker compose commands to be used from python scripts."""
+"""
+******************************************************************************
+compas_rcf.docker
+******************************************************************************
+
+.. currentmodule:: compas_rcf.docker
+
+Docker compose commands to be used from python scripts.
+
+.. autosummary::
+    :toctree: generated/
+    :nosignatures:
+
+    compose_up
+    compose_down
+    restart_container
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -25,10 +41,17 @@ def _setup_env_vars(env_vars):
 
 def _run(cmd, check_output=False, print_output=True, **kwargs):
     if sys.version_info.major < 3:
-        if check_output:
-            subprocess.check_call(cmd, universal_newlines=print_output, **kwargs)
-        else:
-            subprocess.call(cmd, universal_newlines=print_output, **kwargs)
+        subprocess.call(cmd, universal_newlines=print_output, **kwargs)
+
+        # TODO: Get check_call to work
+        # if check_output:
+        #     try:
+        #         subprocess.check_call(cmd, universal_newlines=print_output, **kwargs)
+        #     except subprocess.CalledProcessError as e:
+        #         print("Error message: {}".format(e.cmd))
+        #         raise
+        # else:
+        #     subprocess.call(cmd, universal_newlines=print_output, **kwargs)
     else:
         subprocess.run(cmd, check=check_output, text=print_output, **kwargs)
 
@@ -69,7 +92,8 @@ def compose_up(
     run_kwargs.update({"check_output": check_output})
     run_kwargs.update({"print_output": print_output})
 
-    cmd = ["docker-compose", "--file", str(path), "up", "--detach"]
+    cmd_str = 'docker-compose --file "{}" up --detach'.format(path)
+    cmd = shlex.split(cmd_str)
 
     log.debug("Env vars: {}".format(env_vars))
 
@@ -104,7 +128,7 @@ def compose_down(path, check_output=True, print_output=True):
     check_output : :class:`bool`, optional
         Raise if ``docker-compose`` fails. Defaults to ``True``.
     """
-    cmd_str = "docker-compose --file {} down".format(path)
+    cmd_str = 'docker-compose --file "{}" down'.format(path)
     cmd = shlex.split(cmd_str)
 
     log.debug("Running compose down for {}".format(path))
@@ -125,8 +149,8 @@ def restart_container(container_name, check_output=True, print_output=True):
     check_output : :class:`bool`, optional
         Raise if ``docker-compose`` fails. Defaults to ``True``.
     """
-    cmd_str = "docker-compose --file {} down".format(container_name)
-    cmd_str = "docker restart {}".format(container_name)
+    cmd_str = 'docker-compose --file "{}" down'.format(container_name)
+    cmd_str = 'docker restart "{}"'.format(container_name)
     cmd = shlex.split(cmd_str)
 
     log.debug("Restarting {}".format(container_name))

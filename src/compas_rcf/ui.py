@@ -1,4 +1,9 @@
-"""User interface elements."""
+"""
+******************************************************************************
+compas_rcf.ui
+******************************************************************************
+.. currentmodule:: compas_rcf.ui
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

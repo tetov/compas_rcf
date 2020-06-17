@@ -1,15 +1,31 @@
-"""Utility functions."""
+"""
+********************************************************************************
+compas_rcf.utils
+********************************************************************************
+
+.. currentmodule:: compas_rcf.utils
+
+.. autosummary::
+    :toctree: generated/
+
+    ensure_frame
+    get_offset_frame
+    wrap_list
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import compas.geometry as cg
-from compas import IPY
+from compas import raise_if_ironpython
 
-if IPY:
+from compas_rcf.rhino import rgplane_to_cgframe
+from compas_rcf.rhino import rgpoint_to_cgpoint
+
+try:
     import Rhino.Geometry as rg
-    from compas_rcf.rhino import rgplane_to_cgframe
-    from compas_rcf.rhino import rgpoint_to_cgpoint
+except ImportError:
+    raise_if_ironpython()
 
 
 def wrap_list(list_, idx):
@@ -62,12 +78,14 @@ def ensure_frame(frame_like):
     if isinstance(frame_like, cg.Point):
         return cg.Frame(frame_like, [1, 0, 0], [0, 1, 0])
 
-    if IPY:
+    try:  # try to compare to Rhino objects
         if isinstance(frame_like, rg.Plane):
             return rgplane_to_cgframe(frame_like)
         if isinstance(frame_like, rg.Point3d):
             pt = rgpoint_to_cgpoint(frame_like)
             return cg.Frame(pt, [1, 0, 0], [0, 1, 0])
+    except NameError:
+        pass
 
     raise TypeError(
         "Can't convert {} to compas.geometry.Frame".format(type(frame_like))
