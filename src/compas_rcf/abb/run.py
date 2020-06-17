@@ -32,7 +32,7 @@ from compas_rcf.fab_data import fab_conf
 from compas_rcf.fab_data import interactive_conf_setup
 from compas_rcf.fab_data import load_bullets
 from compas_rcf.fab_data.conf import Path
-from compas_rcf.fab_data.pick_setup import PickSetup
+from compas_rcf.fab_data.pick_station import PickStation
 from compas_rcf.ui import open_file_dialog
 
 if sys.version_info[0] < 2:
@@ -162,17 +162,14 @@ def main():
     log.info("Fabrication data read from: {}".format(json_path))
     log.info("{} items in clay_bullets.".format(len(clay_bullets)))
 
-    if fab_conf["pick"]["setup"].get() == "rcs":
-        pick_setup_json = open_file_dialog(
-            title="Select picking setup json",
-            initial_dir=fab_conf["paths"]["pick_conf_dir"].get(),
-            return_pathobj=True,
-        )
-        with pick_setup_json.open(mode="r") as fp:
-            pick_setup_dict = json.load(fp)
-        pick_setup = PickSetup.from_data(pick_setup_dict)
-    else:
-        pick_setup = PickSetup.from_fab_conf()
+    pick_station_json = open_file_dialog(
+        title="Select picking setup json",
+        initial_dir=fab_conf["paths"]["pick_conf_dir"].get(),
+        return_pathobj=True,
+    )
+    with pick_station_json.open(mode="r") as fp:
+        pick_station_data = json.load(fp)
+    pick_station = PickStation.from_data(pick_station_data)
 
     ############################################################################
     # Create Ros Client                                                        #
@@ -232,18 +229,7 @@ def main():
         abb.send(PrintText(current_bullet_desc))
         log.info(current_bullet_desc)
 
-        if hasattr(bullet, "plate_index"):
-            plate_id = bullet.plate_index
-        else:
-            plate_id = 0
-
-        pick_frame = pick_setup.get_next_frames(
-            bullet.height, plate_id=plate_id, n=fab_conf["tool"]["capacity"].get()
-        )
-
-        # TODO: Temp fix
-        if len(pick_frame):
-            pick_frame = pick_frame[0]
+        pick_frame = pick_station.get_next_frame(bullet)
 
         # Pick bullet
         pick_future = pick_bullet(abb, pick_frame)
@@ -314,12 +300,6 @@ if __name__ == "__main__":
         "--target",
         choices=["real", "virtual"],
         help="Set fabrication runner target.",
-    )
-    parser.add_argument(
-        "-p",
-        "--pick-setup",
-        help="Set method of defining picking frames.",
-        dest="pick.setup",
     )
     parser.add_argument(
         "-q",

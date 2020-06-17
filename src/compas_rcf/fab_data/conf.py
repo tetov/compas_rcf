@@ -175,13 +175,6 @@ def interactive_conf_setup():
 
     log.info("Target is {} controller.".format(fab_conf["target"].get().upper()))
 
-    if not fab_conf["pick"]["setup"].exists():
-        question = questionary.select(
-            "Pick using a work object and parameters in fabrication configuration or use a separate configuration file defining frames in RCS?",  # noqa: E501
-            choices=["WOBJ", "RCS"],
-        ).ask()
-        fab_conf["pick"]["setup"] = question.lower()
-
     # Validate conf
     fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
