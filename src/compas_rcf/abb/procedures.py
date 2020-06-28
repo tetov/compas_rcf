@@ -27,7 +27,7 @@ __all__ = [
     "post_procedure",
     "pick_bullet",
     "place_bullet",
-    "grip_and_release",
+    "grip_and_release"
 ]
 
 log = logging.getLogger(__name__)

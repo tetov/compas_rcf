@@ -13,11 +13,9 @@ line_length = 120
 known_first_party = "compas_rcf"
 known_third_party = "compas,compas_fab,compas_rrc,Rhino"
 default_section = "THIRDPARTY"
-forced_separate = "test_compas"
 add_imports = "__future__.absolute_import,__future__.division,__future__.print_function"
-force_adds = true
 skip = "_version.py"
 
 [tool.black]
 include = '\.pyi?$'
-target-version = ['py27', 'py36', 'py37', 'py38']
+target-version = ['py27']

@@ -37,9 +37,14 @@ Utilities
    ping
    check_reconnect
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from compas import IPY
 
 from .helpers import *  # noqa: F401,F403
+from .rapid_tool_data import *  # noqa: F401,F403
 
 if not IPY:
     from .procedures import *  # noqa: F401,F403

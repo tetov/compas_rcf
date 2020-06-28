@@ -133,7 +133,7 @@ dmypy.json
 *.code-workspace
 
 # Docker volumes
-docker-compose/**/volume/*
+src/compas_rcf/_compose_files/**/volume/*
 
 # generated docs
 docs/__build/
