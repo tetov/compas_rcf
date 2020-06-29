@@ -25,7 +25,7 @@ requirements = [
     "compas_fab ~= 0.10.2",
     "compas_rrc ~= 0.2.2",
     "questionary ~= 1.5.1",
-    "confuse ~= 1.0.0",
+    "confuse ~= 1.3.0",
 ]
 
 extras_require = {

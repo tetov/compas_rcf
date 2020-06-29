@@ -8,10 +8,12 @@ from __future__ import print_function
 
 import json
 import logging as log
+import pathlib
 import sys
 import time
 from datetime import datetime
 from operator import attrgetter
+from pathlib import Path
 
 from compas_fab.backends.ros import RosClient
 from compas_rrc import AbbClient
@@ -28,12 +30,10 @@ from compas_rcf.abb import post_procedure
 from compas_rcf.abb import pre_procedure
 from compas_rcf.docker import compose_up
 from compas_rcf.fab_data import ClayBulletEncoder
+from compas_rcf.fab_data import PickStation
 from compas_rcf.fab_data import fab_conf
-from compas_rcf.fab_data import interactive_conf_setup
 from compas_rcf.fab_data import load_bullets
-from compas_rcf.fab_data.conf import Path
-from compas_rcf.fab_data.pick_station import PickStation
-from compas_rcf.ui import open_file_dialog
+from compas_rcf.fab_data.conf import ABB_RCF_CONF_TEMPLATE
 
 if sys.version_info[0] < 2:
     raise Exception("This module requires Python 3")
@@ -41,20 +41,20 @@ else:
     import questionary
 
 
-def logging_setup():
+def logging_setup(args, log_dir):
     """Configure logging for module and imported modules."""
     timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M_rcf_abb.log")
-    log_file = fab_conf["paths"]["log_dir"].get(Path()) / timestamp_file
+    log_file = Path(log_dir) / timestamp_file
 
     handlers = []
 
-    if not fab_conf["skip_logfile"].get():
+    if not args.skip_logfile:
         handlers.append(log.FileHandler(log_file, mode="a"))
-    if fab_conf["quiet"].get() is not True:
+    if not args.quiet:
         handlers.append(log.StreamHandler(sys.stdout))
 
     log.basicConfig(
-        level=log.DEBUG if fab_conf["debug"].get() else log.INFO,
+        level=log.DEBUG if args.debug else log.INFO,
         format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
         handlers=handlers,
     )
@@ -139,9 +139,6 @@ def setup_fab_data(clay_bullets):
 ################################################################################
 def main():
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
-    # CONF setup
-    interactive_conf_setup()
-
     ############################################################################
     # Docker setup                                                            #
     ############################################################################
@@ -152,21 +149,13 @@ def main():
     ############################################################################
     # Load fabrication data                                                    #
     ############################################################################
-    json_path = open_file_dialog(
-        title="Specify fabrication file",
-        initial_dir=fab_conf["paths"]["json_dir"].get(),
-        file_type=("JSON files", "*.json"),
-        return_pathobj=True,
-    )
-    clay_bullets = load_bullets(json_path)
-    log.info("Fabrication data read from: {}".format(json_path))
+    fab_json_path = fab_conf["paths"]["fab_data_path"].as_path()
+    clay_bullets = load_bullets(fab_json_path)
+
+    log.info("Fabrication data read from: {}".format(fab_json_path))
     log.info("{} items in clay_bullets.".format(len(clay_bullets)))
 
-    pick_station_json = open_file_dialog(
-        title="Select picking setup json",
-        initial_dir=fab_conf["paths"]["pick_conf_dir"].get(),
-        return_pathobj=True,
-    )
+    pick_station_json = fab_conf["paths"]["pick_conf_path"].as_path()
     with pick_station_json.open(mode="r") as fp:
         pick_station_data = json.load(fp)
     pick_station = PickStation.from_data(pick_station_data)
@@ -196,11 +185,11 @@ def main():
     if not fab_conf["skip_progress_file"]:
         json_progress_identifier = "IN_PROGRESS-"
 
-        if json_path.name.startswith(json_progress_identifier):
-            in_progress_json = json_path
+        if fab_json_path.name.startswith(json_progress_identifier):
+            in_progress_json = fab_json_path
         else:
-            in_progress_json = json_path.with_name(
-                json_progress_identifier + json_path.name
+            in_progress_json = fab_json_path.with_name(
+                json_progress_identifier + fab_json_path.name
             )
 
     ############################################################################
@@ -267,10 +256,8 @@ def main():
         len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0
         and not fab_conf["skip_progress_file"].get()
     ):
-        done_file_name = json_path.name.replace(json_progress_identifier, "")
-        done_json = (
-            fab_conf["paths"]["json_dir"].get(Path()) / "00_done" / done_file_name
-        )
+        done_file_name = fab_json_path.name.replace(json_progress_identifier, "")
+        done_json = fab_conf["paths"]["json_dir"].as_path() / "00_done" / done_file_name
 
         in_progress_json.rename(done_json)
 
@@ -296,9 +283,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "run_data_file", type=pathlib.Path, help="File containing fabrication setup.",
+    )
+    parser.add_argument(
         "-t",
         "--target",
         choices=["real", "virtual"],
+        default="virtual",
         help="Set fabrication runner target.",
     )
     parser.add_argument(
@@ -320,12 +311,37 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    print(args)
 
+    # Load dictionary from file specified on command line
+    with args.run_data_file.open(mode="r") as fp:
+        run_data = json.load(fp)
+
+    logging_setup(args, run_data["log_dir"])
+
+    # Read config-default.yml for default values
+    fab_conf.read(user=False, defaults=True)
+
+    # Import options from argparse
     fab_conf.set_args(args, dots=True)
 
-    logging_setup()
+    # Read conf file specified in run_data
+    log.info("Configuration loaded from {}".format(run_data["conf_path"]))
+    fab_conf.set_file(run_data["conf_path"])
+
+    # Add paths from run_data to fab_conf
+    fab_conf["paths"]["fab_data_path"] = run_data["fab_data_path"]
+    fab_conf["paths"]["pick_conf_path"] = run_data["pick_conf_path"]
+
+    log_dir = run_data.get("log_dir")
+    if log_dir is not None:
+        fab_conf["paths"]["log_dir"] = log_dir
+
+    # Validate conf
+    fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
     log.info("compas_rcf version: {}".format(__version__))
+    log.info("Target is {} controller.".format(fab_conf["target"].get().upper()))
     log.debug("argparse input: {}".format(args))
     log.debug("config after set_args: {}".format(fab_conf))
 
