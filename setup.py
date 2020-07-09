@@ -23,7 +23,7 @@ long_description = _read("README.md")
 
 requirements = [
     "compas_fab ~= 0.10.2",
-    "compas_rrc ~= 0.2.2",
+    "compas_rrc >= 0.2.2, < 1.0.0",
     "questionary ~= 1.5.1",
     "confuse ~= 1.0.0",
 ]

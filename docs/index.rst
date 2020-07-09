@@ -27,7 +27,7 @@ Documentation
    :maxdepth: 3
    :titlesonly:
 
-   getting_started
+   installation
    usage
    known_issues
    contributing

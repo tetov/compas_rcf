@@ -1,9 +1,9 @@
 *****************************************************************************
-Getting started
+Installation
 *****************************************************************************
 
-Installation
-============
+Install
+=======
 
 .. note::
     All code related to fabrication with ABB industrial robots requires
@@ -33,7 +33,7 @@ Installation
     .. code:: bash
 
        # install compas_rrc separately
-       pip install git+https://bitbucket.org/ethrfl/compas_rrc#egg=compas_rrc-v0.2.2
+       pip install git+https://bitbucket.org/ethrfl/compas_rrc@v0.2.3-pre
        pip install compas_rcf
        # or compas_rcf=={version} for specific version
 

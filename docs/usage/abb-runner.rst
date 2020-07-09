@@ -3,7 +3,7 @@ ABB fabrication runner
 *******************************************************************************
 
 .. note::
-   Requires ``compas_rrc``. Follow the installation steps in :doc:`../getting_started`.
+   Requires ``compas_rrc``. Follow the installation steps in :doc:`../installation`.
 
 Requirements
 ============

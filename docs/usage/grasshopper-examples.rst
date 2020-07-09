@@ -4,7 +4,7 @@ Grasshopper examples
 
 .. note::
    Requires ``compas_rcf`` installed and available from inside Rhino. Follow the
-   installation steps in the :doc:`../getting_started`.
+   installation steps in :doc:`../installation`.
 
 ClayBullet object creator and JSON read, write and edit
 =======================================================
