@@ -40,6 +40,12 @@ if sys.version_info[0] < 2:
 else:
     import questionary
 
+# This reduces latency, see:
+# https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
+from twisted.internet import reactor  # noqa: E402 isort:skip
+
+reactor.timeout = lambda: 0.0001
+
 
 def logging_setup():
     """Configure logging for module and imported modules."""
