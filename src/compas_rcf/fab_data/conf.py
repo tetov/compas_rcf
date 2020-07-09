@@ -35,7 +35,6 @@ ABB_RCF_CONF_TEMPLATE = {
     # The following is set by command line arguments
     "debug": confuse.TypeTemplate(bool, default=False),
     "quiet": confuse.TypeTemplate(bool, default=False),
-    "run_data_file": confuse.Filename(),
     "skip_logfile": bool,
     "skip_progress_file": bool,
     "target": str,
