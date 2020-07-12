@@ -47,10 +47,10 @@ from twisted.internet import reactor  # noqa: E402 isort:skip
 reactor.timeout = lambda: 0.0001
 
 
-def logging_setup(dir_):
+def logging_setup():
     """Configure logging for module and imported modules."""
     timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M_rcf_abb.log")
-    log_file = Path(dir_) / timestamp_file
+    log_file = Path(log_dir) / timestamp_file
 
     handlers = []
 
@@ -323,7 +323,8 @@ if __name__ == "__main__":
     with args.run_data_file.open(mode="r") as f:
         run_data = json.load(f)
 
-    logging_setup(args, run_data["log_dir"])
+    log_dir = run_data["log_dir"]
+    logging_setup()
 
     # Read config-default.yml for default values
     fab_conf.read(user=False, defaults=True)
