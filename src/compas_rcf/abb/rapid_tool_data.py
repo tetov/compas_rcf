@@ -51,7 +51,7 @@ class RapidToolData(object):
     ):
         self.tcp_coord = tcp_coord
         self.tcp_quaternion = tcp_quaternion
-        self.cog_coord = cog_coord if cog_coord else (0, 0, 100)
+        self.cog_coord = cog_coord if cog_coord else [0, 0, 100]
         self.name = name
         self.weight = weight
         self.tolerance = tolerance
