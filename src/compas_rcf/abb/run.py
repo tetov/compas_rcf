@@ -47,10 +47,10 @@ from twisted.internet import reactor  # noqa: E402 isort:skip
 reactor.timeout = lambda: 0.0001
 
 
-def logging_setup(args, log_dir):
+def logging_setup(dir_):
     """Configure logging for module and imported modules."""
     timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M_rcf_abb.log")
-    log_file = Path(log_dir) / timestamp_file
+    log_file = Path(dir_) / timestamp_file
 
     handlers = []
 
@@ -320,8 +320,8 @@ if __name__ == "__main__":
     print(args)
 
     # Load dictionary from file specified on command line
-    with args.run_data_file.open(mode="r") as fp:
-        run_data = json.load(fp)
+    with args.run_data_file.open(mode="r") as f:
+        run_data = json.load(f)
 
     logging_setup(args, run_data["log_dir"])
 
