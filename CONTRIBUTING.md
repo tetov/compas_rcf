@@ -35,7 +35,7 @@ In short, this is how that works.
 
    ```bash
    cd path/to/compas_rcf
-   pip install git+https://bitbucket.org/ethrfl/compas_rrc#egg=compas_rrc-v0.2.2
+   pip install git+https://bitbucket.org/ethrfl/compas_rrc@v0.2.3-pre
    pip install -e .[dev]
    ```
 
