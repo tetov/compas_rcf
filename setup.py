@@ -22,10 +22,10 @@ def _read(*names, **kwargs):
 long_description = _read("README.md")
 
 requirements = [
-    "compas_fab ~= 0.10.2",
+    "compas_fab ~= 0.11",
     "compas_rrc >= 0.2.2, < 1.0.0",
     "questionary ~= 1.5.1",
-    "confuse ~= 1.0.0",
+    "confuse ~= 1.3.0",
 ]
 
 extras_require = {
@@ -40,7 +40,7 @@ extras_require = {
         "pytest >= 3.2",
         "recommonmark >=0.6",
         "sphinx_compas_theme >= 0.4",
-        "sphinx > =1.6",
+        "sphinx >=1.6",
         "setuptools_scm[toml]",
     ]
 }
