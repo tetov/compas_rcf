@@ -68,14 +68,14 @@ def help(ctx):
         "builds": "True to clean up build/packaging artifacts, otherwise False.",
     }
 )
-def clean(ctx, docs=True, bytecode=True, builds=True):
+def clean(ctx, clean_docs=True, clean_bytecode=True, clean_builds=True):
     """Cleans the local copy from compiled artifacts."""
 
     with chdir(BASE_FOLDER):
-        if builds:
+        if clean_builds:
             ctx.run("python setup.py clean")
 
-        if bytecode:
+        if clean_bytecode:
             for root, dirs, files in os.walk(BASE_FOLDER):
                 for f in files:
                     if f.endswith(".pyc"):
@@ -85,16 +85,16 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
 
         folders = []
 
-        if docs:
+        if clean_docs:
             folders.append("docs/api/generated")
 
         folders.append("dist/")
 
-        if bytecode:
+        if clean_bytecode:
             for t in ("src", "tests"):
                 folders.extend(glob.glob("{}/**/__pycache__".format(t), recursive=True))
 
-        if builds:
+        if clean_builds:
             folders.append("build/")
             folders.append("src/compas_rcf.egg-info/")
 

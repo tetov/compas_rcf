@@ -13,6 +13,7 @@ import time
 from datetime import datetime
 from operator import attrgetter
 
+import questionary
 from compas_fab.backends.ros import RosClient
 from compas_rrc import AbbClient
 from compas_rrc import PrintText
@@ -34,11 +35,6 @@ from compas_rcf.fab_data import load_bullets
 from compas_rcf.fab_data.conf import Path
 from compas_rcf.fab_data.pick_station import PickStation
 from compas_rcf.ui import open_file_dialog
-
-if sys.version_info[0] < 2:
-    raise Exception("This module requires Python 3")
-else:
-    import questionary
 
 # This reduces latency, see:
 # https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439

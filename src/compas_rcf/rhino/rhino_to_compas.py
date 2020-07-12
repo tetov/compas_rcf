@@ -125,29 +125,42 @@ def rgtransform_to_matrix(rgM):
     return M
 
 
-if __name__ == "__main__":
-
+def _test_functions():
     # rgpoint_to_cgpoint
     pt = rgpoint_to_cgpoint(rg.Point3d(3, 2, 1))
-    assert pt.data == [3.0, 2.0, 1.0]
+    if pt.data != [3.0, 2.0, 1.0]:
+        raise Exception("rgpoint_to_cgpoint failed")
 
     # rgvector_to_cgvector
     v = rgvector_to_cgvector(rg.Vector3d(3, 2, 1))
-    assert v.length > 3.7 and v.length < 3.8
+    if not v.length > 3.7 and not v.length < 3.8:
+        raise Exception("rgvector_to_cgvector failed")
 
     # rgline_cgline
     line = rgline_to_cgline(rg.Line(rg.Point3d(3, 2, 1), rg.Vector3d(1, 1, 0), 5.0))
-    assert isinstance(line.midpoint.z, float)
+    if not isinstance(line.midpoint.z, float):
+        raise Exception("rgline_to_cgline failed")
 
     # rgplane_to_cgframe
     frame = rgplane_to_cgframe(rg.Plane(rg.Point3d(1, 3, 2), rg.Vector3d(2, -1, 1)))
-    frame.quaternion.__repr__ == "Quaternion(0.713799, 0.462707, 0.285969, 0.441152)"
+    if (
+        frame.quaternion.__repr__
+        != "Quaternion(0.713799, 0.462707, 0.285969, 0.441152)"
+    ):
+        raise Exception("rgplane_to_cgframe failed")
 
     # rgtransform_to_matrix
     matrix = rg.Transform.ZeroTransformation
-    assert rgtransform_to_matrix(matrix) == [
+
+    zero_matrix = [
         [0.0, 0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0, 1.0],
     ]
+    if rgtransform_to_matrix(matrix) != zero_matrix:
+        raise Exception("rgtransform_to_matrix failed.")
+
+
+if __name__ == "__main__":
+    _test_functions()
