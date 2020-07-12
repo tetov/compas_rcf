@@ -12,43 +12,30 @@ movement:
     zone_pick: 'Fine' # case doesn't matter here
     zone_place: 'FINE'
     zone_travel: 'Z50'
+    compress_at_pick: 0.05 # controls compression before lifting
 safe_joint_positions: # used at start and end of fabrication run
     # 6 joint values in degrees
     end: [ -127.0, 54.0, 9.0 , 2.0 , 30.0, 7.0 ] # 6 joint values in degrees
     start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees
 speed_values:
-    speed_override: 100 # %, optional, default 100
+    speed_override: 100 # %
+    speed_max_tcp: 500 # mm/s
     accel: 100 # mm/s^2
     accel_ramp: 100 # %, optional, default 100, the rate at which acceleration
                     # increases or decreases as a percentage of the normal values
-    speed_max_tcp: 500 # mm/s
 tool:
     io_needles_pin: doDNetOut1 # name of DO
     tool_name: t_A057_ClayTool01 # name of tool
     grip_state: 1 # state (0 or 1)
     release_state: 0 # state (0 or 1)
-    wait_before_io: 0.5 # s, optional, default value 2
-    wait_after_io: 0.5 # s, optional, default value 0.5
-    capacity: 1 # number of bullets tool can pick up
+    wait_before_io: 0.5 # s
+    wait_after_io: 0.5 # s
 wobjs:
     # name of work objects as defined in controller
-    picking_wobj_name: ob_A057_WobjPicking01
+    picking_wobj_name: wobj0
     placing_wobj_name: ob_A057_WobjPlacing01
-pick:
-    origin_grid:  # grid offset from wobj in mm
-        x: 125
-        y: 125
-    xnum: 6  # number of bullets in x direction
-    ynum: 3  # number of bullets in y direction
-    grid_spacing: 125  # distance between grid crossings
-    compression_height_factor: 0.95 # controls compression before lifting
-    xaxis: [0, 1, 0] # x axis as a list
-    yaxis: [1, 0, 0] # y axis as a list
 docker:
     timeout_ping: 10
     sleep_after_up: 5
 paths:
-    json_dir: G:\Shared drives\2020_MAS\T3\RCF-T3-Thesis\09-robot-control\01_fabrication_data_jsons
-    conf_dir: G:\Shared drives\2020_MAS\T3\RCF-T3-Thesis\09-robot-control\02_fabrication_confs
     log_dir: G:\Shared drives\2020_MAS\T3\RCF-T3-Thesis\09-robot-control\03_fabrication_logs
-    pick_conf_dir:  G:\Shared drives\2020_MAS\T3\RCF-T3-Thesis\09-robot-control\05_picking_confs

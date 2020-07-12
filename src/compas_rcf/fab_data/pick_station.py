@@ -46,8 +46,8 @@ class PickStation(object):
 
         location_frame = self.pick_frames[idx]
 
-        pick_height = (
-            bullet.height * fab_conf["pick"]["compression_height_factor"].get()
+        pick_height = bullet.height * (
+            1 - fab_conf["movement"]["compress_at_pick"].get()
         )
         frame = get_offset_frame(location_frame, pick_height)
 

@@ -43,10 +43,15 @@ Tools & Utilities
     ClayBulletEncoder
     check_id_collision
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from compas import IPY
 
 from .clay_objs import *  # noqa: F401,F403
 from .csv_report import *  # noqa: F401,F403
+from .pick_station import *  # noqa: F401,F403
 from .tools import *  # noqa: F401,F403
 
 if not IPY:
