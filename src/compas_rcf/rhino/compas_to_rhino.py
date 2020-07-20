@@ -119,24 +119,32 @@ def matrix_to_rgtransform(M):
     return rgM
 
 
-if __name__ == "__main__":
-
+def _test_functions():
     # test cgpoint_to_rgpoint
     point = cgpoint_to_rgpoint(cg.Point(1, 2, 3))
-    assert point.Z == 3.0
+    if point.Z != 3.0:
+        raise Exception("cgpoint_to_rgpoint failed.")
 
     # test cgvector_to_rgvector
     vector = cgvector_to_rgvector(cg.Vector(5, 1, 9))
-    assert vector.Unitize()
+    if not vector.Unitize():
+        raise Exception("cgvector_to_rgvector failed")
 
     # test cgline_to_rgline
     line = cgline_to_rgline(cg.Line([1, 2, 3], [3, 2, 1]))
-    assert line.Direction == rg.Vector3d(2, 0, -2)
+    if line.Direction != rg.Vector3d(2, 0, -2):
+        raise Exception("cgline_to_rgline failed")
 
     # test frame_to_plane
     plane = cgframe_to_rgplane(cg.Frame([1, 3, -1], [1, 1, 2], [0, 1, 1]))
-    assert isinstance(plane.Normal, rg.Vector3d)
+    if not isinstance(plane.Normal, rg.Vector3d):
+        raise Exception("cgframe_to_rgplane failed")
 
     # matrix_to_rgtransform
     R = cg.Rotation.from_basis_vectors([1, 2, 0], [2, 1, 3])
-    assert isinstance(matrix_to_rgtransform(R), rg.Transform)
+    if not isinstance(matrix_to_rgtransform(R), rg.Transform):
+        raise Exception("matrix_to_rgtransform failed")
+
+
+if __name__ == "__main__":
+    _test_functions()

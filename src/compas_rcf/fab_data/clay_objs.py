@@ -24,7 +24,7 @@ if IPY:
 
 
 class ClayBullet(object):
-    """Describes a clay cylinder, this project's building element.
+    r"""Describes a clay cylinder.
 
     Parameters
     ----------
@@ -58,8 +58,8 @@ class ClayBullet(object):
     def __init__(
         self,
         location,
-        trajectory_to=[],
-        trajectory_from=[],
+        trajectory_to=None,
+        trajectory_from=None,
         bullet_id=None,
         radius=45,
         height=100,
@@ -70,8 +70,9 @@ class ClayBullet(object):
         **kwargs
     ):
         self.location = location
-        self.trajectory_to = trajectory_to
-        self.trajectory_from = trajectory_from
+
+        self.trajectory_to = trajectory_to if trajectory_to else []
+        self.trajectory_from = trajectory_from if trajectory_from else []
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:
@@ -83,12 +84,12 @@ class ClayBullet(object):
         self.height = height
         self.compression_ratio = compression_ratio
 
+        self.clay_density = clay_density
+
         self.cycle_time = cycle_time
         self.placed = placed
 
-        if kwargs:
-            for key in kwargs.keys():
-                setattr(self, key, kwargs[key])
+        self.attrs = kwargs
 
     @property
     def location(self):
@@ -375,7 +376,7 @@ class ClayBullet(object):
 
     @classmethod
     def from_compressed_centroid_frame_like(
-        cls, centroid_frame_like, compression_ratio=0.5, height=100, kwargs={}
+        cls, centroid_frame_like, compression_ratio=0.5, height=100, **kwargs
     ):
         """Construct a :class:`ClayBullet` instance from centroid plane.
 
@@ -493,17 +494,17 @@ def check_id_collision(clay_bullets):
     Exception
         Raises exception when first duplicate is found
     """
-    ids = [bullet.id for bullet in clay_bullets]
+    ids = [bullet.bullet_id for bullet in clay_bullets]
 
     set_of_ids = set()
-    for id in ids:
-        if id in set_of_ids:
+    for id_ in ids:
+        if id_ in set_of_ids:
             raise Exception(
                 "Id {} appears more than once in list of ClayBullet instances".format(
-                    id
+                    id_
                 )
             )
-        set_of_ids.add(id)
+        set_of_ids.add(id_)
 
 
 class ClayStructure(Network):
@@ -549,9 +550,9 @@ class ClayStructure(Network):
         bullets_below = self.vertices_where({"z": (0, z_value)})
 
         bullets_below_keys = [(u, v) for v in bullets_below if v != u]
-        for u, v in bullets_below_keys:
-            if self.edge_length(u, v) <= 20:
-                self.add_edge(u, v, relation="neighboor_below", is_touching=True)
+        for u_, v in bullets_below_keys:
+            if self.edge_length(u_, v) <= 20:
+                self.add_edge(u_, v, relation="neighboor_below", is_touching=True)
 
     def network_from_clay_bullets(self, clay_bullets):
         for i, clay_bullet in enumerate(clay_bullets):

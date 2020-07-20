@@ -2,6 +2,8 @@ version = 1
 
 test_patterns = ["./tests/**"]
 
+exclude_pattersn = ["tasks.py"]
+
 [[analyzers]]
 name = "python"
 enabled = true

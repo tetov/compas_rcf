@@ -4,4 +4,4 @@ from __future__ import print_function
 
 
 def test_nothing():
-    assert 5 == 5
+    assert True

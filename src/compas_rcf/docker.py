@@ -63,7 +63,7 @@ def compose_up(
     ignore_orphans=True,
     print_output=True,
     check_output=True,
-    env_vars={},
+    env_vars=None,
 ):
     """Run ``docker-compose up`` for specified compose file.
 
@@ -88,6 +88,8 @@ def compose_up(
     env_vars : :class:`dict`, optional
         Environment variables to set before running ``docker-compose``
     """
+    env_vars = env_vars if env_vars else {}
+
     run_kwargs = {}
     run_kwargs.update({"check_output": check_output})
     run_kwargs.update({"print_output": print_output})
