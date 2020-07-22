@@ -18,17 +18,9 @@ from compas_rrc import StartWatch
 from compas_rrc import StopWatch
 from compas_rrc import WaitTime
 
-from compas_rcf.utils import get_offset_frame
 from compas_rcf.fab_data import ZoneDataTemplate
 from compas_rcf.fab_data import fab_conf
-
-__all__ = [
-    "pre_procedure",
-    "post_procedure",
-    "pick_bullet",
-    "place_bullet",
-    "grip_and_release"
-]
+from compas_rcf.utils import get_offset_frame
 
 log = logging.getLogger(__name__)
 
