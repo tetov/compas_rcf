@@ -20,6 +20,7 @@ from compas_rrc import WaitTime
 
 from compas_rcf.fab_data import ZoneDataTemplate
 from compas_rcf.fab_data import fab_conf
+from compas_rcf.sensing import get_distance_measurement
 from compas_rcf.utils import get_offset_frame
 
 log = logging.getLogger(__name__)
@@ -202,11 +203,13 @@ def place_bullet(client, bullet):
     # change work object before placing
     client.send(SetWorkObject(fab_conf["wobjs"]["placing_wobj_name"].as_str()))
 
-    # add offset placing plane to pre and post frames
+    # move there with distance sensor TCP active
+    client.send(SetTool(fab_conf["tool"]["distance_sensor_tcp"].as_str()))
 
-    top_bullet_frame = get_offset_frame(bullet.location, bullet.height)
+    # add offset placing plane to pre and post frames
     offset_placement = get_offset_frame(
-        top_bullet_frame, fab_conf["movement"]["offset_distance"].as_number()
+        bullet.location,
+        bullet.height + fab_conf["movement"]["offset_distance"].as_number(),
     )
 
     # start watch
@@ -229,6 +232,36 @@ def place_bullet(client, bullet):
             fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
         )
     )
+
+    client.send_and_wait(WaitTime(2))
+
+    address = "COM5"
+    dist_read = get_distance_measurement(address)
+
+    dist_read = float(dist_read.partition(":")[-1])
+
+    tool0_to_dist_sensor_z = 250
+    tool0_to_tool_z = 358
+    tool0_to_loc_z = (
+        tool0_to_tool_z + fab_conf["movement"]["offset"].get() + bullet.height
+    )
+    expected_dist = tool0_to_loc_z - tool0_to_dist_sensor_z
+
+    dist_diff = expected_dist - dist_read
+
+    bullet.attrs["dist_diff"] = dist_diff
+
+    max_diff = 20
+    if abs(dist_diff) > max_diff:
+        bullet.attrs["dist_diff_error"] = True
+        return 1
+
+    bullet.location = get_offset_frame(bullet.location, dist_diff)
+
+    top_bullet_frame = get_offset_frame(bullet.location, bullet.height)
+
+    client.send_and_wait(WaitTime(2))
+
     client.send(
         MoveToFrame(
             top_bullet_frame,
