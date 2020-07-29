@@ -1,10 +1,8 @@
-version: '3.5'
 # run using this command:
-# docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# docker-compose -f docker-compose.yml -f docker-compose.moveit-setup.yml up -d
+version: "3.5"
 services:
   abb-planner:
-    environment:
-      - DISPLAY=host.docker.internal:0.0
     command:
       - roslaunch
       - --wait
