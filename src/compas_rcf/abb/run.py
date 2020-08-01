@@ -30,11 +30,11 @@ from compas_rcf.abb import place_bullet
 from compas_rcf.abb import post_procedure
 from compas_rcf.abb import pre_procedure
 from compas_rcf.docker import compose_up
+from compas_rcf.fab_data import ABB_RCF_CONF_TEMPLATE
 from compas_rcf.fab_data import ClayBulletEncoder
 from compas_rcf.fab_data import PickStation
 from compas_rcf.fab_data import fab_conf
 from compas_rcf.fab_data import load_bullets
-from compas_rcf.fab_data.conf import ABB_RCF_CONF_TEMPLATE
 
 # This reduces latency, see:
 # https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
@@ -45,18 +45,20 @@ reactor.timeout = lambda: 0.0001
 
 def logging_setup():
     """Configure logging for module and imported modules."""
+    loglevel_dict = {0: log.WARNING, 1: log.INFO, 2: log.DEBUG}
+
     timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M_rcf_abb.log")
     log_file = Path(log_dir) / timestamp_file
 
     handlers = []
 
-    if not args.skip_logfile:
+    if not args.debug:
         handlers.append(log.FileHandler(log_file, mode="a"))
-    if not args.quiet:
-        handlers.append(log.StreamHandler(sys.stdout))
+
+    handlers.append(log.StreamHandler(sys.stdout))
 
     log.basicConfig(
-        level=log.DEBUG if args.debug else log.INFO,
+        level=loglevel_dict[args.verbose],
         format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
         handlers=handlers,
     )
@@ -144,7 +146,7 @@ def main():
     ############################################################################
     # Docker setup                                                            #
     ############################################################################
-    ip = {"ROBOT_IP": ROBOT_IPS[fab_conf["target"].as_str()]}
+    ip = {"ROBOT_IP": ROBOT_IPS[fab_conf["controller"].as_str()]}
     compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
     log.debug("Driver services are running.")
 
@@ -231,7 +233,7 @@ def main():
         bullet.placed = 1  # set placed to temporary value to mark it as "placed"
 
         # Write progress to json while waiting for robot
-        if not fab_conf["skip_progress_file"].get():
+        if not fab_conf["debug"].get():
             with in_progress_json.open(mode="w") as fp:
                 json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
             log.debug("Wrote clay_bullets to {}".format(in_progress_json.name))
@@ -249,30 +251,29 @@ def main():
     ############################################################################
 
     # Write progress of last run of loop
-    if not fab_conf["skip_progress_file"].get():
+    if not fab_conf["debug"].get():
         with in_progress_json.open(mode="w") as fp:
             json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
         log.debug("Wrote clay_bullets to {}".format(in_progress_json.name))
 
-    if (
-        len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0
-        and not fab_conf["skip_progress_file"].get()
-    ):
-        done_file_name = fab_json_path.name.replace(json_progress_identifier, "")
-        done_json = fab_conf["paths"]["json_dir"].as_path() / "00_done" / done_file_name
-
-        in_progress_json.rename(done_json)
-
-        with done_json.open(mode="w") as fp:
-            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
-
-        log.debug("Saved placed bullets to 00_Done.")
-    elif not fab_conf["skip_progress_file"].get():
-        log.debug(
-            "Bullets without placed timestamp still present, keeping {}".format(
-                in_progress_json.name
+        if len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0:
+            done_file_name = fab_json_path.name.replace(json_progress_identifier, "")
+            done_json = (
+                fab_conf["paths"]["json_dir"].as_path() / "00_done" / done_file_name
             )
-        )
+
+            in_progress_json.rename(done_json)
+
+            with done_json.open(mode="w") as fp:
+                json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+
+            log.debug("Saved placed bullets to 00_Done.")
+        else:
+            log.debug(
+                "Bullets without placed timestamp still present, keeping {}".format(
+                    in_progress_json.name
+                )
+            )
 
     log.info("Finished program with {} bullets.".format(len(to_place)))
 
@@ -288,28 +289,22 @@ if __name__ == "__main__":
         "run_data_file", type=pathlib.Path, help="File containing fabrication setup.",
     )
     parser.add_argument(
-        "-t",
-        "--target",
+        "-c",
+        "--controller",
         choices=["real", "virtual"],
         default="virtual",
         help="Set fabrication runner target.",
     )
     parser.add_argument(
-        "-q",
-        "--quiet",
+        "-v",
+        "--verbose",
+        action="count",
+        help="Set log level. -v adds INFO messages and -vv adds DEBUG messages.",
+    )
+    parser.add_argument(
+        "--debug",
         action="store_true",
-        help="Don't print logging messages to console.",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Log DEBUG level messages."
-    )
-    parser.add_argument(
-        "--skip-logfile", action="store_true", help="Don't send log messages to file.",
-    )
-    parser.add_argument(
-        "--skip-progress-file",
-        action="store_true",
-        help="Skip writing progress to json during run.",
+        help="Debug mode. Creates no files and uses mock responses for sensors.",
     )
 
     args = parser.parse_args()
@@ -344,7 +339,7 @@ if __name__ == "__main__":
     fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
     log.info("compas_rcf version: {}".format(__version__))
-    log.info("Target is {} controller.".format(fab_conf["target"].get().upper()))
+    log.info("Using {} controller.".format(fab_conf["controller"].get()))
     log.debug("argparse input: {}".format(args))
     log.debug("config after set_args: {}".format(fab_conf))
 

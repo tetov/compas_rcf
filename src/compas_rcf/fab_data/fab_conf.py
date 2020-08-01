@@ -37,32 +37,37 @@ ABB_RCF_CONF_TEMPLATE = {
     "quiet": confuse.TypeTemplate(bool, default=False),
     "skip_logfile": bool,
     "skip_progress_file": bool,
-    "target": str,
+    "controller": str,
     "paths": {
         "log_dir": confuse.Filename(),
         "pick_conf_path": confuse.Filename(),
         "fab_data_path": confuse.Filename(),
     },
     "wobjs": {"picking_wobj_name": str, "placing_wobj_name": str},
-    "tool": {
-        "tool_name": str,
-        "io_needles_pin": str,
-        "grip_state": int,
-        "release_state": int,
-        "wait_before_io": float,
-        "wait_after_io": float,
+    "tools": {
+        "pick_place": {
+            "tool_name": str,
+            "io_needles_pin": str,
+            "extend_signal": int,
+            "retract_signal": int,
+            "tool0_z_dist": float,
+        },
+        "dist_sensor": {
+            "tool_name": str,
+            "serial_port": str,
+            "serial_baudrate": int,
+            "tool0_z_dist": float,
+        },
     },
-    "speed_values": {
+    "robot_joint_pos": {
+        "start": confuse.Sequence([float] * 6),
+        "end": confuse.Sequence([float] * 6),
+    },
+    "robot_movement": {
         "speed_override": float,
         "speed_max_tcp": float,
         "accel": float,
         "accel_ramp": float,
-    },
-    "safe_joint_positions": {
-        "start": confuse.Sequence([float] * 6),
-        "end": confuse.Sequence([float] * 6),
-    },
-    "movement": {
         "offset_distance": float,
         "speed_placing": float,
         "speed_picking": float,
@@ -70,6 +75,7 @@ ABB_RCF_CONF_TEMPLATE = {
         "zone_travel": ZoneDataTemplate(),
         "zone_pick": ZoneDataTemplate(),
         "zone_place": ZoneDataTemplate(),
+        "needles_pause": float,
         "compress_at_pick": float,
     },
     "docker": {"timeout_ping": float, "sleep_after_up": float},

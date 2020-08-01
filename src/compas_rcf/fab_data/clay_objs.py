@@ -48,8 +48,11 @@ class ClayBullet(object):
         Cycle time from pick to place and back.
     placed : :class:`int`, optional
         Time in epoch (seconds from 1970) of bullet placement.
-    kwargs : :class:`dict`, optional
+    attrs : :obj:`dict`, optional
         Any other attributes needed.
+    kwargs : :class:`dict`, optional
+        Keyword arguments added as key-value pair to `attrs` and replaces value
+        if key already present.
     """  # noqa: E501
 
     # creates id-s for objects
@@ -67,6 +70,7 @@ class ClayBullet(object):
         clay_density=2.0,
         cycle_time=None,
         placed=None,
+        attrs=None,
         **kwargs
     ):
         self.location = location
@@ -89,7 +93,8 @@ class ClayBullet(object):
         self.cycle_time = cycle_time
         self.placed = placed
 
-        self.attrs = kwargs
+        self.attrs = attrs or {}
+        self.attrs.update(kwargs)
 
     @property
     def location(self):
@@ -119,7 +124,7 @@ class ClayBullet(object):
         vector = self.location.zaxis * self.compressed_height * -1
         T = Translation(vector)
 
-        return self._location.transformed(T)
+        return self.location.transformed(T)
 
     @property
     def trajectory_to(self):
