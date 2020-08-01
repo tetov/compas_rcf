@@ -6,7 +6,7 @@ import logging
 
 from compas.geometry import Frame
 
-from compas_rcf.fab_data.conf import fab_conf
+from compas_rcf.fab_data import fab_conf
 from compas_rcf.utils import get_offset_frame
 
 log = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class PickStation(object):
         location_frame = self.pick_frames[idx]
 
         pick_height = bullet.height * (
-            1 - fab_conf["movement"]["compress_at_pick"].get()
+            1 - fab_conf["robot_movement"]["compress_at_pick"].get()
         )
         frame = get_offset_frame(location_frame, pick_height)
 

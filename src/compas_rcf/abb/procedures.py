@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import logging
 
+from compas_rrc import FeedbackLevel
 from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 from compas_rrc import PrintText
@@ -40,16 +41,11 @@ def pre_procedure(client):
     client : :class:`compas_rrc.AbbClient`
         Client connected to controller procedure should be sent to.
     """
-    grip_and_release(
-        client,
-        fab_conf["tool"]["io_needles_pin"].get(),
-        fab_conf["tool"]["release_state"].get(),
-        wait_before=fab_conf["tool"]["wait_before_io"].get(),
-        wait_after=fab_conf["tool"]["wait_after_io"].get(),
-    )
+    # for safety
+    retract_needles(client)
 
-    client.send(SetTool(fab_conf["tool"]["tool_name"].as_str()))
-    log.debug("Tool {} set.".format(fab_conf["tool"]["tool_name"].get()))
+    client.send(SetTool(fab_conf["tools"]["pick_place"]["tool_name"].as_str()))
+    log.debug("Tool {} set.".format(fab_conf["tools"]["pick_place"]["tool_name"].get()))
     client.send(SetWorkObject(fab_conf["wobjs"]["placing_wobj_name"].as_str()))
     log.debug(
         "Work object {} set.".format(fab_conf["wobjs"]["placing_wobj_name"].get())
@@ -58,8 +54,8 @@ def pre_procedure(client):
     # Set Acceleration
     client.send(
         SetAcceleration(
-            fab_conf["speed_values"]["accel"].as_number(),
-            fab_conf["speed_values"]["accel_ramp"].as_number(),
+            fab_conf["robot_movement"]["accel"].as_number(),
+            fab_conf["robot_movement"]["accel_ramp"].as_number(),
         )
     )
     log.debug("Acceleration values set.")
@@ -67,8 +63,8 @@ def pre_procedure(client):
     # Set Max Speed
     client.send(
         SetMaxSpeed(
-            fab_conf["speed_values"]["speed_override"].as_number(),
-            fab_conf["speed_values"]["speed_max_tcp"].as_number(),
+            fab_conf["robot_movement"]["speed_override"].as_number(),
+            fab_conf["robot_movement"]["speed_max_tcp"].as_number(),
         )
     )
     log.debug("Speed set.")
@@ -76,10 +72,10 @@ def pre_procedure(client):
     # Initial configuration
     client.send(
         MoveToJoints(
-            fab_conf["safe_joint_positions"]["start"].get(),
+            fab_conf["robot_joint_pos"]["start"].get(),
             EXTERNAL_AXIS_DUMMY,
-            fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_travel"].as_number(),
+            fab_conf["robot_movement"]["zone_travel"].get(ZoneDataTemplate()),
         )
     )
     log.debug("Sent move to safe joint position")
@@ -95,20 +91,14 @@ def post_procedure(client):
     ----------
     client : :class:`compas_rrc.AbbClient`
     """
-    grip_and_release(
-        client,
-        fab_conf["tool"]["io_needles_pin"].get(),
-        fab_conf["tool"]["release_state"].get(),
-        wait_before=fab_conf["tool"]["wait_before_io"].get(),
-        wait_after=fab_conf["tool"]["wait_after_io"].get(),
-    )
+    retract_needles(client)
 
     client.send(
         MoveToJoints(
-            fab_conf["safe_joint_positions"]["end"].get(),
+            fab_conf["robot_joint_pos"]["end"].get(),
             EXTERNAL_AXIS_DUMMY,
-            fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_travel"].as_number(),
+            fab_conf["robot_movement"]["zone_travel"].get(),
         )
     )
 
@@ -122,8 +112,8 @@ def post_procedure(client):
 def pick_bullet(client, picking_frame):
     """Send movement and IO instructions to pick up a clay bullet.
 
-    Uses ``fab_conf`` set up using
-    :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
+    Uses `fab_conf` set up with command line arguments and configuration
+    file.
 
     Parameters
     ----------
@@ -136,7 +126,7 @@ def pick_bullet(client, picking_frame):
 
     # pick bullet
     offset_picking = get_offset_frame(
-        picking_frame, fab_conf["movement"]["offset_distance"].get()
+        picking_frame, fab_conf["robot_movement"]["offset_distance"].get()
     )
 
     # start watch
@@ -145,32 +135,28 @@ def pick_bullet(client, picking_frame):
     client.send(
         MoveToFrame(
             offset_picking,
-            fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_travel"].get(),
+            fab_conf["robot_movement"]["zone_travel"].get(),
         )
     )
 
     client.send(
         MoveToFrame(
             picking_frame,
-            fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_pick"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_travel"].get(),
+            fab_conf["robot_movement"]["zone_pick"].get(),
         )
     )
 
-    grip_and_release(
-        client,
-        fab_conf["tool"]["io_needles_pin"].get(),
-        fab_conf["tool"]["grip_state"].get(),
-        wait_before=fab_conf["tool"]["wait_before_io"].get(),
-        wait_after=fab_conf["tool"]["wait_after_io"].get(),
-    )
+    client.send(WaitTime(fab_conf["robot_movement"]["needles_pause"].get()))
+    extend_needles(client)
+    client.send(WaitTime(fab_conf["robot_movement"]["needles_pause"].get()))
 
     client.send(
         MoveToFrame(
             offset_picking,
-            fab_conf["movement"]["speed_picking"].as_number(),
-            fab_conf["movement"]["zone_pick"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_picking"].get(),
+            fab_conf["robot_movement"]["zone_pick"].get(),
         )
     )
 
@@ -182,8 +168,8 @@ def pick_bullet(client, picking_frame):
 def place_bullet(client, bullet):
     """Send movement and IO instructions to place a clay bullet.
 
-    Uses ``fab_conf`` set up using
-    :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
+    Uses `fab_conf` set up with command line arguments and configuration
+    file.
 
     Parameters
     ----------
@@ -204,12 +190,12 @@ def place_bullet(client, bullet):
     client.send(SetWorkObject(fab_conf["wobjs"]["placing_wobj_name"].as_str()))
 
     # move there with distance sensor TCP active
-    client.send(SetTool(fab_conf["tool"]["distance_sensor_tcp"].as_str()))
+    # client.send(SetTool(fab_conf["tools"]["dist_sensor"]["tool_name"].as_str()))
 
     # add offset placing plane to pre and post frames
     offset_placement = get_offset_frame(
         bullet.location,
-        bullet.height + fab_conf["movement"]["offset_distance"].as_number(),
+        bullet.height + fab_conf["robot_movement"]["offset_distance"].as_number(),
     )
 
     # start watch
@@ -220,41 +206,43 @@ def place_bullet(client, bullet):
         client.send(
             MoveToFrame(
                 frame,
-                fab_conf["movement"]["speed_travel"].as_number(),
-                fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+                fab_conf["robot_movement"]["speed_travel"].as_number(),
+                fab_conf["robot_movement"]["zone_travel"].get(ZoneDataTemplate()),
             )
         )
 
     client.send(
         MoveToFrame(
             offset_placement,
-            fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_travel"].as_number(),
+            fab_conf["robot_movement"]["zone_travel"].get(ZoneDataTemplate()),
         )
     )
 
-    client.send_and_wait(WaitTime(2))
+    client.send_and_wait(WaitTime(2, feedback_level=FeedbackLevel.NONE))
 
-    address = "COM5"
-    dist_read = get_distance_measurement(address)
+    dist_read = get_distance_measurement()
+    log.debug("Dist read: {}".format(dist_read))
 
-    dist_read = float(dist_read.partition(":")[-1])
-
-    tool0_to_dist_sensor_z = 250
-    tool0_to_tool_z = 358
+    tool0_to_dist_sensor_z = fab_conf["tools"]["tool0_z_dist"].get()
+    tool0_to_tool_z = fab_conf["tools"]["pick_place"]["tool0_z_dist"].get()
     tool0_to_loc_z = (
-        tool0_to_tool_z + fab_conf["movement"]["offset"].get() + bullet.height
+        tool0_to_tool_z
+        + fab_conf["robot_movement"]["offset_distance"].get()
+        + bullet.height
     )
     expected_dist = tool0_to_loc_z - tool0_to_dist_sensor_z
 
     dist_diff = expected_dist - dist_read
+    log.debug("Dist diff: {}".format(dist_diff))
 
     bullet.attrs["dist_diff"] = dist_diff
 
-    max_diff = 20
-    if abs(dist_diff) > max_diff:
-        bullet.attrs["dist_diff_error"] = True
-        return 1
+    # max_diff = 20
+    # if abs(dist_diff) > max_diff:
+    #     bullet.attrs["dist_diff_error"] = True
+    #     log.debug("Skipped because dist diff too high")
+    #     return 1
 
     bullet.location = get_offset_frame(bullet.location, dist_diff)
 
@@ -265,32 +253,28 @@ def place_bullet(client, bullet):
     client.send(
         MoveToFrame(
             top_bullet_frame,
-            fab_conf["movement"]["speed_placing"].as_number(),
-            fab_conf["movement"]["zone_place"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_placing"].get(),
+            fab_conf["robot_movement"]["zone_place"].get(),
         )
     )
 
-    grip_and_release(
-        client,
-        fab_conf["tool"]["io_needles_pin"].get(),
-        fab_conf["tool"]["release_state"].get(),
-        wait_before=fab_conf["tool"]["wait_before_io"].get(),
-        wait_after=fab_conf["tool"]["wait_after_io"].get(),
-    )
+    client.Send(WaitTime(fab_conf["robot_movement"]["needles_pause"].get()))
+    retract_needles(client)
+    client.Send(WaitTime(fab_conf["robot_movement"]["needles_pause"].get()))
 
     client.send(
         MoveToFrame(
             bullet.placement_frame,
-            fab_conf["movement"]["speed_placing"].as_number(),
-            fab_conf["movement"]["zone_place"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_placing"].as_number(),
+            fab_conf["robot_movement"]["zone_place"].get(ZoneDataTemplate()),
         )
     )
 
     client.send(
         MoveToFrame(
             offset_placement,
-            fab_conf["movement"]["speed_travel"].as_number(),
-            fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+            fab_conf["robot_movement"]["speed_travel"].as_number(),
+            fab_conf["robot_movement"]["zone_travel"].get(ZoneDataTemplate()),
         )
     )
 
@@ -299,8 +283,8 @@ def place_bullet(client, bullet):
         client.send(
             MoveToFrame(
                 frame,
-                fab_conf["movement"]["speed_travel"].as_number(),
-                fab_conf["movement"]["zone_travel"].get(ZoneDataTemplate()),
+                fab_conf["robot_movement"]["speed_travel"].as_number(),
+                fab_conf["robot_movement"]["zone_travel"].get(ZoneDataTemplate()),
             )
         )
 
@@ -309,24 +293,19 @@ def place_bullet(client, bullet):
     return client.send(ReadWatch())
 
 
-def grip_and_release(client, do_name, do_state, wait_before=1.0, wait_after=1.0):
-    """Grip or release using RCF tool, either in simulation or on real robot.
+def retract_needles(client):
+    pin = fab_conf["tools"]["pick_place"]["io_needles_pin"].get()
+    state = fab_conf["tools"]["pick_place"]["retract_signal"].get()
 
-    Parameters
-    ----------
-    client : :class:`compas_rrc.AbbClient`
-        Client connected to controller procedure should be sent to.
-    io_name : :class:`str`
-        Name of DO as defined on controller.
-    do_state : :class:`bool` or :class:`int` (0 or 1)
-        Value to set DO to
-    wait_before : :class:`float`, optional
-        Time to wait in position before setting DO state. Defaults to ``1.``
-    wait_after : :class:`float`, optional
-        Time to wait in position after setting DO state. Defaults to ``1.``
-    """
-    client.send(WaitTime(wait_before))
-    client.send(SetDigital(do_name, do_state))
-    client.send(WaitTime(wait_after))
+    client.send(SetDigital(pin, state))
 
-    log.debug("IO {} set to {}.".format(do_name, do_state))
+    log.debug("IO {} set to {}.".format(pin, state))
+
+
+def extend_needles(client):
+    pin = fab_conf["tools"]["pick_place"]["io_needles_pin"].get()
+    state = fab_conf["tools"]["pick_place"]["extend_signal"].get()
+
+    client.send(SetDigital(pin, state))
+
+    log.debug("IO {} set to {}.".format(pin, state))
