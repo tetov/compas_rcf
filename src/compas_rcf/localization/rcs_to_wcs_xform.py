@@ -17,8 +17,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import compas.geometry as cg
 import compas
+import compas.geometry as cg
 
 compas.PRECISION = "12f"
 
@@ -37,6 +37,7 @@ def rcs_to_wcs_xform(robot_base_frame):
     :obj:`list` of :obj:`list` of :obj:`float`
         The transformation matrix.
     """
+    # TODO: Replace with xform from frame?
     translation = cg.Translation(robot_base_frame.point)
     rotation = cg.Rotation.from_basis_vectors(
         robot_base_frame.xaxis, robot_base_frame.yaxis
