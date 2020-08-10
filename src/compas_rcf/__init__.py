@@ -40,6 +40,9 @@ HERE = os.path.dirname(__file__)
 HOME = os.path.abspath(os.path.join(HERE, "../.."))
 DOCKER_COMPOSE_DIR = os.path.join(HERE, "_compose_files")
 
+# Global debug flag
+DEBUG = False
+
 # from https://smarie.github.io/python-getversion/#package-versioning-best-practices
 try:
     # -- Distribution mode --
