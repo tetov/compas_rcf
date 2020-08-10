@@ -14,10 +14,7 @@ from tkinter.filedialog import askopenfilename
 try:
     from pathlib import Path
 except ImportError:
-    try:
-        from pathlib2 import Path
-    except ImportError:
-        pass
+    pass
 
 
 def open_file_dialog(

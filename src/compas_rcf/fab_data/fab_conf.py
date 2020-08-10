@@ -32,53 +32,44 @@ class ZoneDataTemplate(confuse.Template):
 
 
 ABB_RCF_CONF_TEMPLATE = {
-    # The following is set by command line arguments
-    "debug": confuse.TypeTemplate(bool, default=False),
-    "quiet": confuse.TypeTemplate(bool, default=False),
-    "skip_logfile": bool,
-    "skip_progress_file": bool,
-    "controller": str,
-    "paths": {
-        "log_dir": confuse.Filename(),
-        "pick_conf_path": confuse.Filename(),
-        "fab_data_path": confuse.Filename(),
-    },
-    "wobjs": {"picking_wobj_name": str, "placing_wobj_name": str},
-    "tools": {
-        "pick_place": {
-            "tool_name": str,
-            "io_needles_pin": str,
-            "extend_signal": int,
-            "retract_signal": int,
-            "tool0_z_dist": float,
+    "log_dir": confuse.Filename(),
+    "fab_data": confuse.Path(),
+    "pick_conf": confuse.Path(),
+    "robot_client": {
+        "docker": {"timeout_ping": float, "sleep_after_up": float},
+        "controller": str,
+        "wobjs": {"pick": str, "place": str},
+        "tools": {
+            "pick_place": {
+                "name": str,
+                "io_pin_needles": str,
+                "extend_signal": int,
+                "retract_signal": int,
+                "needles_pause": float,
+                "compress_at_pick": float,
+            },
+            "dist_sensor": {
+                "name": str,
+                "serial_port": confuse.String(default=None),
+                "serial_baudrate": int,
+                "max_z_adjustment": float,
+            },
         },
-        "dist_sensor": {
-            "tool_name": str,
-            "serial_port": str,
-            "serial_baudrate": int,
-            "tool0_z_dist": float,
+        "robot_movement": {
+            "global_speed_accel": {
+                "speed_override": float,
+                "speed_max_tcp": float,
+                "accel": float,
+                "accel_ramp": float,
+            },
+            "speed": {"precise": float, "travel": float},
+            "zone": {"precise": ZoneDataTemplate(), "travel": ZoneDataTemplate()},
+            "set_joint_pos": {
+                "start": confuse.Sequence([float] * 6),
+                "end": confuse.Sequence([float] * 6),
+            },
         },
     },
-    "robot_joint_pos": {
-        "start": confuse.Sequence([float] * 6),
-        "end": confuse.Sequence([float] * 6),
-    },
-    "robot_movement": {
-        "speed_override": float,
-        "speed_max_tcp": float,
-        "accel": float,
-        "accel_ramp": float,
-        "offset_distance": float,
-        "speed_placing": float,
-        "speed_picking": float,
-        "speed_travel": float,
-        "zone_travel": ZoneDataTemplate(),
-        "zone_pick": ZoneDataTemplate(),
-        "zone_place": ZoneDataTemplate(),
-        "needles_pause": float,
-        "compress_at_pick": float,
-    },
-    "docker": {"timeout_ping": float, "sleep_after_up": float},
 }
 
 fab_conf = confuse.LazyConfig("compas_rcf", modname=__name__)

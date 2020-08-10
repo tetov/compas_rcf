@@ -5,11 +5,10 @@ from __future__ import print_function
 
 import collections
 import math
+from copy import deepcopy
 from itertools import count
 
-from compas import IPY
 from compas.datastructures import Mesh as cg_Mesh
-from compas.datastructures import Network
 from compas.geometry import Frame
 from compas.geometry import Translation
 from compas_ghpython.artists import MeshArtist
@@ -17,10 +16,6 @@ from compas_ghpython.artists import MeshArtist
 from compas_rcf.utils import ensure_frame
 from compas_rcf.utils import get_offset_frame
 from compas_rcf.utils import wrap_list
-
-if IPY:
-    import Rhino.Geometry as rg
-    from compas_rcf.rhino import cgframe_to_rgplane
 
 
 class ClayBullet(object):
@@ -61,6 +56,7 @@ class ClayBullet(object):
     def __init__(
         self,
         location,
+        egress_frame_distance=200,
         trajectory_to=None,
         trajectory_from=None,
         bullet_id=None,
@@ -73,10 +69,12 @@ class ClayBullet(object):
         attrs=None,
         **kwargs
     ):
+        if not isinstance(location, Frame):
+            raise Exception("Location should be given as a compas.geometry.Frame")
         self.location = location
 
-        self.trajectory_to = trajectory_to if trajectory_to else []
-        self.trajectory_from = trajectory_from if trajectory_from else []
+        self.trajectory_to = trajectory_to or []
+        self.trajectory_from = trajectory_from or []
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:
@@ -87,6 +85,7 @@ class ClayBullet(object):
         self.radius = radius
         self.height = height
         self.compression_ratio = compression_ratio
+        self.egress_frame_distance = egress_frame_distance
 
         self.clay_density = clay_density
 
@@ -96,35 +95,34 @@ class ClayBullet(object):
         self.attrs = attrs or {}
         self.attrs.update(kwargs)
 
-    @property
-    def location(self):
-        """Frame specifying location of bottom of clay cylinder.
+    def get_location_plane(self):
+        from compas_rcf.rhino import cgframe_to_rgplane
 
-        Returns
-        -------
-        :class:`compas.geometry.Frame`
-        """
-        return self._location
+        return cgframe_to_rgplane(self.location)
 
-    @location.setter
-    def location(self, frame_like):
-        """Ensure that location is stored as :class:`compas.geometry.Frame` object."""
-        self._location = ensure_frame(frame_like)
+    def get_normal(self):
+        return self.location.normal * -1
 
-    @property
-    def placement_frame(self):
-        """Last frame in placement procedure.
-
-        Derived from location, height and compression ratio.
-
-        Returns
-        -------
-        :class:`compas.geometry.Frame`
-        """
-        vector = self.location.zaxis * self.compressed_height * -1
+    def get_uncompressed_top_frame(self):
+        """:class:`compas.geometry.frame` Top of uncompressed cylinder."""
+        vector = self.get_normal() * self.height
         T = Translation(vector)
 
         return self.location.transformed(T)
+
+    def get_compressed_top_frame(self):
+        """:class:`compas.geometry.frame` Top of compressed cylinder."""
+        vector = self.get_normal() * self.get_compressed_height()
+        T = Translation(vector)
+
+        return self.location.transformed(T)
+
+    def get_egress_frame(self):
+        """Frame at end and start of trajectory to and from."""
+        vector = self.get_normal() * self.egress_frame_distance
+        T = Translation(vector)
+
+        return self.get_uncompressed_top_frame().transformed(T)
 
     @property
     def trajectory_to(self):
@@ -171,83 +169,21 @@ class ClayBullet(object):
             frame = ensure_frame(frame_list)
             self._trajectory_from.append(frame)
 
-    @property
-    def centroid_frame(self):
+    def get_uncompressed_centroid_frame(self):
         """Get frame at middle of uncompressed bullet."""
-        return get_offset_frame(self.location, self.height)
+        vector = self.get_normal() * self.height / 2
+        T = Translation(vector)
 
-    @property
-    def compressed_centroid_frame(self):
+        return self.location.transformed(T)
+
+    def get_compressed_centroid_frame(self):
         """Get frame at middle of compressed bullet."""
-        return get_offset_frame(self.location, self.compressed_height)
+        vector = self.get_normal() * self.get_compressed_height() / 2
+        T = Translation(vector)
 
-    @property
-    def plane(self):
-        """For compatibility with older scripts."""
-        return self.location_plane
+        return self.location.transformed(T)
 
-    @property
-    def location_plane(self):
-        """:class:`Rhino.Geometry.Plane` representation of location frame.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Plane`
-        """
-        return cgframe_to_rgplane(self.location)
-
-    @property
-    def placement_plane(self):
-        """:class:`Rhino.Geometry.Plane` representation of placement frame.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Plane`
-        """
-        return cgframe_to_rgplane(self.placement_frame)
-
-    @property
-    def trajectory_to_planes(self):
-        """:class:`Rhino.Geometry.Plane` representations of trajectory_to frames.
-
-        Returns
-        -------
-        :class:`list` of :class:`Rhino.Geometry.Plane`
-        """
-        return [cgframe_to_rgplane(frame) for frame in self.trajectory_to]
-
-    @property
-    def trajectory_from_planes(self):
-        """:class:`Rhino.Geometry.Plane` representations of trajectory_from frames.
-
-        Returns
-        -------
-        :class:`list` of :class:`Rhino.Geometry.Plane`
-        """
-        return [cgframe_to_rgplane(frame) for frame in self.trajectory_from]
-
-    @property
-    def centroid_plane(self):
-        """Get plane at middle of uncompressed bullet.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Plane`
-        """
-        return cgframe_to_rgplane(self.centroid_frame)
-
-    @property
-    def compressed_centroid_plane(self):
-        """Get plane at middle of compressed bullet.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Plane`
-        """
-        return cgframe_to_rgplane(self.centroid_frame)
-
-    @property
-    def volume(self):
+    def get_volume(self):
         r"""Volume of clay bullet in mm\ :sup:`3`\ .
 
         Returns
@@ -256,8 +192,7 @@ class ClayBullet(object):
         """
         return math.pi * self.radius ** 2 * self.height
 
-    @property
-    def volume_m3(self):
+    def get_volume_m3(self):
         r"""Volume of clay bullet in m\ :sup:`3`\ .
 
         Returns
@@ -266,8 +201,7 @@ class ClayBullet(object):
         """
         return self.volume * 1e-9
 
-    @property
-    def weight_kg(self):
+    def get_weight_kg(self):
         """Weight of clay bullet in kg.
 
         Returns
@@ -276,8 +210,7 @@ class ClayBullet(object):
         """
         return self.density * self.volume * 1e-6
 
-    @property
-    def weight(self):
+    def get_weight(self):
         """Weight of clay bullet in g.
 
         Returns
@@ -286,18 +219,16 @@ class ClayBullet(object):
         """
         return self.weight_kg * 1000
 
-    @property
-    def compressed_radius(self):
+    def get_compressed_radius(self):
         """Radius of clay bullet in mm when compressed to defined compression ratio.
 
         Returns
         -------
         float
         """
-        return math.sqrt(self.volume / (self.compressed_height * math.pi))
+        return math.sqrt(self.get_volume() / (self.get_compressed_height() * math.pi))
 
-    @property
-    def compressed_height(self):
+    def get_compressed_height(self):
         """Height of clay bullet in mm when compressed to defined compression ratio.
 
         Returns
@@ -306,35 +237,120 @@ class ClayBullet(object):
         """
         return self.height * self.compression_ratio
 
-    @property
-    def circle(self):
+    def get_rgcircle(self):
         """:class:`Rhino.Geometry.Circle` representing bullet footprint.
 
         Returns
         -------
         :class:`Rhino.Geometry.Circle`
         """
-        return rg.Circle(self.location_plane, self.compressed_radius)
+        from Rhino.Geometry import Circle
 
-    @property
-    def cylinder(self):
+        return Circle(self.get_location_plane(), self.get_compressed_radius())
+
+    def get_rgcylinder(self):
         """:class:`Rhino.Geometry.Cylinder` representing bullet.
 
         Returns
         -------
         :class:`Rhino.Geometry.Cylinder`
         """
-        return rg.Cylinder(self.circle, self.compressed_height)
+        from Rhino.Geometry import Cylinder
 
-    @property
-    def vector_from_bullet_zaxis(self):
+        return Cylinder(self.get_rgcircle(), self.get_compressed_height())
+
+    def get_rgvector_from_bullet_zaxis(self):
         """Vector through center of bullet.
 
         Returns
         -------
         :class:`compas.geometry.Vector`
         """
-        return self.location.normal * self.compressed_height
+        return self.get_normal() * self.get_compressed_height()
+
+    def copy(self):
+        return deepcopy(self)
+
+    def get_rgmesh(self, face_count=18):
+        """Generate mesh representation of bullet with custom resolution.
+
+        Parameters
+        ----------
+        face_count : :class:`int`, optional
+            Desired number of faces, by default 18
+            Used as a guide for the resolution of the mesh cylinder
+
+        Returns
+        -------
+        :class:`Rhino.Geometry.Mesh`
+        """
+        import Rhino.Geometry as rg
+
+        if face_count < 6:
+            sides = 3
+        elif face_count < 15:
+            sides = 4
+        else:
+            sides = face_count // 3
+
+        circle = self.get_rgcircle()
+
+        polygons = []
+        polygons.append(rg.Polyline.CreateInscribedPolygon(circle, sides))
+
+        T = rg.Transform.Translation(circle.Normal * -self.get_compressed_height())
+
+        second_polygon = polygons[0].Duplicate()
+        second_polygon.Transform(T)
+
+        polygons.append(second_polygon)
+
+        mesh = cg_Mesh()
+        outer_verts_polygons = []
+
+        # generate verts at polygon corners
+        for polygon in polygons:
+            _temp_list = []
+
+            polygon_corners = list(polygon.Item)
+            polygon_corners.pop()  # remove end pt since == start pt
+
+            for pt in polygon_corners:
+                _temp_list.append(mesh.add_vertex(x=pt.X, y=pt.Y, z=pt.Z))
+            outer_verts_polygons.append(_temp_list)
+
+        polygon_faces = []
+        for vkeys in outer_verts_polygons:
+            polygon_faces.append(mesh.add_face(vkeys))
+
+        # if >4 sides polygon, create faces by tri subd
+        if sides > 4:
+
+            centroid_verts = []
+            for fkey in polygon_faces:
+                x, y, z = mesh.face_centroid(fkey)
+                centroid_verts.append(mesh.add_vertex(x=x, y=y, z=z))
+                mesh.delete_face(fkey)
+
+            # create new faces
+            for vkeys, ckey in zip(outer_verts_polygons, centroid_verts):
+                for i, vkey in enumerate(vkeys):
+                    next_vkey = wrap_list(vkeys, i + 1)
+                    mesh.add_face([ckey, vkey, next_vkey])
+
+        # generate faces between polygons
+        vertex_for_vertex = zip(*outer_verts_polygons)
+
+        for i, mirror_corners_1 in enumerate(vertex_for_vertex):
+            mirror_corners_2 = wrap_list(vertex_for_vertex, i + 1)
+            mesh.add_face(mirror_corners_1 + mirror_corners_2[::-1])
+
+        # to Rhino.Geometry and clean it up
+        rgmesh = MeshArtist(mesh).draw_mesh()
+        rgmesh.UnifyNormals()
+        rgmesh.Normals.ComputeNormals()
+
+        return rgmesh
 
     @classmethod
     def from_data(cls, data):
@@ -409,83 +425,6 @@ class ClayBullet(object):
             location, compression_ratio=compression_ratio, height=height, **kwargs
         )
 
-    def generate_mesh(self, face_count=18):
-        """Generate mesh representation of bullet with custom resolution.
-
-        Parameters
-        ----------
-        face_count : :class:`int`, optional
-            Desired number of faces, by default 18
-            Used as a guide for the resolution of the mesh cylinder
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Mesh`
-        """
-        if face_count < 6:
-            sides = 3
-        elif face_count < 15:
-            sides = 4
-        else:
-            sides = face_count // 3
-
-        polygons = []
-        polygons.append(rg.Polyline.CreateInscribedPolygon(self.circle, sides))
-
-        T = rg.Transform.Translation(self.circle.Normal * -self.compressed_height)
-
-        second_polygon = polygons[0].Duplicate()
-        second_polygon.Transform(T)
-
-        polygons.append(second_polygon)
-
-        mesh = cg_Mesh()
-        outer_verts_polygons = []
-
-        # generate verts at polygon corners
-        for polygon in polygons:
-            _temp_list = []
-
-            polygon_corners = list(polygon.Item)
-            polygon_corners.pop()  # remove end pt since == start pt
-
-            for pt in polygon_corners:
-                _temp_list.append(mesh.add_vertex(x=pt.X, y=pt.Y, z=pt.Z))
-            outer_verts_polygons.append(_temp_list)
-
-        polygon_faces = []
-        for vkeys in outer_verts_polygons:
-            polygon_faces.append(mesh.add_face(vkeys))
-
-        # if >4 sides polygon, create faces by tri subd
-        if sides > 4:
-
-            centroid_verts = []
-            for fkey in polygon_faces:
-                x, y, z = mesh.face_centroid(fkey)
-                centroid_verts.append(mesh.add_vertex(x=x, y=y, z=z))
-                mesh.delete_face(fkey)
-
-            # create new faces
-            for vkeys, ckey in zip(outer_verts_polygons, centroid_verts):
-                for i, vkey in enumerate(vkeys):
-                    next_vkey = wrap_list(vkeys, i + 1)
-                    mesh.add_face([ckey, vkey, next_vkey])
-
-        # generate faces between polygons
-        vertex_for_vertex = zip(*outer_verts_polygons)
-
-        for i, mirror_corners_1 in enumerate(vertex_for_vertex):
-            mirror_corners_2 = wrap_list(vertex_for_vertex, i + 1)
-            mesh.add_face(mirror_corners_1 + mirror_corners_2[::-1])
-
-        # to Rhino.Geometry and clean it up
-        rg_mesh = MeshArtist(mesh).draw_mesh()
-        rg_mesh.UnifyNormals()
-        rg_mesh.Normals.ComputeNormals()
-
-        return rg_mesh
-
 
 def check_id_collision(clay_bullets):
     """Check for duplicate ids in list of ClayBullet instances.
@@ -510,72 +449,3 @@ def check_id_collision(clay_bullets):
                 )
             )
         set_of_ids.add(id_)
-
-
-class ClayStructure(Network):
-    def __init__(self, clay_bullets):
-        super(ClayStructure, self).__init__()
-        self._clay_bullets = clay_bullets
-        self.network_from_clay_bullets(self._clay_bullets)
-        self.update_default_edge_attributes(relation=None)
-        self.update_default_edge_attributes(is_touching=False)
-
-    @property
-    def clay_bullets(self):
-        return self.vertices
-
-    @property
-    def average_compressed_radius(self):
-        sum_ = sum([bullet.compressed_radius for bullet in self._clay_bullets])
-        return sum_ / len(self._clay_bullets)
-
-    def _edges_from_distance(self, i, clay_bullet):
-        edges = []
-        for j, other_bullet in enumerate(self._clay_bullets):
-            if i == j:
-                continue
-            dist = clay_bullet.plane.Origin.DistanceTo(other_bullet.plane.Origin)
-            if dist <= clay_bullet.compressed_radius + other_bullet.compressed_radius:
-                edges.append((i, j))  # equivalent to set.update()
-        return edges
-
-    def _set_attributes_edges_longer_than(self, dist, **kwargs):
-        if len(kwargs) < 1:
-            raise Exception("No attributes to set")
-
-        keys = []
-        for u, v in self.edges():
-            if self.edge_length(u, v) >= dist:
-                keys.append((u, v))
-
-        self.set_edges_attributes(kwargs.keys(), kwargs.values(), keys=keys)
-
-    def _bullet_neighboors_below(self, u):
-        z_value = self.get_vertex_attribute(u, "z")
-        bullets_below = self.vertices_where({"z": (0, z_value)})
-
-        bullets_below_keys = [(u, v) for v in bullets_below if v != u]
-        for u_, v in bullets_below_keys:
-            if self.edge_length(u_, v) <= 20:
-                self.add_edge(u_, v, relation="neighboor_below", is_touching=True)
-
-    def network_from_clay_bullets(self, clay_bullets):
-        for i, clay_bullet in enumerate(clay_bullets):
-            self.add_vertex(
-                key=i,
-                x=clay_bullet.plane.Origin.X,
-                y=clay_bullet.plane.Origin.Y,
-                z=clay_bullet.plane.Origin.Z,
-                class_instance=clay_bullet,
-            )
-
-        edges_from_order = [(i, i + 1) for i in range(len(clay_bullets) - 1)]
-
-        for u, v in edges_from_order:
-            self.add_edge(u, v, relation="print_order", is_touching=True)
-
-        # TODO: Better distance value
-        self._set_attributes_edges_longer_than(26, is_touching=False)
-
-        for i in range(len(self._clay_bullets)):
-            self._bullet_neighboors_below(i)
