@@ -9,17 +9,12 @@ import json
 
 import compas.geometry as cg
 
-from compas_rcf.fab_data.clay_objs import ClayBullet
+from compas_rcf.fab_data import ClayBullet
 
 try:
     from pathlib import Path
 except ImportError:
-    try:
-        from pathlib2 import Path
-    except ImportError:
-        pass
-
-__all__ = ["csv_reports", "ClayBulletEncoder", "load_bullets"]
+    pass
 
 
 def csv_reports(args):
@@ -89,7 +84,7 @@ def csv_reports(args):
                         row.append(bullet.density)
                 except AttributeError:
                     try:
-                        row.append(bullet.attributes["density"])
+                        row.append(bullet.attrs["density"])
                     except (AttributeError, KeyError):
                         row.append(None)
 
@@ -105,12 +100,7 @@ def csv_reports(args):
                 pt_fmt = ",".join(["{:.3f}"] * 3)
                 row.append(pt_fmt.format(*bullet.location.point))
 
-                row.append(bullet.tool)
-
-                try:
-                    row.append(bullet.weight_kg)
-                except AttributeError:
-                    row.append(None)
+                row.append(bullet.get_weight_kg())
 
                 csv_w.writerow(row)
 

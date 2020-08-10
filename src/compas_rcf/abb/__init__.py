@@ -47,4 +47,4 @@ from .helpers import *  # noqa: F401,F403
 from .rapid_tool_data import *  # noqa: F401,F403
 
 if not IPY:
-    from .procedures import *  # noqa: F401,F403
+    from .abb_rcf_client import *  # noqa: F401,F403

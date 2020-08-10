@@ -30,7 +30,6 @@ def readline_serial(port, baudrate):
     Exception
         ???
     """
-
     with serial.Serial(port, baudrate) as ser:
         while True:
             try:
@@ -60,4 +59,4 @@ def get_distance_measurement():
 
 
 if __name__ == "__main__":
-    print(get_distance_measurement("COM4", 115200))
+    print(readline_serial("COM4", 115200))

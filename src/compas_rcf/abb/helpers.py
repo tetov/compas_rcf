@@ -4,13 +4,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import time
 from collections import Sequence
 from os.path import join
 
 from compas_fab.backends import RosClient
 from compas_rrc import AbbClient
-from compas_rrc import FeedbackLevel
 from compas_rrc import Motion
 from compas_rrc import MoveToFrame
 from compas_rrc import Noop
@@ -19,11 +17,9 @@ from compas_rrc import SetAcceleration
 from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
-from compas_rrc import TimeoutException
 from compas_rrc import Zone
 
 from compas_rcf import DOCKER_COMPOSE_DIR
-from compas_rcf.docker import restart_container
 
 log = logging.getLogger(__name__)
 
@@ -59,57 +55,6 @@ DOCKER_COMPOSE_PATHS = {
 DRIVER_CONTAINER_NAME = "abb-driver"
 
 ROBOT_IPS = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
-
-
-def ping(client, timeout=10):
-    """Ping ABB robot controller.
-
-    Parameters
-    ----------
-    client : :class:`compas_rrc.AbbClient`
-        Client connected to controller.
-    timeout : :class:`float`, optional
-        Timeout for reply. Defaults to ``10``.
-
-    Raises
-    ------
-    :exc:`TimeoutError`
-        If no reply is returned before timeout.
-    """
-    client.send_and_wait(Noop(feedback_level=FeedbackLevel.DONE), timeout=timeout)
-
-
-def check_reconnect(
-    client, driver_container_name="abb-driver", timeout_ping=5, wait_after_up=2, tries=3
-):
-    """Check connection to ABB controller and restart abb-driver if necessary.
-
-    Parameters
-    ----------
-    client : :class:`compas_rrc.AbbClient`
-        Client connected to controller.
-    timeout_ping : :class:`float`, optional
-        Timeout for ping response.
-    wait_after_up : :class:`float`, optional
-        Time to wait to ping after `abb-driver` container started.
-
-    Raises
-    ------
-    :exc:`TimeoutError`
-        If no reply is returned before timeout.
-    """
-    for _ in range(tries):
-        try:
-            log.debug("Pinging robot")
-            ping(client, timeout_ping)
-            log.debug("Breaking loop after successful ping.")
-            break
-        except TimeoutException:
-            log.info("No response from controller, restarting abb-driver service.")
-            restart_container(driver_container_name)
-            time.sleep(wait_after_up)
-    else:
-        raise TimeoutException("Failed to connect to robot.")
 
 
 def std_move_to_frame(
