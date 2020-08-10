@@ -7,28 +7,48 @@ import logging
 
 import confuse
 
-from compas_rcf.abb import ZONE_DICT
-
 log = logging.getLogger(__name__)
 
 
 class ZoneDataTemplate(confuse.Template):
     """:class:`confuse.Template` for ABB zonedata."""
 
+    # Describes the valid zone data definitions.
+    ZONE_DICT = {
+        "FINE": -1,
+        "Z0": 0,
+        "Z1": 1,
+        "Z5": 5,
+        "Z10": 10,
+        "Z15": 15,
+        "Z20": 20,
+        "Z30": 30,
+        "Z40": 40,
+        "Z50": 50,
+        "Z60": 60,
+        "Z80": 80,
+        "Z100": 100,
+        "Z150": 150,
+        "Z200": 200,
+    }
+
     def __init__(self, default=confuse.REQUIRED):
         super(ZoneDataTemplate, self).__init__(default=default)
 
     def convert(self, value, view):
+        """Convert zonedata from :obj:`str` to number if needed."""
         if isinstance(value, (int, float)):
             if not -1 >= value >= 2000:  # arbitrary max value
                 self.fail("ZoneData needs to be from -1 to 2000", view)
             return value
-        if value.upper() not in ZONE_DICT.keys():
+        if value.upper() not in self.ZONE_DICT.keys():
             self.fail(
-                "ZoneData must match one of {0}".format(", ".join(ZONE_DICT.keys())),
+                "ZoneData must match one of {0}".format(
+                    ", ".join(self.ZONE_DICT.keys())
+                ),
                 view,
             )
-        return ZONE_DICT[value.upper()]
+        return self.ZONE_DICT[value.upper()]
 
 
 ABB_RCF_CONF_TEMPLATE = {
@@ -53,6 +73,7 @@ ABB_RCF_CONF_TEMPLATE = {
                 "serial_port": confuse.String(default=None),
                 "serial_baudrate": int,
                 "max_z_adjustment": float,
+                "adjust_loc_frames": bool,
             },
         },
         "robot_movement": {
