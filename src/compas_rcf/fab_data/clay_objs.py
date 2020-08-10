@@ -10,6 +10,7 @@ from itertools import count
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
+from compas.geometry import Primitive
 from compas.geometry import Translation
 from compas_ghpython.artists import MeshArtist
 
@@ -352,6 +353,17 @@ class ClayBullet(object):
 
         return rgmesh
 
+    def to_data(self):
+        data = {}
+
+        for key, value in self.__dict__.items():
+            if isinstance(value, Primitive):
+                data[key] = value.to_data()
+            else:
+                data[key] = value
+
+        return data
+
     @classmethod
     def from_data(cls, data):
         """Construct a :class:`ClayBullet` instance from its data representation.
@@ -366,7 +378,7 @@ class ClayBullet(object):
         :class:`ClayBullet`
             The constructed ClayBullet instance
         """
-        location = Frame.from_data(data.pop("_location"))
+        location = Frame.from_data(data.pop("location"))
 
         trajectory_to = []
         for frame_data in data.pop("_trajectory_to"):

@@ -33,8 +33,8 @@ class ZoneDataTemplate(confuse.Template):
 
 ABB_RCF_CONF_TEMPLATE = {
     "log_dir": confuse.Filename(),
-    "fab_data": confuse.Path(),
     "pick_conf": confuse.Path(),
+    "run_data_path": confuse.Template(),  # Already type checked by argparse
     "robot_client": {
         "docker": {"timeout_ping": float, "sleep_after_up": float},
         "controller": str,

@@ -25,10 +25,10 @@ from compas_rcf.abb import ROBOT_IPS
 from compas_rcf.abb import AbbRcfClient
 from compas_rcf.docker import compose_up
 from compas_rcf.fab_data import ABB_RCF_CONF_TEMPLATE
+from compas_rcf.fab_data import ClayBullet
 from compas_rcf.fab_data import ClayBulletEncoder
 from compas_rcf.fab_data import PickStation
 from compas_rcf.fab_data import fab_conf
-from compas_rcf.fab_data import load_bullets
 
 # This reduces latency, see:
 # https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
@@ -37,7 +37,7 @@ from twisted.internet import reactor  # noqa: E402 isort:skip
 reactor.timeout = lambda: 0.0001
 
 
-def logging_setup():
+def logging_setup(log_dir, log_level):
     """Configure logging for module and imported modules."""
     loglevel_dict = {0: log.WARNING, 1: log.INFO, 2: log.DEBUG}
 
@@ -45,7 +45,7 @@ def logging_setup():
     log_file = Path(log_dir) / timestamp_file
 
     log.basicConfig(
-        level=loglevel_dict[args.verbose],
+        level=loglevel_dict[log_level],
         format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
         handlers=[log.FileHandler(log_file, mode="a"), log.StreamHandler(sys.stdout)],
     )
@@ -128,7 +128,7 @@ def setup_fab_data(clay_bullets):
 ################################################################################
 # Script runner                                                                #
 ################################################################################
-def main(run_conf):
+def run(run_conf, run_data):
     """Fabrication runner, sets conf, reads json input and runs fabrication process."""
     ############################################################################
     # Docker setup                                                            #
@@ -140,10 +140,10 @@ def main(run_conf):
     ############################################################################
     # Load fabrication data                                                    #
     ############################################################################
-    clay_bullets = load_bullets(run_conf.fab_data)
-    log.info("Fabrication data read from: {}".format(run_conf.fab_data))
+    clay_cylinders = [ClayBullet.from_data(data) for data in run_data["fab_data"]]
+    log.info("Fabrication data read.")
 
-    log.info("{} items in clay_bullets.".format(len(clay_bullets)))
+    log.info("{} items in clay_bullets.".format(len(clay_cylinders)))
 
     # Integrate into AbbRcfClient?
     with run_conf.pick_conf.open(mode="r") as fp:
@@ -154,13 +154,15 @@ def main(run_conf):
     ############################################################################
     json_progress_identifier = "-IN_PROGRESS"
 
-    if run_conf.fab_data.stem.endswith(
+    run_data_path = run_conf.run_data_path
+
+    if run_data_path.stem.endswith(
         json_progress_identifier
-    ) or run_conf.fab_data.stem.endswith(json_progress_identifier + ".log"):
-        progress_file = run_conf.fab_data
+    ) or run_data_path.stem.endswith(json_progress_identifier + ".json"):
+        progress_file = run_data_path
     else:
-        progress_file = run_conf.fab_data.with_name(
-            run_conf.fab_data.stem + json_progress_identifier + run_conf.fab_data.suffix
+        progress_file = run_data_path.with_name(
+            run_data_path.stem + json_progress_identifier + run_data_path.suffix
         )
 
     i = 1
@@ -183,7 +185,7 @@ def main(run_conf):
         # Fabrication loop                                                         #
         ############################################################################
 
-        to_place = setup_fab_data(clay_bullets)
+        to_place = setup_fab_data(clay_cylinders)
 
         if not questionary.confirm("Ready to start program?").ask():
             log.critical("Program exited because user didn't confirm start.")
@@ -216,8 +218,9 @@ def main(run_conf):
             bullet.placed = 1  # set placed to temporary value to mark it as "placed"
 
             # Write progress to json while waiting for robot
+            run_data["fab_data"] = [cylinder.to_data() for cylinder in clay_cylinders]
             with progress_file.open(mode="w") as fp:
-                json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
+                json.dump(run_data, fp, cls=ClayBulletEncoder)
             log.debug("Wrote clay_bullets to {}".format(progress_file.name))
 
             # This blocks until cycle is finished
@@ -233,24 +236,25 @@ def main(run_conf):
         ############################################################################
 
         # Write progress of last run of loop
+        run_data["fab_data"] = [cylinder.to_data() for cylinder in clay_cylinders]
         with progress_file.open(mode="w") as fp:
-            json.dump(clay_bullets, fp, cls=ClayBulletEncoder)
-        log.debug("Wrote clay_bullets to {}".format(progress_file.name))
+            json.dump(run_data, fp, cls=ClayBulletEncoder)
+        log.debug("Wrote run_data to {}".format(progress_file.name))
 
-        if len([bullet for bullet in clay_bullets if bullet.placed is None]) == 0:
+        if len([bullet for bullet in clay_cylinders if bullet.placed is None]) == 0:
             progress_file.rename(done_file)
             log.debug("Saved placed bullets to {}.".format(done_file))
 
         rob_client.post_procedure()
 
 
-if __name__ == "__main__":
+def main():
     """Entry point, logging setup and argument handling."""
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "run_data_file", type=pathlib.Path, help="File containing fabrication setup.",
+        "run_data_path", type=pathlib.Path, help="File containing fabrication setup.",
     )
     parser.add_argument(
         "-d",
@@ -277,27 +281,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load dictionary from file specified on command line
-    with args.run_data_file.open(mode="r") as f:
+    with args.run_data_path.open(mode="r") as f:
         run_data = json.load(f)
 
-    log_dir = run_data["log_dir"]
+    logging_setup(run_data["log_dir"], args.verbose)
 
     # Read config-default.yml for default values
     fab_conf.read(user=False, defaults=True)
 
-    if run_data.get("log_dir"):
-        fab_conf["log_dir"] = run_data["log_dir"]
-    logging_setup()
+    # Read conf file specified in run_data
+    fab_conf.set_file(run_data["conf_path"])
+    log.info("Configuration loaded from {}".format(run_data["conf_path"]))
 
     # Import options from argparse
     fab_conf.set_args(args, dots=True)
 
-    # Read conf file specified in run_data
-    log.info("Configuration loaded from {}".format(run_data["conf_path"]))
-    fab_conf.set_file(run_data["conf_path"])
-
-    # Add paths from run_data to fab_conf
-    fab_conf["fab_data"] = run_data["fab_data_path"]
     fab_conf["pick_conf"] = run_data["pick_conf_path"]
 
     # Validate conf
@@ -308,4 +306,8 @@ if __name__ == "__main__":
     log.debug("argparse input: {}".format(args))
     log.debug("config after set_args: {}".format(fab_conf))
 
-    main(run_conf)
+    run(run_conf, run_data)
+
+
+if __name__ == "__main__":
+    main()
