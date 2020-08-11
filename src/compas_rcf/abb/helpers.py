@@ -34,6 +34,7 @@ DOCKER_COMPOSE_PATHS = {
 }
 
 DRIVER_CONTAINER_NAME = "abb-driver"
+DRIVER_IMAGE_NAME = "gramaziokohler/compas_rrc_driver"
 
 ROBOT_IPS = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
 

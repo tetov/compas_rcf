@@ -16,6 +16,7 @@ from operator import attrgetter
 from pathlib import Path
 
 import questionary
+from compas.geometry import Transformation
 from compas_fab.backends.ros import RosClient
 from compas_rrc import PrintText
 
@@ -29,6 +30,7 @@ from compas_rcf.fab_data import ClayBullet
 from compas_rcf.fab_data import ClayBulletEncoder
 from compas_rcf.fab_data import PickStation
 from compas_rcf.fab_data import fab_conf
+from compas_rcf.localization import publish_static_transform
 
 # This reduces latency, see:
 # https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
@@ -133,6 +135,19 @@ def run(run_conf, run_data):
     ############################################################################
     # Docker setup                                                            #
     ############################################################################
+    # Publish TF static transform for transformation by ROS
+    if run_conf.publish_tf_xform:
+        if run_data.get("xform_path"):
+            log.debug(f"Loading matrix from {run_data['xform_path']}")
+            with open(run_data["xform_path"], mode="r") as fp:
+                xform = json.load(fp)
+        else:
+            # Publish identity matrix (zero matrix)
+            log.debug("Publishing zero matrix")
+            xform = Transformation()
+
+        publish_static_transform(xform, scale_factor=1000)  # mm to m scale factor
+
     ip = {"ROBOT_IP": ROBOT_IPS[run_conf.robot_client.controller]}
     compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
     log.debug("Driver services are running.")
@@ -143,7 +158,7 @@ def run(run_conf, run_data):
     clay_cylinders = [ClayBullet.from_data(data) for data in run_data["fab_data"]]
     log.info("Fabrication data read.")
 
-    log.info("{} items in clay_bullets.".format(len(clay_cylinders)))
+    log.info(f"{len(clay_cylinders)} items in clay_cylinders.")
 
     # Integrate into AbbRcfClient?
     with run_conf.pick_conf.open(mode="r") as fp:
@@ -243,7 +258,7 @@ def run(run_conf, run_data):
 
         if len([bullet for bullet in clay_cylinders if bullet.placed is None]) == 0:
             progress_file.rename(done_file)
-            log.debug("Saved placed bullets to {}.".format(done_file))
+            log.debug(f"Saved placed bullets to {done_file}.")
 
         rob_client.post_procedure()
 
@@ -291,7 +306,7 @@ def main():
 
     # Read conf file specified in run_data
     fab_conf.set_file(run_data["conf_path"])
-    log.info("Configuration loaded from {}".format(run_data["conf_path"]))
+    log.info(f"Configuration loaded from {run_data['conf_path']}")
 
     # Import options from argparse
     fab_conf.set_args(args, dots=True)
@@ -301,10 +316,10 @@ def main():
     # Validate conf
     run_conf = fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
-    log.info("compas_rcf version: {}".format(__version__))
-    log.info("Using {} controller.".format(run_conf.robot_client.controller))
-    log.debug("argparse input: {}".format(args))
-    log.debug("config after set_args: {}".format(fab_conf))
+    log.info(f"compas_rcf version: {__version__}")
+    log.info(f"Using {run_conf.robot_client.controller} controller.")
+    log.debug(f"argparse input: {args}")
+    log.debug(f"config after set_args: {fab_conf}")
 
     run(run_conf, run_data)
 
