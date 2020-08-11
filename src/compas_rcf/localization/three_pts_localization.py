@@ -39,7 +39,7 @@ def three_pts_localization(rcs_coords, wcs_coords):
         The base frame of the robot in WCS.
     """
     # Calculate the directions of the X, Y and X axis of the robot in WCS
-    rcs_o, rcs_x, rcs_y = rcs_coords
+    rcs_o, _, _ = rcs_coords
     wcs_o, wcs_x, wcs_y = wcs_coords
 
     wcs_robot_x_dir = wcs_x - wcs_o
