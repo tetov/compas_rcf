@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import compas
 import compas.geometry as cg
 from compas import raise_if_ironpython
 
@@ -110,3 +111,19 @@ def get_offset_frame(frame, distance):
     T = cg.Translation(offset_vector)
 
     return frame.transformed(T)
+
+
+def temp_change_compas_precision(precision):
+    def decorator(func):
+        def wrapped_func(*args, **kwargs):
+            prev_precision = compas.PRECISION
+            compas.PRECISION = precision
+
+            result = func(*args, **kwargs)
+
+            compas.PRECISION = prev_precision
+            return result
+
+        return wrapped_func
+
+    return decorator

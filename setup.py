@@ -26,6 +26,7 @@ requirements = [
     "compas_rrc >= 0.2.2, < 1.0.0",
     "questionary ~= 1.5.1",
     "confuse ~= 1.3.0",
+    "docker ~= 4.2.2",
 ]
 
 extras_require = {
@@ -82,5 +83,5 @@ setup(
     install_requires=requirements,
     extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README
-    entry_points={"console_scripts": []},
+    entry_points={"console_scripts": ["rcf_run = compas_rcf.abb.run:main"]},
 )
