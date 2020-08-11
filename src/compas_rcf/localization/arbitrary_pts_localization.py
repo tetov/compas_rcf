@@ -21,12 +21,11 @@ import tempfile
 from functools import reduce
 from pathlib import Path
 
-import compas
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize
 
-compas.PRECISION = "12f"
+from compas_rcf.utils import temp_change_compas_precision
 
 
 def _objective_function(x, rcs_coords, wcs_coords):
@@ -203,6 +202,7 @@ def _plot_result(rcs_coords, wcs_coords, result, plot_dir):
     plt.savefig(plot_dir / "rcs_matching_yz.png")
 
 
+@temp_change_compas_precision("12f")
 def arbitrary_pts_localization(rcs_coords, wcs_coords, plot_results=False, maxiter=100):
     """Calculate the RCS origin frame.
 
