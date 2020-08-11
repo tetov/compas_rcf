@@ -35,9 +35,10 @@ ABB_RCF_CONF_TEMPLATE = {
     "log_dir": confuse.Filename(),
     "pick_conf": confuse.Path(),
     "run_data_path": confuse.Template(),  # Already type checked by argparse
+    "publish_tf_xform": bool,
     "robot_client": {
-        "docker": {"timeout_ping": float, "sleep_after_up": float},
         "controller": str,
+        "docker": {"timeout_ping": float, "sleep_after_up": float},
         "wobjs": {"pick": str, "place": str},
         "tools": {
             "pick_place": {

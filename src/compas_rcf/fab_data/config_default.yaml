@@ -8,6 +8,7 @@ robot_client:
     docker:
         timeout_ping: 2
         sleep_after_up: 2
+    publish_tf_xform: false  # publish a TF topic w xform
     wobjs:
         pick: wobj0
         place: ob_A057_WobjPlacing01

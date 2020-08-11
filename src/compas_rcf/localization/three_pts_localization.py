@@ -20,10 +20,8 @@ from __future__ import print_function
 import compas
 import compas.geometry as cg
 
-compas.PRECISION = "12f"
 
-
-def three_point_localization(rcs_coords, wcs_coords):
+def three_pts_localization(rcs_coords, wcs_coords):
     """Get the robot base frame in WCS using three points method.
 
     Parameters
@@ -38,6 +36,8 @@ def three_point_localization(rcs_coords, wcs_coords):
     :class:`compas.geometry.Frame`
         The base frame of the robot in WCS.
     """
+    old_precision = compas.PRECISION
+    compas.PRECISION = "12f"
     # Calculate the directions of the X, Y and X axis of the robot in WCS
     rcs_o, rcs_x, rcs_y = rcs_coords
     wcs_o, wcs_x, wcs_y = wcs_coords
@@ -72,5 +72,7 @@ def three_point_localization(rcs_coords, wcs_coords):
     print("Robot Z Direction in WCS: {}".format(wcs_robot_base.zaxis))
 
     print("RCS origin in WCS: {}".format(wcs_robot_base.point))
+
+    compas.PRECISION = old_precision
 
     return wcs_robot_base
