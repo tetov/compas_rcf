@@ -7,8 +7,6 @@ import csv
 import datetime
 import json
 
-import compas.geometry as cg
-
 from compas_rcf.fab_data import ClayBullet
 
 try:
@@ -105,21 +103,6 @@ def csv_reports(args):
                 csv_w.writerow(row)
 
 
-class ClayBulletEncoder(json.JSONEncoder):
-    """JSON encoder for :class:`ClayBullet`.
-
-    Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
-    """
-
-    def default(self, obj):
-        if isinstance(obj, ClayBullet):
-            return obj.__dict__
-        if isinstance(obj, cg.Primitive):
-            return obj.to_data()
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
-
-
 def load_bullets(file_path):
     """Load fabrication data from JSON file.
 
@@ -133,10 +116,13 @@ def load_bullets(file_path):
     :class:`list` of :class:`ClayBullet`
     """
     with open(str(file_path), mode="r") as fp:
-        json_string = json.load(fp)
+        run_data = json.load(fp)
 
-    clay_bullets = []
-    for dict_ in json_string:
-        clay_bullets.append(ClayBullet.from_data(dict_))
+    # Accept either run_data file or fab_data file
+    fab_data = run_data.get("fab_data") or run_data
 
-    return clay_bullets
+    clay_cylinders = []
+    for data in fab_data:
+        clay_cylinders.append(ClayBullet.from_data(data))
+
+    return clay_cylinders

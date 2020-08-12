@@ -4,9 +4,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import math
 import time
 
 from compas.geometry import Translation
+from compas_fab.robots import JointTrajectory
 from compas_rrc import AbbClient
 from compas_rrc import FeedbackLevel
 from compas_rrc import MoveToFrame
@@ -14,6 +16,7 @@ from compas_rrc import MoveToJoints
 from compas_rrc import Noop
 from compas_rrc import PrintText
 from compas_rrc import ReadWatch
+from compas_rrc import RobotJoints
 from compas_rrc import SetAcceleration
 from compas_rrc import SetDigital
 from compas_rrc import SetMaxSpeed
@@ -216,6 +219,35 @@ class AbbRcfClient(AbbClient):
 
         return self.send(ReadWatch())
 
+    def execute_trajectory(self, trajectory):
+        trajectory_type = self._get_trajectory_type(trajectory)
+        if trajectory_type == "JointTrajectory":
+            execute_func = self._execute_joint_trajectory
+        elif trajectory_type == "FrameList":
+            execute_func = self._execute_frame_trajectory
+        else:
+            raise ValueError(f"No trajectory execution function for {trajectory}.")
+
+        execute_func(trajectory)
+
+    def _execute_joint_trajectory(self, trajectory):
+        robot_joints_list = self.joint_trajectory_to_robot_joints_list(trajectory)
+
+        for rob_joints in robot_joints_list:
+            self.send(
+                MoveToJoints(
+                    rob_joints,
+                    self.EXTERNAL_AXIS_DUMMY,
+                    self.speed.travel,
+                    self.zone.travel,
+                )
+            )
+
+    def _execute_frame_trajectory(self, trajectory):
+
+        for frame in trajectory:
+            self.send(MoveToFrame(frame, self.speed.travel, self.zone.travel))
+
     def place_bullet(self, cylinder):
         """Send movement and IO instructions to place a clay cylinder.
 
@@ -246,9 +278,7 @@ class AbbRcfClient(AbbClient):
         # start watch
         self.send(StartWatch())
 
-        # Safe pos then vertical offset
-        for frame in cylinder.trajectory_to:
-            self.send(MoveToFrame(frame, self.speed.travel, self.zone.travel))
+        self.execute_trajectory(cylinder.trajectory_to)
 
         self.send(
             MoveToFrame(
@@ -263,10 +293,6 @@ class AbbRcfClient(AbbClient):
                 self.correct_location(cylinder, dist_diff)
             else:
                 raise Exception("Unacceptable distance difference.")
-
-        self.send_and_wait(WaitTime(2, feedback_level=FeedbackLevel.NONE))
-
-        self.send_and_wait(WaitTime(2))
 
         self.send(SetTool(self.pick_place_tool))
 
@@ -297,8 +323,7 @@ class AbbRcfClient(AbbClient):
         )
 
         # offset placement frame then safety frame
-        for frame in cylinder.trajectory_from:
-            self.send(MoveToFrame(frame, self.speed.travel, self.zone.travel))
+        self.execute_trajectory(cylinder.trajectory_from)
 
         self.send(StopWatch())
 
@@ -321,8 +346,13 @@ class AbbRcfClient(AbbClient):
         log.debug("IO {} set to {}.".format(pin, state))
 
     def measure_z_diff(self, cylinder):
+
+        self.send(WaitTime(1))
+
         dist_read = get_distance_measurement()
         log.debug("Dist read: {}".format(dist_read))
+
+        self.send(WaitTime(1))
 
         expected_dist = cylinder.get_egress_frame().point.distance_to_point(
             cylinder.location.point
@@ -347,3 +377,19 @@ class AbbRcfClient(AbbClient):
     @classmethod
     def from_confuse_conf(cls, ros, conf):
         pass
+
+    @staticmethod
+    def _get_trajectory_type(trajectory):
+        if isinstance(trajectory, JointTrajectory):
+            return "JointTrajectory"
+        else:
+            return "FrameList"
+
+    @staticmethod
+    def joint_trajectory_to_robot_joints_list(joint_trajectory):
+        robot_joints_list = []
+        for pt in joint_trajectory.points:
+            in_degrees = [math.degrees(pos) for pos in pt.values]
+            robot_joints_list.append(RobotJoints(*in_degrees))
+
+        return robot_joints_list
