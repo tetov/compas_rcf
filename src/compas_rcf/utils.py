@@ -16,6 +16,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
+
 import compas
 import compas.geometry as cg
 from compas import raise_if_ironpython
@@ -127,3 +129,18 @@ def temp_change_compas_precision(precision):
         return wrapped_func
 
     return decorator
+
+
+class CompasObjEncoder(json.JSONEncoder):
+    """JSON encoder for :class:`ClayBullet`.
+
+    Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
+    """
+
+    def default(self, obj):
+        try:
+            obj = obj.to_data()
+        except AttributeError:
+            pass
+
+        return obj

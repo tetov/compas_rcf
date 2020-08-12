@@ -6,6 +6,7 @@ import logging
 
 from compas.geometry import Frame
 from compas.geometry import Transformation
+from compas.geometry import Translation
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +25,10 @@ class PickStation(object):
         self.pick_frames = pick_frames
         self.counter = 0
         self.n_pick_frames = len(pick_frames)
+
+    def get_egress_frame(self, offset=400):
+        Tr = Translation([0, 0, offset])
+        return self.pick_frames[0].transformed(Tr)
 
     def get_next_frame(self, place_cylinder):
         """Get next frame to pick cylinder at.

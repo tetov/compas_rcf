@@ -60,6 +60,7 @@ def _run(cmd, check_output=False, print_output=True, **kwargs):
 
 def compose_up(
     path,
+    overrides=None,
     force_recreate=False,
     remove_orphans=False,
     ignore_orphans=True,
@@ -71,8 +72,10 @@ def compose_up(
 
     Parameters
     ----------
-    path : :class:`os.PathLike` or :class:`str`
+    path : :class:`os.PathLike`
         Path to compose file.
+    overrides : :obj:`list` of :class:`os.PathLike`, optional
+        Docker compose override files, e.g. ``docker-compose.override.yml``.
     force_recreate : :class:`bool`, optional
         Force recreation of containers specified in ``docker-compose`` file.
         Defaults to ``False``.
@@ -96,9 +99,15 @@ def compose_up(
     run_kwargs.update({"check_output": check_output})
     run_kwargs.update({"print_output": print_output})
 
-    cmd_str = 'docker-compose --file "{}" up --detach'.format(path)
-    cmd = shlex.split(cmd_str)
+    file_args = "--file {} ".format(path)
 
+    for o_path in overrides or []:
+        file_args += "--file {} ".format(o_path)
+
+    cmd_str = "docker-compose {} up --detach".format(file_args)
+    print(cmd_str)
+    cmd = shlex.split(cmd_str, posix="win" not in sys.platform)
+    print(cmd)
     log.debug("Env vars: {}".format(env_vars))
 
     if ignore_orphans:
@@ -115,6 +124,7 @@ def compose_up(
         cmd.append("--remove-orphans")
 
     log.debug("Command to run: {}".format(cmd))
+    print("Command to run: {}".format(cmd))
 
     _run(cmd, **run_kwargs)
 
@@ -172,6 +182,9 @@ def _restart_container_subprocess(container_name):
 def _restart_container_dockerpy(name):
     import docker
 
-    with docker.client.from_env() as d:
-        container = d.get(name)
-        container.restart()
+    d = docker.client.from_env()
+
+    container = d.containers.get(name)
+    container.restart()
+
+    d.close()

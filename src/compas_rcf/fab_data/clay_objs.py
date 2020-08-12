@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import math
 from copy import deepcopy
 from itertools import count
@@ -12,6 +11,7 @@ from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
 from compas.geometry import Primitive
 from compas.geometry import Translation
+from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
 from compas_rcf.utils import ensure_frame
@@ -124,51 +124,6 @@ class ClayBullet(object):
         T = Translation(vector)
 
         return self.get_uncompressed_top_frame().transformed(T)
-
-    @property
-    def trajectory_to(self):
-        """Frames describing trajectory from picking station to placement moves.
-
-        Returns
-        -------
-        list of :class:`compas.geometry.Frame`
-        """
-        return self._trajectory_to
-
-    @trajectory_to.setter
-    def trajectory_to(self, frame_list):
-        """Ensure trajectory_to elements are :class:`compas.geometry.Frame` objects."""
-        self._trajectory_to = []
-
-        if isinstance(frame_list, collections.Sequence):
-            for frame_like in frame_list:
-                frame = ensure_frame(frame_like)
-                self._trajectory_to.append(frame)
-        else:
-            frame = ensure_frame(frame_list)
-            self._trajectory_to.append(frame)
-
-    @property
-    def trajectory_from(self):
-        """Frames describing trajectory from last placement move to picking station.
-
-        Returns
-        -------
-        list of :class:`compas.geometry.Frame`
-        """
-        return self._trajectory_from
-
-    @trajectory_from.setter
-    def trajectory_from(self, frame_list):
-        """Ensure trajectory_from elements are :class:`compas.geometry.Frame` objects."""  # noqa: E501
-        self._trajectory_from = []
-        if isinstance(frame_list, collections.Sequence):
-            for frame_like in frame_list:
-                frame = ensure_frame(frame_like)
-                self._trajectory_from.append(frame)
-        else:
-            frame = ensure_frame(frame_list)
-            self._trajectory_from.append(frame)
 
     def get_uncompressed_centroid_frame(self):
         """Get frame at middle of uncompressed bullet."""
@@ -287,6 +242,8 @@ class ClayBullet(object):
         """
         import Rhino.Geometry as rg
 
+        from compas_rcf.rhino import cgvector_to_rgvector
+
         if face_count < 6:
             sides = 3
         elif face_count < 15:
@@ -299,7 +256,9 @@ class ClayBullet(object):
         polygons = []
         polygons.append(rg.Polyline.CreateInscribedPolygon(circle, sides))
 
-        T = rg.Transform.Translation(circle.Normal * -self.get_compressed_height())
+        T = rg.Transform.Translation(
+            cgvector_to_rgvector(self.get_normal()) * self.get_compressed_height()
+        )
 
         second_polygon = polygons[0].Duplicate()
         second_polygon.Transform(T)
@@ -380,13 +339,23 @@ class ClayBullet(object):
         """
         location = Frame.from_data(data.pop("location"))
 
-        trajectory_to = []
-        for frame_data in data.pop("_trajectory_to"):
-            trajectory_to.append(Frame.from_data(frame_data))
+        _trajectory_to = data.pop("trajectory_to")
+        # Check if obj is JointTrajectory
+        if _trajectory_to.get("start_configuration"):
+            trajectory_to = JointTrajectory.from_data(_trajectory_to)
+        else:
+            trajectory_to = []
+            for frame_data in _trajectory_to:
+                trajectory_to.append(Frame.from_data(frame_data))
 
-        trajectory_from = []
-        for frame_data in data.pop("_trajectory_from"):
-            trajectory_from.append(Frame.from_data(frame_data))
+        _trajectory_from = data.pop("trajectory_from")
+        # Check if obj is JointTrajectory
+        if _trajectory_from.get("start_configuration"):
+            trajectory_from = JointTrajectory.from_data(_trajectory_from)
+        else:
+            trajectory_from = []
+            for frame_data in _trajectory_from:
+                trajectory_from.append(Frame.from_data(frame_data))
 
         # To check for old attr name for id
         if "bullet_id" in data.keys():

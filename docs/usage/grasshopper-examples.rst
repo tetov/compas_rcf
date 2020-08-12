@@ -1,5 +1,5 @@
 *******************************************************************************
-Grasshopper examples
+Grasshopper files
 *******************************************************************************
 
 .. note::
@@ -13,7 +13,7 @@ ClayBullet object creator and JSON read, write and edit
    :figclass: figure
    :class: figure-img img-fluid
 
-   :download:`create_edit_fab_data.gh <./../../grasshopper/create_edit_fab_data.gh>`.
+   :download:`create_edit_fab_data.ghx <./../../grasshopper/create_edit_fab_data.ghx>`.
 
 Create Rapid tooldata from Rhino Geometry
 =========================================
@@ -22,7 +22,7 @@ Create Rapid tooldata from Rhino Geometry
    :figclass: figure
    :class: figure-img img-fluid
 
-   :download:`create_rapid_tooldata.gh <./../../grasshopper/create_rapid_tooldata.gh>`.
+   :download:`create_rapid_tooldata.ghx <./../../grasshopper/create_rapid_tooldata.ghx>`.
 
 Send commands to ABB controller
 ===============================
@@ -34,4 +34,19 @@ Send commands to ABB controller
    :figclass: figure
    :class: figure-img img-fluid
 
-   :download:`abb_robot_control.gh <./../../grasshopper/abb_robot_control.gh>`.
+   :download:`abb_robot_control.ghx <./../../grasshopper/abb_robot_control.ghx>`.
+
+Localization
+============
+
+:download:`localization.ghx <./../../grasshopper/localization.ghx>`.
+
+Path planning
+=============
+
+:download:`path_planning.ghx <./../../grasshopper/path_planning.ghx>`.
+
+Pick conf creator
+=================
+
+:download:`localization.ghx <./../../grasshopper/localization.ghx>`.

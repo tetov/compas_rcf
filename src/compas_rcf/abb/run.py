@@ -27,10 +27,10 @@ from compas_rcf.abb import AbbRcfClient
 from compas_rcf.docker import compose_up
 from compas_rcf.fab_data import ABB_RCF_CONF_TEMPLATE
 from compas_rcf.fab_data import ClayBullet
-from compas_rcf.fab_data import ClayBulletEncoder
 from compas_rcf.fab_data import PickStation
 from compas_rcf.fab_data import fab_conf
 from compas_rcf.localization import publish_static_transform
+from compas_rcf.utils import CompasObjEncoder
 
 # This reduces latency, see:
 # https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
@@ -235,7 +235,7 @@ def run(run_conf, run_data):
             # Write progress to json while waiting for robot
             run_data["fab_data"] = [cylinder.to_data() for cylinder in clay_cylinders]
             with progress_file.open(mode="w") as fp:
-                json.dump(run_data, fp, cls=ClayBulletEncoder)
+                json.dump(run_data, fp, cls=CompasObjEncoder)
             log.debug("Wrote clay_bullets to {}".format(progress_file.name))
 
             # This blocks until cycle is finished
@@ -253,7 +253,7 @@ def run(run_conf, run_data):
         # Write progress of last run of loop
         run_data["fab_data"] = [cylinder.to_data() for cylinder in clay_cylinders]
         with progress_file.open(mode="w") as fp:
-            json.dump(run_data, fp, cls=ClayBulletEncoder)
+            json.dump(run_data, fp, cls=CompasObjEncoder)
         log.debug("Wrote run_data to {}".format(progress_file.name))
 
         if len([bullet for bullet in clay_cylinders if bullet.placed is None]) == 0:
