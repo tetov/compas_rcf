@@ -366,7 +366,8 @@ class AbbRcfClient(AbbClient):
     def is_dist_diff_ok(self, dist_diff):
         return abs(dist_diff) < self.max_z_diff
 
-    def correct_location_in_z(self, cylinder, dist_diff):
+    @staticmethod
+    def correct_location_in_z(cylinder, dist_diff):
         corr_vector = cylinder.get_normal() * dist_diff
         T = Translation(corr_vector)
 
@@ -382,8 +383,8 @@ class AbbRcfClient(AbbClient):
     def _get_trajectory_type(trajectory):
         if isinstance(trajectory, JointTrajectory):
             return "JointTrajectory"
-        else:
-            return "FrameList"
+        # Assume its list of frame if not JointTrajectory
+        return "FrameList"
 
     @staticmethod
     def joint_trajectory_to_robot_joints_list(joint_trajectory):
