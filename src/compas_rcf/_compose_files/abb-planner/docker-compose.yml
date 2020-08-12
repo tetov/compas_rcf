@@ -7,7 +7,7 @@ services:
       - "ROS_HOSTNAME=ros-master"
       - "ROS_MASTER_URI=http://ros-master:11311"
     ports:
-      - "11312:11311"
+      - "11311:11311"
     command:
       - roscore
 

@@ -287,6 +287,8 @@ class ClayBullet(object):
         """
         import Rhino.Geometry as rg
 
+        from compas_rcf.rhino import cgvector_to_rgvector
+
         if face_count < 6:
             sides = 3
         elif face_count < 15:
@@ -299,7 +301,9 @@ class ClayBullet(object):
         polygons = []
         polygons.append(rg.Polyline.CreateInscribedPolygon(circle, sides))
 
-        T = rg.Transform.Translation(circle.Normal * -self.get_compressed_height())
+        T = rg.Transform.Translation(
+            cgvector_to_rgvector(self.get_normal()) * self.get_compressed_height()
+        )
 
         second_polygon = polygons[0].Duplicate()
         second_polygon.Transform(T)
