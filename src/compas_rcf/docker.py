@@ -182,6 +182,9 @@ def _restart_container_subprocess(container_name):
 def _restart_container_dockerpy(name):
     import docker
 
-    with docker.client.from_env() as d:
-        container = d.get(name)
-        container.restart()
+    d = docker.client.from_env()
+
+    container = d.get(name)
+    container.restart()
+
+    d.close()
