@@ -184,7 +184,7 @@ def _restart_container_dockerpy(name):
 
     d = docker.client.from_env()
 
-    container = d.get(name)
+    container = d.containers.get(name)
     container.restart()
 
     d.close()
