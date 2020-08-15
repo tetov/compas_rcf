@@ -60,6 +60,9 @@ class ClayBullet(object):
         egress_frame_distance=200,
         trajectory_to=None,
         trajectory_from=None,
+        egress_conf=None,
+        uncompressed_top_conf=None,
+        compressed_top_conf=None,
         bullet_id=None,
         radius=45,
         height=100,
@@ -76,6 +79,11 @@ class ClayBullet(object):
 
         self.trajectory_to = trajectory_to or []
         self.trajectory_from = trajectory_from or []
+
+        # Path planned configurations
+        self.egress_conf = egress_conf
+        self.uncompressed_top_conf = uncompressed_top_conf
+        self.compressed_top_conf = compressed_top_conf
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:
@@ -339,23 +347,31 @@ class ClayBullet(object):
         """
         location = Frame.from_data(data.pop("location"))
 
-        _trajectory_to = data.pop("trajectory_to")
-        # Check if obj is JointTrajectory
-        if _trajectory_to.get("start_configuration"):
-            trajectory_to = JointTrajectory.from_data(_trajectory_to)
-        else:
-            trajectory_to = []
-            for frame_data in _trajectory_to:
-                trajectory_to.append(Frame.from_data(frame_data))
+        _trajectory_to = data.pop("trajectory_to", None)
 
-        _trajectory_from = data.pop("trajectory_from")
-        # Check if obj is JointTrajectory
-        if _trajectory_from.get("start_configuration"):
-            trajectory_from = JointTrajectory.from_data(_trajectory_from)
+        if _trajectory_to:
+            # Check if obj is JointTrajectory
+            if _trajectory_to.get("start_configuration"):
+                trajectory_to = JointTrajectory.from_data(_trajectory_to)
+            else:
+                trajectory_to = []
+                for frame_data in _trajectory_to:
+                    trajectory_to.append(Frame.from_data(frame_data))
         else:
-            trajectory_from = []
-            for frame_data in _trajectory_from:
-                trajectory_from.append(Frame.from_data(frame_data))
+            trajectory_to = None
+
+        _trajectory_from = data.pop("trajectory_from", None)
+
+        if _trajectory_from:
+            # Check if obj is JointTrajectory
+            if _trajectory_from.get("start_configuration"):
+                trajectory_from = JointTrajectory.from_data(_trajectory_from)
+            else:
+                trajectory_from = []
+                for frame_data in _trajectory_from:
+                    trajectory_from.append(Frame.from_data(frame_data))
+        else:
+            trajectory_from = None
 
         # To check for old attr name for id
         if "bullet_id" in data.keys():
