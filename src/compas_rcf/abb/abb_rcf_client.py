@@ -317,15 +317,14 @@ class AbbRcfClient(AbbClient):
 
         self.execute_trajectory(
             cylinder.trajectory_compressed_top_to_top,
-            self.speed.travel,
+            self.speed.precise,
             self.zone.travel,
         )
 
         self.execute_trajectory(
-            cylinder.trajectory_top_to_egress, self.speed.travel, self.zone.travel
+            cylinder.trajectory_top_to_egress, self.speed.precise, self.zone.travel
         )
 
-        # offset placement frame then safety frame
         self.execute_trajectory(
             cylinder.trajectory_from, self.speed.travel, self.zone.travel
         )
@@ -335,6 +334,7 @@ class AbbRcfClient(AbbClient):
         return self.send(ReadWatch())
 
     def retract_needles(self):
+        """Send signal to retract needles on pick and place tool."""
         pin = self.pick_place_tool.io_pin_needles
         state = self.pick_place_tool.retract_signal
 
@@ -343,6 +343,7 @@ class AbbRcfClient(AbbClient):
         log.debug("IO {} set to {}.".format(pin, state))
 
     def extend_needles(self):
+        """Send signal to extend needles on pick and place tool."""
         pin = self.pick_place_tool.io_pin_needles
         state = self.pick_place_tool.extend_signal
 
@@ -351,7 +352,20 @@ class AbbRcfClient(AbbClient):
         log.debug("IO {} set to {}.".format(pin, state))
 
     def measure_z_diff(self, cylinder):
+        """Measure expected distance to top of cylinder below compared to actual distance.
 
+        Parameters
+        ----------
+        cylinder : :class:`ClayBullet`
+            Cylinder to evaluate.
+
+        Returns
+        -------
+        :obj:`float`
+            Measured difference between expected top of cylinder below compared
+            to actual distance. Positive number means the actual distance was
+            less than the expected, negative that it was more than expected.
+        """
         self.send(WaitTime(1))
 
         dist_read = get_distance_measurement()
@@ -369,6 +383,18 @@ class AbbRcfClient(AbbClient):
         return dist_diff
 
     def is_dist_diff_ok(self, dist_diff):
+        """Check distance compared to set max difference allowed.
+
+        Parameters
+        ----------
+        dist_diff : :obj:`float`
+            Distance difference.
+
+        Returns
+        -------
+        :obj:`bool`
+            Whetever distance difference is within allowed bounds or not.
+        """
         return abs(dist_diff) < self.max_z_diff
 
     @staticmethod
