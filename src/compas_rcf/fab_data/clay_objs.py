@@ -9,13 +9,11 @@ from itertools import count
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
-from compas.geometry import Primitive
 from compas.geometry import Translation
 from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.utils import ensure_frame
-from compas_rcf.utils import get_offset_frame
+from compas_rcf.robots import reverse_trajectory
 from compas_rcf.utils import wrap_list
 
 
@@ -57,16 +55,14 @@ class ClayBullet(object):
     def __init__(
         self,
         location,
-        egress_frame_distance=200,
-        trajectory_to=None,
-        trajectory_from=None,
-        egress_conf=None,
-        uncompressed_top_conf=None,
-        compressed_top_conf=None,
-        bullet_id=None,
         radius=45,
         height=100,
         compression_ratio=0.5,
+        egress_frame_distance=200,
+        trajectory_to=None,
+        trajectory_egress_to_top=None,
+        trajectory_top_to_compressed_top=None,
+        bullet_id=None,
         clay_density=2.0,
         cycle_time=None,
         placed=None,
@@ -77,24 +73,20 @@ class ClayBullet(object):
             raise Exception("Location should be given as a compas.geometry.Frame")
         self.location = location
 
-        self.trajectory_to = trajectory_to or []
-        self.trajectory_from = trajectory_from or []
+        self.radius = radius
+        self.height = height
+        self.compression_ratio = compression_ratio
+        self.egress_frame_distance = egress_frame_distance
 
-        # Path planned configurations
-        self.egress_conf = egress_conf
-        self.uncompressed_top_conf = uncompressed_top_conf
-        self.compressed_top_conf = compressed_top_conf
+        self.trajectory_to = trajectory_to
+        self.trajectory_egress_to_top = trajectory_egress_to_top
+        self.trajectory_top_to_compressed_top = trajectory_top_to_compressed_top
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:
             self.bullet_id = next(self._ids)
         else:
             self.bullet_id = bullet_id
-
-        self.radius = radius
-        self.height = height
-        self.compression_ratio = compression_ratio
-        self.egress_frame_distance = egress_frame_distance
 
         self.clay_density = clay_density
 
@@ -104,105 +96,184 @@ class ClayBullet(object):
         self.attrs = attrs or {}
         self.attrs.update(kwargs)
 
+    @property
+    def trajectory_from(self):
+        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
+        return reverse_trajectory(self.trajectory_to)
+
+    @property
+    def trajectory_egress_to_top(self):
+        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
+        if self._trajectory_egress_to_top:
+            return self._trajectory_egress_to_top
+        else:
+            return [self.get_egress_frame(), self.get_uncompressed_top_frame()]
+
+    @trajectory_egress_to_top.setter
+    def trajectory_egress_to_top(self, trajectory):
+        self._trajectory_egress_to_top = trajectory
+
+    @property
+    def trajectory_top_to_egress(self):
+        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
+        return reverse_trajectory(self.trajectory_egress_to_top)
+
+    @property
+    def trajectory_top_to_compressed_top(self):
+        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
+        if self._trajectory_top_to_compressed_top:
+            return self._trajectory_top_to_compressed_top
+        else:
+            return [self.get_compressed_top_frame(), self.get_uncompressed_top_frame()]
+
+    @trajectory_top_to_compressed_top.setter
+    def trajectory_top_to_compressed_top(self, trajectory):
+        self._trajectory_top_to_compressed_top = trajectory
+
+    @property
+    def trajectory_compressed_top_to_top(self):
+        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
+        return reverse_trajectory(self.trajectory_top_to_compressed_top)
+
     def get_location_plane(self):
+        """Get location as Rhino.Geometry.Plane.
+
+        Returns
+        -------
+        :class:`Rhino.Geometry.Plane`
+        """
         from compas_rcf.rhino import cgframe_to_rgplane
 
         return cgframe_to_rgplane(self.location)
 
     def get_normal(self):
+        """Get normal direction of cylinder.
+
+        Actually the reverse of the location frame's normal as it's used as a
+        robot target frame and thus pointing "down".
+
+        Returns
+        -------
+        :class:`compas.geometry.Vector`
+        """
         return self.location.normal * -1
 
     def get_uncompressed_top_frame(self):
-        """:class:`compas.geometry.frame` Top of uncompressed cylinder."""
+        """Top of uncompressed cylinder.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         vector = self.get_normal() * self.height
         T = Translation(vector)
 
         return self.location.transformed(T)
 
     def get_compressed_top_frame(self):
-        """:class:`compas.geometry.frame` Top of compressed cylinder."""
+        """Top of compressed cylinder.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         vector = self.get_normal() * self.get_compressed_height()
         T = Translation(vector)
 
         return self.location.transformed(T)
 
     def get_egress_frame(self):
-        """Frame at end and start of trajectory to and from."""
+        """Get Frame at end and start of trajectory to and from.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         vector = self.get_normal() * self.egress_frame_distance
         T = Translation(vector)
 
         return self.get_uncompressed_top_frame().transformed(T)
 
     def get_uncompressed_centroid_frame(self):
-        """Get frame at middle of uncompressed bullet."""
+        """Get frame at middle of uncompressed bullet.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         vector = self.get_normal() * self.height / 2
         T = Translation(vector)
 
         return self.location.transformed(T)
 
     def get_compressed_centroid_frame(self):
-        """Get frame at middle of compressed bullet."""
+        """Get frame at middle of compressed bullet.
+
+        Returns
+        -------
+        :class:`compas.geometry.Frame`
+        """
         vector = self.get_normal() * self.get_compressed_height() / 2
         T = Translation(vector)
 
         return self.location.transformed(T)
 
     def get_volume(self):
-        r"""Volume of clay bullet in mm\ :sup:`3`\ .
+        r"""Get volume of clay bullet in mm\ :sup:`3`\ .
 
         Returns
         -------
-        float
+        :obj:`float`
         """
         return math.pi * self.radius ** 2 * self.height
 
     def get_volume_m3(self):
-        r"""Volume of clay bullet in m\ :sup:`3`\ .
+        r"""Get volume of clay bullet in m\ :sup:`3`\ .
 
         Returns
         -------
-        float
+        :obj:`float`
         """
         return self.volume * 1e-9
 
     def get_weight_kg(self):
-        """Weight of clay bullet in kg.
+        """Get weight of clay bullet in kg.
 
         Returns
         -------
-        float
+        :obj:`float`
         """
         return self.density * self.volume * 1e-6
 
     def get_weight(self):
-        """Weight of clay bullet in g.
+        """Get weight of clay bullet in g.
 
         Returns
         -------
-        float
+        :obj:`float`
         """
         return self.weight_kg * 1000
 
     def get_compressed_radius(self):
-        """Radius of clay bullet in mm when compressed to defined compression ratio.
+        """Get radius of clay bullet in mm when compressed to defined compression ratio.
 
         Returns
         -------
-        float
+        :obj:`float`
         """
         return math.sqrt(self.get_volume() / (self.get_compressed_height() * math.pi))
 
     def get_compressed_height(self):
-        """Height of clay bullet in mm when compressed to defined compression ratio.
+        """Get height of clay bullet in mm when compressed to defined compression ratio.
 
         Returns
         -------
-        float
+        :obj:`float`
         """
         return self.height * self.compression_ratio
 
     def get_rgcircle(self):
-        """:class:`Rhino.Geometry.Circle` representing bullet footprint.
+        """Get :class:`Rhino.Geometry.Circle` representing bullet footprint.
 
         Returns
         -------
@@ -213,7 +284,7 @@ class ClayBullet(object):
         return Circle(self.get_location_plane(), self.get_compressed_radius())
 
     def get_rgcylinder(self):
-        """:class:`Rhino.Geometry.Cylinder` representing bullet.
+        """Get :class:`Rhino.Geometry.Cylinder` representing bullet.
 
         Returns
         -------
@@ -233,9 +304,15 @@ class ClayBullet(object):
         return self.get_normal() * self.get_compressed_height()
 
     def copy(self):
+        """Get a copy of instance.
+
+        Returns
+        -------
+        :class:`compas_rcf.fab_data.ClayBullet`
+        """
         return deepcopy(self)
 
-    def get_rgmesh(self, face_count=18):
+    def get_cgmesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution.
 
         Parameters
@@ -248,6 +325,7 @@ class ClayBullet(object):
         -------
         :class:`Rhino.Geometry.Mesh`
         """
+        # TODO: Rewrite as pure compas
         import Rhino.Geometry as rg
 
         from compas_rcf.rhino import cgvector_to_rgvector
@@ -313,6 +391,22 @@ class ClayBullet(object):
             mirror_corners_2 = wrap_list(vertex_for_vertex, i + 1)
             mesh.add_face(mirror_corners_1 + mirror_corners_2[::-1])
 
+        return mesh
+
+    def get_rgmesh(self, face_count=18):
+        """Generate mesh representation of bullet with custom resolution.
+
+        Parameters
+        ----------
+        face_count : :class:`int`, optional
+            Desired number of faces, by default 18
+            Used as a guide for the resolution of the mesh cylinder
+
+        Returns
+        -------
+        :class:`Rhino.Geometry.Mesh`
+        """
+        mesh = self.get_cgmesh(face_count=face_count)
         # to Rhino.Geometry and clean it up
         rgmesh = MeshArtist(mesh).draw_mesh()
         rgmesh.UnifyNormals()
@@ -321,12 +415,13 @@ class ClayBullet(object):
         return rgmesh
 
     def to_data(self):
+        """Get :obj:`dict` representation of :class:`ClayBullet`."""
         data = {}
 
         for key, value in self.__dict__.items():
-            if isinstance(value, Primitive):
+            try:
                 data[key] = value.to_data()
-            else:
+            except AttributeError:
                 data[key] = value
 
         return data
@@ -345,33 +440,29 @@ class ClayBullet(object):
         :class:`ClayBullet`
             The constructed ClayBullet instance
         """
+
+        def trajectory_from_data(traj_data):
+            if not traj_data:
+                return None
+            try:
+                return JointTrajectory.from_data(traj_data)
+            except AttributeError:
+                return [Frame.from_data(frame_data) for frame_data in traj_data]
+
         location = Frame.from_data(data.pop("location"))
 
-        _trajectory_to = data.pop("trajectory_to", None)
+        trajectory_to_data = data.pop("trajectory_to", None)
+        trajectory_to = trajectory_from_data(trajectory_to_data)
 
-        if _trajectory_to:
-            # Check if obj is JointTrajectory
-            if _trajectory_to.get("start_configuration"):
-                trajectory_to = JointTrajectory.from_data(_trajectory_to)
-            else:
-                trajectory_to = []
-                for frame_data in _trajectory_to:
-                    trajectory_to.append(Frame.from_data(frame_data))
-        else:
-            trajectory_to = None
+        trajectory_egress_to_top_data = data.pop("_trajectory_egress_to_top", None)
+        trajectory_egress_to_top = trajectory_from_data(trajectory_egress_to_top_data)
 
-        _trajectory_from = data.pop("trajectory_from", None)
-
-        if _trajectory_from:
-            # Check if obj is JointTrajectory
-            if _trajectory_from.get("start_configuration"):
-                trajectory_from = JointTrajectory.from_data(_trajectory_from)
-            else:
-                trajectory_from = []
-                for frame_data in _trajectory_from:
-                    trajectory_from.append(Frame.from_data(frame_data))
-        else:
-            trajectory_from = None
+        trajectory_top_to_compressed_top_data = data.pop(
+            "_trajectory_top_to_compressed_top", None
+        )
+        trajectory_top_to_compressed_top = trajectory_from_data(
+            trajectory_top_to_compressed_top_data
+        )
 
         # To check for old attr name for id
         if "bullet_id" in data.keys():
@@ -381,45 +472,13 @@ class ClayBullet(object):
         else:
             bullet_id = None
 
-        # Take the rest of the dictionary
-        kwargs = data
-
         return cls(
             location,
             trajectory_to=trajectory_to,
-            trajectory_from=trajectory_from,
+            trajectory_egress_to_top=trajectory_egress_to_top,
+            trajectory_top_to_compressed_top=trajectory_top_to_compressed_top,
             bullet_id=bullet_id,
-            **kwargs
-        )
-
-    @classmethod
-    def from_compressed_centroid_frame_like(
-        cls, centroid_frame_like, compression_ratio=0.5, height=100, **kwargs
-    ):
-        """Construct a :class:`ClayBullet` instance from centroid plane.
-
-        Parameters
-        ----------
-        centroid_frame_like : :class:`compas.geometry.Frame` or :class:`Rhino.Geometry.Plane`
-            Frame between bottom of clay bullet and compressed top.
-        compression_ratio : :class:`float`
-            The compressed height as a percentage of the original height.
-        height : :class:`float`
-            The height of the bullet before compression.
-        kwargs : :class:`dict`
-            Other attributes.
-
-        Returns
-        -------
-        :class:`ClayBullet`
-            The constructed ClayBullet instance
-        """  # noqa: E501
-        centroid_frame = ensure_frame(centroid_frame_like)
-        compressed_height = height * compression_ratio
-        location = get_offset_frame(centroid_frame, -compressed_height / 2)
-
-        return cls(
-            location, compression_ratio=compression_ratio, height=height, **kwargs
+            **data
         )
 
 

@@ -95,26 +95,6 @@ def ensure_frame(frame_like):
     )
 
 
-def get_offset_frame(frame, distance):
-    """Offset a frame in its reverse Z axis direction.
-
-    Parameters
-    ----------
-    frame : :class:`compas.geometry.Frame`
-        Frame to offset.
-    distance : :class:`float`
-        Translation distance in mm.
-
-    Returns
-    -------
-    :class:`compas.geometry.Frame`
-    """
-    offset_vector = frame.zaxis * distance * -1
-    T = cg.Translation(offset_vector)
-
-    return frame.transformed(T)
-
-
 def temp_change_compas_precision(precision):
     def decorator(func):
         def wrapped_func(*args, **kwargs):

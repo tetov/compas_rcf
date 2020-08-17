@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import compas
 import compas.geometry as cg
+from compas_ghpython.artists import MeshArtist
 
 try:
     import Rhino
@@ -117,6 +118,12 @@ def matrix_to_rgtransform(M):
         for j, val in enumerate(row):
             rgM[i, j] = val
     return rgM
+
+
+def cgmesh_to_rgmesh(mesh):
+    artist = MeshArtist(mesh)
+
+    return artist.draw_mesh()
 
 
 def _test_functions():

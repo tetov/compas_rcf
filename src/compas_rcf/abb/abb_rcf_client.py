@@ -4,11 +4,9 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import math
 import time
 
 from compas.geometry import Translation
-from compas_fab.robots import JointTrajectory
 from compas_rrc import AbbClient
 from compas_rrc import FeedbackLevel
 from compas_rrc import MoveToFrame
@@ -16,7 +14,6 @@ from compas_rrc import MoveToJoints
 from compas_rrc import Noop
 from compas_rrc import PrintText
 from compas_rrc import ReadWatch
-from compas_rrc import RobotJoints
 from compas_rrc import SetAcceleration
 from compas_rrc import SetDigital
 from compas_rrc import SetMaxSpeed
@@ -28,6 +25,8 @@ from compas_rrc import TimeoutException
 from compas_rrc import WaitTime
 
 from compas_rcf.docker import restart_container
+from compas_rcf.robots import get_trajectory_type
+from compas_rcf.robots import joint_trajectory_to_robot_joints_list
 from compas_rcf.sensing import get_distance_measurement
 
 log = logging.getLogger(__name__)
@@ -54,6 +53,8 @@ class AbbRcfClient(AbbClient):
         self.zone = rob_conf.robot_movement.zone
 
         self.docker_cfg = rob_conf.docker
+
+        self.use_dist_sensor = self.dist_sensor_tool.serial_port is not None
 
     def ping(self, timeout=10):
         """Ping ABB robot controller.
@@ -211,7 +212,7 @@ class AbbRcfClient(AbbClient):
 
         self.send(
             MoveToFrame(
-                cylinder.get_egress_frame(), self.speed.precise, self.zone.precise
+                cylinder.get_egress_frame(), self.speed.precise, self.zone.travel
             )
         )
 
@@ -219,8 +220,12 @@ class AbbRcfClient(AbbClient):
 
         return self.send(ReadWatch())
 
-    def execute_trajectory(self, trajectory):
-        trajectory_type = self._get_trajectory_type(trajectory)
+    def execute_trajectory(self, trajectory, speed, zone):
+        log.debug(f"Trajectory: {trajectory}")
+
+        trajectory_type = get_trajectory_type(trajectory)
+        log.debug(f"Identified type: {trajectory_type}")
+
         if trajectory_type == "JointTrajectory":
             execute_func = self._execute_joint_trajectory
         elif trajectory_type == "FrameList":
@@ -228,25 +233,17 @@ class AbbRcfClient(AbbClient):
         else:
             raise ValueError(f"No trajectory execution function for {trajectory}.")
 
-        execute_func(trajectory)
+        execute_func(trajectory, speed, zone)
 
-    def _execute_joint_trajectory(self, trajectory):
-        robot_joints_list = self.joint_trajectory_to_robot_joints_list(trajectory)
+    def _execute_joint_trajectory(self, trajectory, speed, zone):
+        robot_joints_list = joint_trajectory_to_robot_joints_list(trajectory)
 
         for rob_joints in robot_joints_list:
-            self.send(
-                MoveToJoints(
-                    rob_joints,
-                    self.EXTERNAL_AXIS_DUMMY,
-                    self.speed.travel,
-                    self.zone.travel,
-                )
-            )
+            self.send(MoveToJoints(rob_joints, self.EXTERNAL_AXIS_DUMMY, speed, zone))
 
-    def _execute_frame_trajectory(self, trajectory):
-
+    def _execute_frame_trajectory(self, trajectory, speed, zone):
         for frame in trajectory:
-            self.send(MoveToFrame(frame, self.speed.travel, self.zone.travel))
+            self.send(MoveToFrame(frame, speed, zone))
 
     def place_bullet(self, cylinder):
         """Send movement and IO instructions to place a clay cylinder.
@@ -273,20 +270,23 @@ class AbbRcfClient(AbbClient):
         self.send(SetWorkObject(self.wobjs.place))
 
         # move there with distance sensor TCP active
-        self.send(SetTool(self.dist_sensor_tool.name))
+        if self.use_dist_sensor:
+            tcp = self.dist_sensor_tool.name
+        else:
+            tcp = self.pick_place_tool.name
+
+        self.send(SetTool(tcp))
 
         # start watch
         self.send(StartWatch())
 
-        self.execute_trajectory(cylinder.trajectory_to)
-
-        self.send(
-            MoveToFrame(
-                cylinder.get_egress_frame(), self.speed.travel, self.zone.travel
-            )
+        self.execute_trajectory(
+            cylinder.trajectory_to, self.speed.travel, self.zone.travel
         )
 
-        if self.dist_sensor_tool.get("port") is not None:
+        if self.use_dist_sensor:
+            self.send(SetTool(self.pick_place_tool.name))
+
             dist_diff = self.measure_z_diff(cylinder)
 
             if self.max_z_diff and self.is_dist_diff_ok(dist_diff):
@@ -294,36 +294,34 @@ class AbbRcfClient(AbbClient):
             else:
                 raise Exception("Unacceptable distance difference.")
 
-        self.send(SetTool(self.pick_place_tool))
-
-        self.send(
-            MoveToFrame(
-                cylinder.get_uncompressed_top_frame(),
-                self.speed.precise,
-                self.zone.precise,
-            )
+        self.execute_trajectory(
+            cylinder.trajectory_egress_to_top, self.speed.precise, self.zone.precise
         )
 
         self.send(WaitTime(self.pick_place_tool.needles_pause))
         self.retract_needles()
         self.send(WaitTime(self.pick_place_tool.needles_pause))
 
-        self.send(
-            MoveToFrame(
-                cylinder.get_compressed_top_frame(),
-                self.speed.precise,
-                self.zone.precise,
-            )
+        self.execute_trajectory(
+            cylinder.trajectory_top_to_compressed_top,
+            self.speed.precise,
+            self.zone.precise,
         )
 
-        self.send(
-            MoveToFrame(
-                cylinder.get_egress_frame(), self.speed.travel, self.zone.travel
-            )
+        self.execute_trajectory(
+            cylinder.trajectory_compressed_top_to_top,
+            self.speed.travel,
+            self.zone.travel,
+        )
+
+        self.execute_trajectory(
+            cylinder.trajectory_top_to_egress, self.speed.travel, self.zone.travel
         )
 
         # offset placement frame then safety frame
-        self.execute_trajectory(cylinder.trajectory_from)
+        self.execute_trajectory(
+            cylinder.trajectory_from, self.speed.travel, self.zone.travel
+        )
 
         self.send(StopWatch())
 
@@ -378,19 +376,3 @@ class AbbRcfClient(AbbClient):
     @classmethod
     def from_confuse_conf(cls, ros, conf):
         pass
-
-    @staticmethod
-    def _get_trajectory_type(trajectory):
-        if isinstance(trajectory, JointTrajectory):
-            return "JointTrajectory"
-        # Assume its list of frame if not JointTrajectory
-        return "FrameList"
-
-    @staticmethod
-    def joint_trajectory_to_robot_joints_list(joint_trajectory):
-        robot_joints_list = []
-        for pt in joint_trajectory.points:
-            in_degrees = [math.degrees(pos) for pos in pt.values]
-            robot_joints_list.append(RobotJoints(*in_degrees))
-
-        return robot_joints_list

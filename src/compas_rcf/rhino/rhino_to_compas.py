@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import compas
 import compas.geometry as cg
+from compas_rhino.geometry import RhinoMesh
 
 try:
     import Rhino
@@ -123,6 +124,10 @@ def rgtransform_to_matrix(rgM):
     """
     M = [[rgM.Item[i, j] for j in range(4)] for i in range(4)]
     return M
+
+
+def rgmesh_to_cgmesh(mesh, cls=None):
+    return RhinoMesh.from_geometry(mesh).to_compas(cls=cls)
 
 
 def _test_functions():
