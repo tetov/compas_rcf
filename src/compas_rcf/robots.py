@@ -22,7 +22,9 @@ def get_trajectory_type(trajectory):
             return "FrameList"
 
     raise ValueError(
-        f"Trajectory should contain JointTrajectory or Frame objects, not {type(elem)}"
+        "Trajectory should contain JointTrajectory or Frame objects, not {}.".format(
+            type(elem)
+        )
     )
 
 

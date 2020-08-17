@@ -85,7 +85,11 @@ ABB_RCF_CONF_TEMPLATE = {
                 "accel_ramp": float,
             },
             "speed": {"precise": float, "travel": float},
-            "zone": {"precise": ZoneDataTemplate(), "travel": ZoneDataTemplate()},
+            "zone": {
+                "precise": ZoneDataTemplate(),
+                "travel": ZoneDataTemplate(),
+                "absj_precise": ZoneDataTemplate(),
+            },
             "set_joint_pos": {
                 "start": confuse.Sequence([float] * 6),
                 "end": confuse.Sequence([float] * 6),

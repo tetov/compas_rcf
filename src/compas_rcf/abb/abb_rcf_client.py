@@ -227,9 +227,16 @@ class AbbRcfClient(AbbClient):
         log.debug(f"Identified type: {trajectory_type}")
 
         if trajectory_type == "JointTrajectory":
+            # Change zone precise to absj precise
+            # TODO: Make this make sense
+            if zone == self.zone.precise:
+                zone = self.zone.absj_precise
+
             execute_func = self._execute_joint_trajectory
+
         elif trajectory_type == "FrameList":
             execute_func = self._execute_frame_trajectory
+
         else:
             raise ValueError(f"No trajectory execution function for {trajectory}.")
 
