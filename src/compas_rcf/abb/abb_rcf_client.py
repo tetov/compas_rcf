@@ -27,6 +27,8 @@ from compas_rrc import WaitTime
 from compas_rcf.docker import restart_container
 from compas_rcf.robots import get_trajectory_type
 from compas_rcf.robots import joint_trajectory_to_robot_joints_list
+from compas_rcf.robots import FRAME_LIST_TRAJECTORY_TYPE
+from compas_rcf.robots import JOINT_TRAJECTORY_TYPE
 from compas_rcf.sensing import get_distance_measurement
 
 log = logging.getLogger(__name__)
@@ -224,9 +226,9 @@ class AbbRcfClient(AbbClient):
         log.debug(f"Trajectory: {trajectory}")
 
         trajectory_type = get_trajectory_type(trajectory)
-        log.debug(f"Identified type: {trajectory_type}")
 
-        if trajectory_type == "JointTrajectory":
+        if trajectory_type == JOINT_TRAJECTORY_TYPE:
+            log.debug("Identified type: JointTrajectory")
             # Change zone precise to absj precise
             # TODO: Make this make sense
             if zone == self.zone.precise:
@@ -234,7 +236,8 @@ class AbbRcfClient(AbbClient):
 
             execute_func = self._execute_joint_trajectory
 
-        elif trajectory_type == "FrameList":
+        elif trajectory_type == FRAME_LIST_TRAJECTORY_TYPE:
+            log.debug("Identified type: Frame list")
             execute_func = self._execute_frame_trajectory
 
         else:

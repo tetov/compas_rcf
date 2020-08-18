@@ -106,8 +106,8 @@ class ClayBullet(object):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
         if self._trajectory_egress_to_top:
             return self._trajectory_egress_to_top
-        else:
-            return [self.get_egress_frame(), self.get_uncompressed_top_frame()]
+
+        return [self.get_egress_frame(), self.get_uncompressed_top_frame()]
 
     @trajectory_egress_to_top.setter
     def trajectory_egress_to_top(self, trajectory):
@@ -123,8 +123,8 @@ class ClayBullet(object):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
         if self._trajectory_top_to_compressed_top:
             return self._trajectory_top_to_compressed_top
-        else:
-            return [self.get_compressed_top_frame(), self.get_uncompressed_top_frame()]
+
+        return [self.get_compressed_top_frame(), self.get_uncompressed_top_frame()]
 
     @trajectory_top_to_compressed_top.setter
     def trajectory_top_to_compressed_top(self, trajectory):

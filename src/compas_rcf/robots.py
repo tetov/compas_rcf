@@ -10,22 +10,30 @@ from compas.geometry import Frame
 from compas_fab.robots import JointTrajectory
 from compas_rrc import RobotJoints
 
+JOINT_TRAJECTORY_TYPE = 0
+FRAME_LIST_TRAJECTORY_TYPE = 1
+
 
 def get_trajectory_type(trajectory):
+    """Get trajectory type.
+
+    Returns
+    -------
+    :obj:`int`
+        Identifier for trajectory type.
+    """
     if isinstance(trajectory, JointTrajectory):
-        return "JointTrajectory"
+        return JOINT_TRAJECTORY_TYPE
     if isinstance(trajectory, Sequence):
         for elem in trajectory:
             if not isinstance(elem, Frame):
-                break
-        else:
-            return "FrameList"
+                raise ValueError(
+                    "Trajectory should be JointTrajectory or Frames, not {}.".format(
+                        type(elem)
+                    )
+                )
 
-    raise ValueError(
-        "Trajectory should contain JointTrajectory or Frame objects, not {}.".format(
-            type(elem)
-        )
-    )
+        return FRAME_LIST_TRAJECTORY_TYPE
 
 
 def reverse_trajectory(trajectory):
