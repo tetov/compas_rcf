@@ -118,9 +118,10 @@ class CompasObjEncoder(json.JSONEncoder):
     """
 
     def default(self, obj):
-        try:
-            obj = obj.to_data()
-        except AttributeError:
-            pass
+        if hasattr(obj, "to_data"):
+            return obj.to_data()
+        else:
+            print(obj.__dict__)
+            json.JSONEncoder.default(self, obj)
 
         return obj

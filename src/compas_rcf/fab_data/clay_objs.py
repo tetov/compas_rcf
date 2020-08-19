@@ -419,9 +419,9 @@ class ClayBullet(object):
         data = {}
 
         for key, value in self.__dict__.items():
-            try:
+            if hasattr(value, "to_data"):
                 data[key] = value.to_data()
-            except AttributeError:
+            else:
                 data[key] = value
 
         return data

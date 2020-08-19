@@ -243,17 +243,25 @@ class AbbRcfClient(AbbClient):
         else:
             raise ValueError(f"No trajectory execution function for {trajectory}.")
 
-        execute_func(trajectory, speed, zone)
+        execute_func(trajectory, speed, zone, blocking=blocking)
 
-    def _execute_joint_trajectory(self, trajectory, speed, zone):
+    def _execute_joint_trajectory(self, trajectory, speed, zone, blocking=False):
         robot_joints_list = joint_trajectory_to_robot_joints_list(trajectory)
 
-        for rob_joints in robot_joints_list:
-            self.send(MoveToJoints(rob_joints, self.EXTERNAL_AXIS_DUMMY, speed, zone))
+        for i, rob_joints in enumerate(robot_joints_list):
+            cmd = MoveToJoints(rob_joints, self.EXTERNAL_AXIS_DUMMY, speed, zone)
+            if blocking and i == len(robot_joints_list) - 1:
+                self.send_and_wait(cmd)
+            else:
+                self.send(cmd)
 
-    def _execute_frame_trajectory(self, trajectory, speed, zone):
-        for frame in trajectory:
-            self.send(MoveToFrame(frame, speed, zone))
+    def _execute_frame_trajectory(self, trajectory, speed, zone, blocking=False):
+        for i, frame in enumerate(trajectory):
+            cmd = MoveToFrame(frame, speed, zone)
+            if blocking and i == len(trajectory) - 1:
+                self.send_and_wait(cmd)
+            else:
+                self.send(cmd)
 
     def place_bullet(self, cylinder):
         """Send movement and IO instructions to place a clay cylinder.
