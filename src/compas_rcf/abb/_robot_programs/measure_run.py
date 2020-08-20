@@ -60,4 +60,3 @@ def measure_run(run_conf, run_data):
             json.dump(run_data, fp, cls=CompasObjEncoder)
 
         rob_client.post_procedure()
-
