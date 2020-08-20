@@ -23,13 +23,13 @@ from compas_rrc import StartWatch
 from compas_rrc import StopWatch
 from compas_rrc import TimeoutException
 from compas_rrc import WaitTime
+from compas.geometry import Frame
 
 from compas_rcf.docker import restart_container
-from compas_rcf.robots import get_trajectory_type
-from compas_rcf.robots import joint_trajectory_to_robot_joints_list
 from compas_rcf.robots import FRAME_LIST_TRAJECTORY_TYPE
 from compas_rcf.robots import JOINT_TRAJECTORY_TYPE
-from compas_rcf.sensing import get_distance_measurement
+from compas_rcf.robots import get_trajectory_type
+from compas_rcf.robots import joint_trajectory_to_robot_joints_list
 
 log = logging.getLogger(__name__)
 
@@ -175,6 +175,30 @@ class AbbRcfClient(AbbClient):
 
         self.send_and_wait(PrintText("Finished"))
 
+    def measure_cylinder(self, cylinder):
+
+        port = self.dist_sensor_tool.serial_port
+        baudrate = self.dist_sensor_tool.serial_baudrate
+
+        self.send(SetTool(self.dist_sensor_tool.name))
+        self.send(SetWorkObject(self.wobjs.pick))
+
+        for measurement in cylinder.measurements:
+            trajectory = [Frame.from_data(measurement.frame)]
+            log.debug("frame")
+            self.execute_trajectory(
+                trajectory, self.speed.precise, self.zone.precise, blocking=True,
+            )
+
+            if not self.use_dist_sensor:
+                log.info(
+                    "Using dummy value for measurement since no distance"
+                    + "sensor port is specified."
+                )
+
+            measurement.measure(port, baudrate, use_dummy=not self.use_dist_sensor)
+            log.debug("Measurement: {}".format(measurement))
+
     def pick_bullet(self, cylinder):
         """Send movement and IO instructions to pick up a clay cylinder.
 
@@ -222,7 +246,7 @@ class AbbRcfClient(AbbClient):
 
         return self.send(ReadWatch())
 
-    def execute_trajectory(self, trajectory, speed, zone):
+    def execute_trajectory(self, trajectory, speed, zone, blocking=False):
         log.debug(f"Trajectory: {trajectory}")
 
         trajectory_type = get_trajectory_type(trajectory)
@@ -362,8 +386,9 @@ class AbbRcfClient(AbbClient):
 
         log.debug("IO {} set to {}.".format(pin, state))
 
+    """
     def measure_z_diff(self, cylinder):
-        """Measure expected distance to top of cylinder below compared to actual distance.
+        \"\"\"Measure expected distance to top of cylinder below compared to actual distance.
 
         Parameters
         ----------
@@ -376,7 +401,7 @@ class AbbRcfClient(AbbClient):
             Measured difference between expected top of cylinder below compared
             to actual distance. Positive number means the actual distance was
             less than the expected, negative that it was more than expected.
-        """
+        \"\"\"
         self.send(WaitTime(1))
 
         dist_read = get_distance_measurement()
@@ -392,9 +417,11 @@ class AbbRcfClient(AbbClient):
         log.debug("Dist diff: {}".format(dist_diff))
 
         return dist_diff
+    """  # noqa: E501
 
+    """
     def is_dist_diff_ok(self, dist_diff):
-        """Check distance compared to set max difference allowed.
+        \"\"\"Check distance compared to set max difference allowed.
 
         Parameters
         ----------
@@ -405,8 +432,9 @@ class AbbRcfClient(AbbClient):
         -------
         :obj:`bool`
             Whetever distance difference is within allowed bounds or not.
-        """
+        \"\"\"
         return abs(dist_diff) < self.max_z_diff
+    """
 
     @staticmethod
     def correct_location_in_z(cylinder, dist_diff):

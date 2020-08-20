@@ -2,14 +2,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import time
+import logging
 
-import serial
-
-from compas_rcf.fab_data import fab_conf
+log = logging.getLogger(__name__)
 
 
-def readline_serial(port, baudrate):
+def serial_readline_to_str(port, baudrate):
     """Read line from serial bus.
 
     Parameters
@@ -23,40 +21,94 @@ def readline_serial(port, baudrate):
 
     Returns
     -------
-    obj:bytes:
+    :obj:`bytes`
 
     Raises
     ------
     Exception
         ???
     """
-    with serial.Serial(port, baudrate) as ser:
-        while True:
-            try:
-                time.sleep(0.01)
-                line = ser.readline()
-            except Exception as e:
-                print(e)
-                raise
+    import serial
 
-    return line.decode("ascii").strip()
+    log.debug(
+        "Reading serial input from port: {} and baudrate: {}".format(port, baudrate)
+    )
+    with serial.Serial(port=port, baudrate=baudrate, timeout=10) as ser:
+        line = ser.readline()
+
+    line = line.decode("ascii").strip()
+    log.debug("Line read: {}".format(line))
+
+    return line
 
 
-def get_distance_measurement():
-    """Read distance from distance sensors.
+class ClayCylinderMeasurement(object):
+    SEPARATOR = ":"
 
-    Parameters specified in fab_conf (either from command line arguments or
-    config file).
+    def __init__(self, frame=None, expected_dist=None, raw_reading=None):
 
-    Returns
-    -------
-    :obj:`float`
-        Distance in millimeter.
-    """
-    address = fab_conf["tool"]["dist_sensor"]["port"].get()
-    baudrate = fab_conf["tool"]["dist_sensor"]["baudrate"].get()
-    return float(readline_serial(address, baudrate))
+        self.frame = frame
+        self.expected_reading = expected_dist
+
+        self.raw_reading = raw_reading
+
+    def __str__(self):
+        return "Measurement at {}. Expected reading: {}. Measured distance: {}.".format(
+            self.frame, self.expected_reading, self.dist
+        )
+
+    @property
+    def dist(self):
+        """:obj:`float` : Distance in millimeter given by distance sensor."""
+        return self.parse_raw_reading()["dist"]
+
+    @property
+    def at_milli(self):
+        """:obj:`int` : Milliseconds from power on from arduino with distance sensor."""
+        return self.parse_raw_reading()["at_milli"]
+
+    def measure(self, port, baudrate, use_dummy=False):
+        if use_dummy:
+            self._raw_reading = "1111:2222"
+        else:
+            self.raw_reading = serial_readline_to_str(port, baudrate)
+
+    def parse_raw_reading(self):
+        if not self.raw_reading:
+            raise RuntimeError("No raw reading recorded.")
+
+        at_milli, dist = self.raw_reading.split(self.SEPARATOR)
+
+        return {"at_milli": at_milli, "dist": dist}
+
+    def get_dist_diff(self):
+        if not self.raw_reading:
+            raise RuntimeError("Distance not measured (yet).")
+        if not self.expected_dist:
+            raise ValueError("No expected dist set.")
+
+        return self.dist - self.expected_dist
+
+    def to_data(self):
+        """Get :obj:`dict` representation of :class:`ClayBullet`."""
+        data = {}
+
+        for key, value in self.__dict__.items():
+            if hasattr(value, "to_data"):
+                data[key] = value.to_data()
+            else:
+                data[key] = value
+
+        return data
+
+    @classmethod
+    def from_data(cls, data):
+        for key, value in data.items():
+            if hasattr(value, "from_data"):
+                data[key] = value.from_data()
+
+        return cls(**data)
 
 
 if __name__ == "__main__":
-    print(readline_serial("COM4", 115200))
+    pass

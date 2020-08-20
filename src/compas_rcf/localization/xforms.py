@@ -4,7 +4,9 @@ from __future__ import division
 from __future__ import print_function
 
 from compas.geometry import Frame
+from compas.geometry import Rotation
 from compas.geometry import Transformation
+from compas.geometry import Translation
 from compas.geometry import quaternion_from_matrix
 from compas.geometry import translation_from_matrix
 
@@ -26,7 +28,15 @@ def worldxy_to_robot_base_xform(robot_base_frame):
     :class:`compas.geometry.Transformation`
         The transformation matrix.
     """
-    return Transformation.change_basis(Frame.worldXY(), robot_base_frame)
+    translation = Translation(robot_base_frame.point)
+    rotation = Rotation.from_basis_vectors(
+        robot_base_frame.xaxis, robot_base_frame.yaxis
+    )
+    transform = translation * rotation
+    transform.invert()
+    return transform
+
+    # return Transformation.change_basis(Frame.worldXY(), robot_base_frame)
 
 
 @temp_change_compas_precision("12f")
