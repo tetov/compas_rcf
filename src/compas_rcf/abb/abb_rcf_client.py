@@ -386,56 +386,6 @@ class AbbRcfClient(AbbClient):
 
         log.debug("IO {} set to {}.".format(pin, state))
 
-    """
-    def measure_z_diff(self, cylinder):
-        \"\"\"Measure expected distance to top of cylinder below compared to actual distance.
-
-        Parameters
-        ----------
-        cylinder : :class:`ClayBullet`
-            Cylinder to evaluate.
-
-        Returns
-        -------
-        :obj:`float`
-            Measured difference between expected top of cylinder below compared
-            to actual distance. Positive number means the actual distance was
-            less than the expected, negative that it was more than expected.
-        \"\"\"
-        self.send(WaitTime(1))
-
-        dist_read = get_distance_measurement()
-        log.debug("Dist read: {}".format(dist_read))
-
-        self.send(WaitTime(1))
-
-        expected_dist = cylinder.get_egress_frame().point.distance_to_point(
-            cylinder.location.point
-        )
-
-        dist_diff = expected_dist - dist_read
-        log.debug("Dist diff: {}".format(dist_diff))
-
-        return dist_diff
-    """  # noqa: E501
-
-    """
-    def is_dist_diff_ok(self, dist_diff):
-        \"\"\"Check distance compared to set max difference allowed.
-
-        Parameters
-        ----------
-        dist_diff : :obj:`float`
-            Distance difference.
-
-        Returns
-        -------
-        :obj:`bool`
-            Whetever distance difference is within allowed bounds or not.
-        \"\"\"
-        return abs(dist_diff) < self.max_z_diff
-    """
-
     @staticmethod
     def correct_location_in_z(cylinder, dist_diff):
         corr_vector = cylinder.get_normal() * dist_diff

@@ -61,8 +61,11 @@ class ClayBullet(object):
         compression_ratio=0.5,
         egress_frame_distance=200,
         trajectory_to=None,
+        trajectory_from=None,
         trajectory_egress_to_top=None,
+        trajectory_top_to_egress=None,
         trajectory_top_to_compressed_top=None,
+        trajectory_compressed_top_to_top=None,
         bullet_id=None,
         clay_density=2.0,
         cycle_time=None,
@@ -81,8 +84,13 @@ class ClayBullet(object):
         self.egress_frame_distance = egress_frame_distance
 
         self.trajectory_to = trajectory_to
+        self.trajectory_from = trajectory_from
+
         self.trajectory_egress_to_top = trajectory_egress_to_top
+        self.trajectory_top_to_egress = trajectory_top_to_egress
+
         self.trajectory_top_to_compressed_top = trajectory_top_to_compressed_top
+        self.trajectory_compressed_top_to_top = trajectory_compressed_top_to_top
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:
@@ -104,15 +112,19 @@ class ClayBullet(object):
     @property
     def trajectory_from(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return reverse_trajectory(self.trajectory_to)
+        return self._trajectory_from or reverse_trajectory(self.trajectory_to)
+
+    @trajectory_from.setter
+    def trajectory_from(self, trajectory):
+        self._trajectory_from = trajectory
 
     @property
     def trajectory_egress_to_top(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        if self._trajectory_egress_to_top:
-            return self._trajectory_egress_to_top
-
-        return [self.get_egress_frame(), self.get_uncompressed_top_frame()]
+        return self._trajectory_egress_to_top or [
+            self.get_egress_frame(),
+            self.get_uncompressed_top_frame(),
+        ]
 
     @trajectory_egress_to_top.setter
     def trajectory_egress_to_top(self, trajectory):
@@ -121,15 +133,21 @@ class ClayBullet(object):
     @property
     def trajectory_top_to_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return reverse_trajectory(self.trajectory_egress_to_top)
+        return self._trajectory_top_to_egress or reverse_trajectory(
+            self.trajectory_egress_to_top
+        )
+
+    @trajectory_top_to_egress.setter
+    def trajectory_top_to_egress(self, trajectory):
+        self._trajectory_top_to_egress = trajectory
 
     @property
     def trajectory_top_to_compressed_top(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        if self._trajectory_top_to_compressed_top:
-            return self._trajectory_top_to_compressed_top
-
-        return [self.get_compressed_top_frame(), self.get_uncompressed_top_frame()]
+        return self._trajectory_top_to_compressed_top or [
+            self.get_compressed_top_frame(),
+            self.get_uncompressed_top_frame(),
+        ]
 
     @trajectory_top_to_compressed_top.setter
     def trajectory_top_to_compressed_top(self, trajectory):
@@ -138,7 +156,13 @@ class ClayBullet(object):
     @property
     def trajectory_compressed_top_to_top(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return reverse_trajectory(self.trajectory_top_to_compressed_top)
+        return self._trajectory_compressed_top_to_top or reverse_trajectory(
+            self.trajectory_top_to_compressed_top
+        )
+
+    @trajectory_compressed_top_to_top.setter
+    def trajectory_compressed_top_to_top(self, trajectory):
+        self._trajectory_compressed_top_to_top = trajectory
 
     def get_location_plane(self):
         """Get location as Rhino.Geometry.Plane.

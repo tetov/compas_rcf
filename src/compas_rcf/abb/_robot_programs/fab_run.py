@@ -98,6 +98,13 @@ def _check_fab_data(clay_bullets):
 
 
 def _publish_tf_static_xform(xform=None):
+    """Start a docker service advertising  a TF2 static transformation.
+
+    Parameters
+    ----------
+    xform : :obj:`list` of :obj:`list` of :obj:`float`, optional
+        Transformation matrix. Defaults to a zero-matrix.
+    """
     if xform:
         xform = Transformation.from_data(xform)
         log.debug("Loading matrix from run_data.")
