@@ -118,10 +118,9 @@ class CompasObjEncoder(json.JSONEncoder):
     """
 
     def default(self, obj):
+        # If obj has to_data method use that to serialize the object
         if hasattr(obj, "to_data"):
             return obj.to_data()
-        else:
-            print(obj.__dict__)
-            json.JSONEncoder.default(self, obj)
 
-        return obj
+        # else use standard
+        return json.JSONEncoder.default(self, obj)

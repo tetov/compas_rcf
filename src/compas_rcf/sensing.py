@@ -44,6 +44,7 @@ def serial_readline_to_str(port, baudrate):
 
 class ClayCylinderMeasurement(object):
     SEPARATOR = ":"
+    DUMMY_MSG = "9999" + SEPARATOR + "9999"
 
     def __init__(self, frame=None, expected_dist=None, raw_reading=None):
 
@@ -69,7 +70,7 @@ class ClayCylinderMeasurement(object):
 
     def measure(self, port, baudrate, use_dummy=False):
         if use_dummy:
-            self._raw_reading = "1111:2222"
+            self.raw_reading = self.DUMMY_MSG
         else:
             self.raw_reading = serial_readline_to_str(port, baudrate)
 
