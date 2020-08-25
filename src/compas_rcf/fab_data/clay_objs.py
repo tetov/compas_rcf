@@ -498,7 +498,7 @@ class ClayBullet(object):
 
             if traj_data:
                 # strip leading underscore
-                attr_keyword = re.sub("^_", key)
+                attr_keyword = re.sub("^_", "", key)
 
                 kwargs[attr_keyword] = trajectory_from_data(traj_data)
 
