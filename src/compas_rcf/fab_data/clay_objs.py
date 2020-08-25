@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math
+import re
 from copy import deepcopy
 from itertools import count
 
@@ -445,6 +446,8 @@ class ClayBullet(object):
 
     def to_data(self):
         """Get :obj:`dict` representation of :class:`ClayBullet`."""
+        # TODO: Check if this is at all needed, or can be done just using
+        # CompasObjEncoder
         data = {}
 
         for key, value in self.__dict__.items():
@@ -470,54 +473,47 @@ class ClayBullet(object):
             The constructed ClayBullet instance
         """
 
+        # TODO: Trajectories class
         def trajectory_from_data(traj_data):
-            if not traj_data:
-                return None
             try:
                 return JointTrajectory.from_data(traj_data)
             except AttributeError:
                 return [Frame.from_data(frame_data) for frame_data in traj_data]
 
+        kwargs = {}
+
         location = Frame.from_data(data.pop("location"))
 
-        trajectory_to_data = data.pop("trajectory_to", None)
-        trajectory_to = trajectory_from_data(trajectory_to_data)
-
-        trajectory_egress_to_top_data = data.pop("_trajectory_egress_to_top", None)
-        trajectory_egress_to_top = trajectory_from_data(trajectory_egress_to_top_data)
-
-        trajectory_top_to_compressed_top_data = data.pop(
-            "_trajectory_top_to_compressed_top", None
+        trajectory_attributes = (
+            "trajectory_to",
+            "_trajectory_from",
+            "_trajectory_egress_to_top",
+            "_trajectory_top_to_egress",
+            "_trajectory_top_to_compressed_top",
+            "_trajectory_compressed_top_to_top",
         )
-        trajectory_top_to_compressed_top = trajectory_from_data(
-            trajectory_top_to_compressed_top_data
-        )
+
+        for key in trajectory_attributes:
+            traj_data = data.pop(key, None)
+
+            if traj_data:
+                # strip leading underscore
+                attr_keyword = re.sub("^_", key)
+
+                kwargs[attr_keyword] = trajectory_from_data(traj_data)
 
         measurements = data.pop("measurements", None)
         if measurements:
-            measurement_objs = []
+            kwargs["measurements"] = []
             for measurement in measurements:
-                measurement_objs.append(ClayCylinderMeasurement.from_data(measurement))
-        else:
-            measurement_objs = None
+                kwargs["measurements"].append(
+                    ClayCylinderMeasurement.from_data(measurement)
+                )
 
-        # To check for old attr name for id
-        if "bullet_id" in data.keys():
-            bullet_id = data.pop("bullet_id")
-        elif "id" in data.keys():
-            bullet_id = data.pop("id")
-        else:
-            bullet_id = None
+        # merge kwargs with data
+        kwargs.update(data)
 
-        return cls(
-            location,
-            trajectory_to=trajectory_to,
-            trajectory_egress_to_top=trajectory_egress_to_top,
-            trajectory_top_to_compressed_top=trajectory_top_to_compressed_top,
-            measurements=measurement_objs,
-            bullet_id=bullet_id,
-            **data
-        )
+        return cls(location, **kwargs)
 
 
 def check_id_collision(clay_bullets):

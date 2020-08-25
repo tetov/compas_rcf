@@ -6,6 +6,7 @@ from __future__ import print_function
 import logging
 import time
 
+from compas.geometry import Frame
 from compas.geometry import Translation
 from compas_rrc import AbbClient
 from compas_rrc import FeedbackLevel
@@ -23,7 +24,6 @@ from compas_rrc import StartWatch
 from compas_rrc import StopWatch
 from compas_rrc import TimeoutException
 from compas_rrc import WaitTime
-from compas.geometry import Frame
 
 from compas_rcf.docker import restart_container
 from compas_rcf.robots import FRAME_LIST_TRAJECTORY_TYPE
@@ -192,8 +192,7 @@ class AbbRcfClient(AbbClient):
 
             if not self.use_dist_sensor:
                 log.info(
-                    "Using dummy value for measurement since no distance"
-                    + "sensor port is specified."
+                    "Using dummy value for measurement since no distance sensor port is specified."  # noqa: E501
                 )
 
             measurement.measure(port, baudrate, use_dummy=not self.use_dist_sensor)
