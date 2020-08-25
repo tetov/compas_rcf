@@ -118,9 +118,9 @@ class CompasObjEncoder(json.JSONEncoder):
     """
 
     def default(self, obj):
-        try:
-            obj = obj.to_data()
-        except AttributeError:
-            pass
+        # If obj has to_data method use that to serialize the object
+        if hasattr(obj, "to_data"):
+            return obj.to_data()
 
-        return obj
+        # else use standard
+        return json.JSONEncoder.default(self, obj)
