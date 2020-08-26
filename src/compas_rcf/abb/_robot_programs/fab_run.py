@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import json
 import logging
+import re
 import time
 from operator import attrgetter
 
@@ -134,27 +135,38 @@ def fab_run(run_conf, run_data):
     with run_conf.pick_conf.open(mode="r") as fp:
         pick_station = PickStation.from_data(json.load(fp))
 
-    # setup in_progress JSON
-    json_progress_identifier = "-IN_PROGRESS"
-
     run_data_path = run_conf.run_data_path
 
-    if run_data_path.stem.endswith(
-        json_progress_identifier
-    ) or run_data_path.stem.endswith(json_progress_identifier + ".json"):
+    # setup in_progress JSON
+    progress_identifier = "-IN_PROGRESS"
+
+    progress_identifier_regex = re.compile(progress_identifier + r"\d{0,2}")
+
+    if progress_identifier in run_data_path.stem:
         progress_file = run_data_path
+        i = 1
+        # Add number and increment it if needed.
+        while progress_file.exists():
+            # strip suffix
+            stem = progress_file.stem
+
+            # Match IN_PROGRESS with or without digits after and add/replace digits
+            new_name = re.sub(
+                progress_identifier_regex, progress_identifier + f"{i:02}", stem
+            )
+
+            new_name += progress_file.suffix
+
+            progress_file = progress_file.with_name(new_name)
+
+            i += 1
     else:
         progress_file = run_data_path.with_name(
-            run_data_path.stem + json_progress_identifier + run_data_path.suffix
+            run_data_path.stem + progress_identifier + run_data_path.suffix
         )
 
-    i = 1
-    while progress_file.exists():
-        progress_file = progress_file / ".{:02}".format(i)
-
-    done_file = progress_file.with_name(
-        str(progress_file.name).replace(json_progress_identifier, "-DONE")
-    )
+    done_file_name = re.sub(progress_identifier_regex, "-DONE", progress_file.name)
+    done_file = progress_file.with_name(done_file_name)
 
     # Create Ros Client                                                        #
     with RosClient() as ros:
@@ -216,6 +228,6 @@ def fab_run(run_conf, run_data):
 
         if len([bullet for bullet in clay_cylinders if bullet.placed is None]) == 0:
             progress_file.rename(done_file)
-            log.debug(f"Saved placed bullets to {done_file}.")
+            log.debug(f"Progressfile renamed to {done_file}.")
 
         rob_client.post_procedure()
