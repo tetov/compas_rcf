@@ -6,6 +6,10 @@ python:
 git:
     depth: false
 
+env:
+    global:
+        - COMPAS_RRC_VER: v1.0.0
+
 before_install:
     - pip install --upgrade pip setuptools wheel
     - pip install Cython --install-option="--no-cython-compile"
@@ -13,7 +17,7 @@ before_install:
     - echo 'bitbucket.org,18.205.93.1 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==' >> $HOME/.ssh/known_hosts
 
 install:
-    - pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@v0.2.2#egg=compas_rrc
+    - pip install git+https://$bitbucket_uname:$bitbucket_passw@bitbucket.org/ethrfl/compas_rrc.git@$COMPAS_RRC_VER#egg=compas_rrc
     - pip install --no-cache-dir -e .[dev]
     - python -c "from setuptools_scm import get_version;get_version('.', write_to='src/compas_rcf/_version.py')"
 
