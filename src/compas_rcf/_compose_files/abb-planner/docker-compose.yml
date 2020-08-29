@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   ros-master-ppl:
-    image: tetov/ros-abb-planner:20.03
+    image: tetov/ros-abb-planner-git:8385788
     container_name: ros-master
     environment:
       - "ROS_HOSTNAME=ros-master"
@@ -12,13 +12,13 @@ services:
       - roscore
 
   ros-bridge-ppl:
-    image: tetov/ros-abb-planner:20.03
+    image: tetov/ros-abb-planner-git:8385788
     container_name: ros-bridge
     environment:
       - "ROS_HOSTNAME=ros-bridge"
       - "ROS_MASTER_URI=http://ros-master:11311"
     ports:
-      - "9091:9090"
+      - "9090:9090"
     command:
       - roslaunch
       - --wait
@@ -26,7 +26,7 @@ services:
       - rosbridge_websocket.launch
 
   ros-fileserver:
-    image: tetov/ros-abb-planner:20.03
+    image: tetov/ros-abb-planner-git:8385788
     container_name: ros-fileserver
     environment:
       - "ROS_HOSTNAME=ros-fileserver"
@@ -44,7 +44,7 @@ services:
 
   # Runs once but can be invoked again with different transformation
   abb-tf-base_link:
-    image: tetov/ros-abb-planner:20.03
+    image: tetov/ros-abb-planner-git:8385788
     container_name: abb-tf-base_link
     environment:
       - "ROS_HOSTNAME=abb-tf-base_link"
@@ -65,7 +65,7 @@ services:
       - '100'
 
   abb-description:
-    image: tetov/ros-abb-planner:20.03
+    image: tetov/ros-abb-planner-git:8385788
     container_name: abb-description
     environment:
       - ROS_HOSTNAME=abb-description
@@ -78,7 +78,7 @@ services:
       - load_robot_description:=true
 
   abb-planner:
-    image: tetov/ros-abb-planner:20.03
+    image: tetov/ros-abb-planner-git:8385788
     container_name: abb-planner
     environment:
       - ROS_HOSTNAME=abb-planner
