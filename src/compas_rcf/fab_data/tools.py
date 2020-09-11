@@ -4,8 +4,8 @@ from __future__ import division
 from __future__ import print_function
 
 import csv
-import datetime
 import json
+from collections import OrderedDict
 
 from compas_rcf.fab_data import ClayBullet
 
@@ -47,60 +47,27 @@ def csv_reports(args):
 
         clay_bullets = load_bullets(json_file)
 
-        columns = [
-            "id",
-            "radius (mm)",
-            "height (mm)",
-            "compression-height-ratio",
-            "density (kg/l)",
-            "cycle_time (s)",
-            "time placed (in UTC)",
-            "location (xyz in mm)",
-            "tool",
-            "weight (kg)",
-        ]
+        headers_attrs = OrderedDict(
+            (
+                ("id", "bullet_id"),
+                ("radius (mm)", "radius"),
+                ("height (mm)", "height"),
+                ("compression-height-ratio", "compression_ratio"),
+                ("density (kg/l)", "density"),
+                ("cycle time (s)", "cycle_time"),
+                ("time placed (from epoch)", "placed"),
+                ("location frame", "location"),
+            )
+        )
 
         with csv_file.open(mode="w", encoding="utf8", newline="") as out_file:
             csv_w = csv.writer(out_file)
-            csv_w.writerow(columns)
+            csv_w.writerow(headers_attrs.keys())
 
             for bullet in clay_bullets:
                 row = []
-
-                # get bullet_id or id
-                try:
-                    row.append(bullet.bullet_id)
-                except AttributeError:
-                    row.append(bullet.id)
-
-                row.append(bullet.radius)
-                row.append(bullet.height)
-                row.append(bullet.compression_ratio)
-
-                try:
-                    if bullet.density:
-                        row.append(bullet.density)
-                except AttributeError:
-                    try:
-                        row.append(bullet.attrs["density"])
-                    except (AttributeError, KeyError):
-                        row.append(None)
-
-                row.append(bullet.cycle_time)
-
-                if bullet.placed:
-                    time_obj = datetime.datetime.fromtimestamp(bullet.placed)
-                    time_str = time_obj.isoformat()
-                    row.append(time_str)
-                else:
-                    row.append(None)
-
-                pt_fmt = ",".join(["{:.3f}"] * 3)
-                row.append(pt_fmt.format(*bullet.location.point))
-
-                row.append(bullet.get_weight_kg())
-
-                csv_w.writerow(row)
+                for attr in headers_attrs.values():
+                    row.append(getattr(bullet, attr, None))
 
 
 def load_bullets(file_path):
