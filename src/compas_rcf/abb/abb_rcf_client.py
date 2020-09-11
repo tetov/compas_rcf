@@ -38,6 +38,8 @@ class AbbRcfClient(AbbClient):
     DOCKER_IMAGE = "abb-driver"
     # Define external axis, will not be used but required in move cmds
     EXTERNAL_AXIS_DUMMY: list = []
+    # Used to filter rob_joints if they are the same as the previous
+    LAST_ROB_JOINTS = None
 
     def __init__(self, ros, rob_conf):
         super().__init__(ros)
@@ -272,11 +274,19 @@ class AbbRcfClient(AbbClient):
         robot_joints_list = joint_trajectory_to_robot_joints_list(trajectory)
 
         for i, rob_joints in enumerate(robot_joints_list):
+
+            # test to see if sending same conf twice causes corner error
+            if rob_joints == self.LAST_ROB_JOINTS:
+                continue
+
             cmd = MoveToJoints(rob_joints, self.EXTERNAL_AXIS_DUMMY, speed, zone)
+
             if blocking and i == len(robot_joints_list) - 1:
                 self.send_and_wait(cmd)
             else:
                 self.send(cmd)
+
+            self.LAST_ROB_JOINTS = rob_joints
 
     def _execute_frame_trajectory(self, trajectory, speed, zone, blocking=False):
         for i, frame in enumerate(trajectory):

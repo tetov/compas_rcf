@@ -105,9 +105,7 @@ def compose_up(
         file_args += "--file {} ".format(o_path)
 
     cmd_str = "docker-compose {} up --detach".format(file_args)
-    print(cmd_str)
     cmd = shlex.split(cmd_str, posix="win" not in sys.platform)
-    print(cmd)
     log.debug("Env vars: {}".format(env_vars))
 
     if ignore_orphans:
@@ -124,7 +122,6 @@ def compose_up(
         cmd.append("--remove-orphans")
 
     log.debug("Command to run: {}".format(cmd))
-    print("Command to run: {}".format(cmd))
 
     _run(cmd, **run_kwargs)
 
