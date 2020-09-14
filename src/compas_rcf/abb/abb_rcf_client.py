@@ -360,6 +360,12 @@ class AbbRcfClient(AbbClient):
         )
 
         self.execute_trajectory(
+            cylinder.trajectory_compressed_top_to_top,
+            self.speed.precise,
+            self.zone.precise,
+        )
+
+        self.execute_trajectory(
             cylinder.trajectory_from, self.speed.travel, self.zone.travel
         )
 
