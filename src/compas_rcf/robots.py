@@ -37,11 +37,13 @@ def get_trajectory_type(trajectory):
 
 
 def reverse_trajectory(trajectory):
-    if isinstance(trajectory, JointTrajectory):
-        copy = deepcopy(trajectory)
+    copy = deepcopy(trajectory)
+    type_ = get_trajectory_type(trajectory)
+    if type_ == JOINT_TRAJECTORY_TYPE:
         copy.points.reverse()
-
-        return copy
+    elif type_ == FRAME_LIST_TRAJECTORY_TYPE:
+        copy.reverse()
+    return copy
 
 
 def joint_trajectory_to_robot_joints_list(joint_trajectory):

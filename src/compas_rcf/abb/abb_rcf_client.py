@@ -332,7 +332,15 @@ class AbbRcfClient(AbbClient):
         self.send(StartWatch())
 
         self.execute_trajectory(
-            cylinder.trajectory_to, self.speed.travel, self.zone.travel
+            cylinder.trajectory_pick_egress_to_segment_egress,
+            self.speed.travel,
+            self.zone.travel,
+        )
+
+        self.execute_trajectory(
+            cylinder.trajectory_segment_egress_to_place_egress,
+            self.speed.travel,
+            self.zone.travel,
         )
 
         if self.use_dist_sensor:
@@ -366,7 +374,19 @@ class AbbRcfClient(AbbClient):
         )
 
         self.execute_trajectory(
-            cylinder.trajectory_from, self.speed.travel, self.zone.travel
+            cylinder.trajectory_top_to_egress, self.speed.precise, self.zone.precise
+        )
+
+        self.execute_trajectory(
+            cylinder.trajectory_place_egress_to_segment_egress,
+            self.speed.travel,
+            self.zone.travel,
+        )
+
+        self.execute_trajectory(
+            cylinder.trajectory_segment_egress_to_pick_egress,
+            self.speed.travel,
+            self.zone.travel,
         )
 
         self.send(StopWatch())
