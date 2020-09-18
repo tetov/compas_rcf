@@ -56,6 +56,7 @@ ABB_RCF_CONF_TEMPLATE = {
     "pick_conf": confuse.Path(),
     "run_data_path": confuse.Template(),  # Already type checked by argparse
     "publish_tf_xform": bool,
+    "edit_sequence": confuse.TypeTemplate(bool, default=False),
     "robot_client": {
         "controller": str,
         "docker": {"timeout_ping": float, "sleep_after_up": float},

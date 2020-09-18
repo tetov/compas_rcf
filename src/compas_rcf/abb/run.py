@@ -15,7 +15,6 @@ from pathlib import Path
 
 from compas_rcf import __version__
 from compas_rcf.abb._robot_programs import fab_run
-from compas_rcf.abb._robot_programs import measure_run
 from compas_rcf.fab_data import ABB_RCF_CONF_TEMPLATE
 from compas_rcf.fab_data import fab_conf
 
@@ -46,14 +45,14 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "run_data_path", type=pathlib.Path, help="File containing fabrication setup.",
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Set log level. -v adds INFO messages and -vv adds DEBUG messages.",
     )
     parser.add_argument(
-        "-d",
-        "--dist-sensor",
-        action="store",
-        dest="robot_client.tools.dist_sensor.serial_port",
-        help="Specify port distance sensor is connected on. E.g. COM4",
+        "run_data_path", type=pathlib.Path, help="File containing fabrication setup.",
     )
     parser.add_argument(
         "-c",
@@ -64,17 +63,11 @@ def main():
         help="Set fabrication runner target.",
     )
     parser.add_argument(
-        "-m",
-        "--measurement",
+        "--edit-sequence",
+        "-e",
         action="store_true",
-        help="Run measurement run instead of fabrication run.",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="count",
-        default=0,
-        help="Set log level. -v adds INFO messages and -vv adds DEBUG messages.",
+        dest="edit_sequence",
+        help="Select cylinders to place or start index.",
     )
     args = parser.parse_args()
 
@@ -104,10 +97,9 @@ def main():
     log.debug(f"argparse input: {args}")
     log.debug(f"config after set_args: {fab_conf}")
 
-    if args.measurement:
-        measure_run(run_conf, run_data)
-    else:
-        fab_run(run_conf, run_data)
+    # if args.measurement:
+    #     measure_run(run_conf, run_data)
+    fab_run(run_conf, run_data)
 
 
 if __name__ == "__main__":

@@ -42,8 +42,10 @@ class ClayBullet(object):
         Density of clay in g/mm\ :sup:`3`
     cycle_time : :class:`float`, optional
         Cycle time from pick to place and back.
-    placed : :class:`int`, optional
-        Time in epoch (seconds from 1970) of bullet placement.
+    placed : :obj:`bool`, optional
+        If fabrication element has been placed or not.
+    time_placed : :obj:`int`, optional
+        Time in epoch (seconds from 1970) of fabrication element placement.
     attrs : :obj:`dict`, optional
         Any other attributes needed.
     kwargs : :class:`dict`, optional
@@ -72,7 +74,8 @@ class ClayBullet(object):
         bullet_id=None,
         clay_density=2.0,
         cycle_time=None,
-        placed=None,
+        placed=False,
+        time_placed=None,
         measurements=None,
         attrs=None,
         **kwargs
@@ -116,9 +119,7 @@ class ClayBullet(object):
 
         self.cycle_time = cycle_time
         self.placed = placed
-
-        # Dict with data for measurement runs
-        self.measurements = measurements or {}
+        self.time_placed = time_placed
 
         self.attrs = attrs or {}
         self.attrs.update(kwargs)
