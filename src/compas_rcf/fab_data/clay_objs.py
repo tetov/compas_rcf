@@ -7,6 +7,8 @@ import math
 import re
 from copy import deepcopy
 from itertools import count
+import json
+
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
@@ -15,8 +17,8 @@ from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
 from compas_rcf.robots import reverse_trajectory
-from compas_rcf.sensing import ClayCylinderMeasurement
 from compas_rcf.utils import wrap_list
+from compas_rcf.utils import CompasObjEncoder
 
 
 class ClayBullet(object):
@@ -57,6 +59,7 @@ class ClayBullet(object):
     def __init__(
         self,
         location,
+        id_,
         radius=45,
         height=100,
         compression_ratio=0.5,
@@ -64,14 +67,10 @@ class ClayBullet(object):
         trajectory_to=None,
         trajectory_from=None,
         trajectory_egress_to_top=None,
-        trajectory_top_to_egress=None,
         trajectory_top_to_compressed_top=None,
-        trajectory_compressed_top_to_top=None,
-        bullet_id=None,
-        clay_density=2.0,
         cycle_time=None,
         placed=None,
-        measurements=None,
+        ignore=False,
         attrs=None,
         **kwargs
     ):
@@ -88,24 +87,12 @@ class ClayBullet(object):
         self.trajectory_from = trajectory_from
 
         self.trajectory_egress_to_top = trajectory_egress_to_top
-        self.trajectory_top_to_egress = trajectory_top_to_egress
 
         self.trajectory_top_to_compressed_top = trajectory_top_to_compressed_top
-        self.trajectory_compressed_top_to_top = trajectory_compressed_top_to_top
-
-        # sortable ID, used for fabrication sequence
-        if not bullet_id:
-            self.bullet_id = next(self._ids)
-        else:
-            self.bullet_id = bullet_id
-
-        self.clay_density = clay_density
 
         self.cycle_time = cycle_time
         self.placed = placed
-
-        # Dict with data for measurement runs
-        self.measurements = measurements or {}
+        self.ignore = ignore
 
         self.attrs = attrs or {}
         self.attrs.update(kwargs)
@@ -113,57 +100,53 @@ class ClayBullet(object):
     @property
     def trajectory_from(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_from or reverse_trajectory(self.trajectory_to)
+        return self.trajectory_from_ or reverse_trajectory(self.trajectory_to)
 
     @trajectory_from.setter
     def trajectory_from(self, trajectory):
-        self._trajectory_from = trajectory
+        self.trajectory_from_ = trajectory
 
     @property
     def trajectory_egress_to_top(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_egress_to_top or [
+        return self.trajectory_egress_to_top_ or [
             self.get_egress_frame(),
             self.get_uncompressed_top_frame(),
         ]
 
     @trajectory_egress_to_top.setter
     def trajectory_egress_to_top(self, trajectory):
-        self._trajectory_egress_to_top = trajectory
-
-    @property
-    def trajectory_top_to_egress(self):
-        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_top_to_egress or reverse_trajectory(
-            self.trajectory_egress_to_top
-        )
-
-    @trajectory_top_to_egress.setter
-    def trajectory_top_to_egress(self, trajectory):
-        self._trajectory_top_to_egress = trajectory
+        self.trajectory_egress_to_top_ = trajectory
 
     @property
     def trajectory_top_to_compressed_top(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_top_to_compressed_top or [
+        return self.trajectory_top_to_compressed_top_ or [
             self.get_compressed_top_frame(),
             self.get_uncompressed_top_frame(),
         ]
 
     @trajectory_top_to_compressed_top.setter
     def trajectory_top_to_compressed_top(self, trajectory):
-        self._trajectory_top_to_compressed_top = trajectory
+        self.trajectory_top_to_compressed_top_ = trajectory
 
-    @property
-    def trajectory_compressed_top_to_top(self):
-        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_compressed_top_to_top or reverse_trajectory(
-            self.trajectory_top_to_compressed_top
-        )
+    def get_level(self):
+        if type(self.id_) == str:
+            return self.id_.parts("-")[0][0]
 
-    @trajectory_compressed_top_to_top.setter
-    def trajectory_compressed_top_to_top(self, trajectory):
-        self._trajectory_compressed_top_to_top = trajectory
+    def get_segment(self):
+        if type(self.id_) == str:
+            return self.id_.parts("-")[0][1]
+
+    def get_layer(self):
+        if type(self.id_) == str:
+            return self.id_.parts("-")[1]
+
+    def get_idx(self):
+        if type(self.id_) == str:
+            return self.id_.parts("-")[2]
+        else:
+            return self.id_
 
     def get_location_plane(self):
         """Get location as Rhino.Geometry.Plane.
@@ -458,6 +441,9 @@ class ClayBullet(object):
 
         return data
 
+    def to_json_str(self):
+        return json.dumps(self, cls=CompasObjEncoder)
+
     @classmethod
     def from_data(cls, data):
         """Construct a :class:`ClayBullet` instance from its data representation.
@@ -473,7 +459,6 @@ class ClayBullet(object):
             The constructed ClayBullet instance
         """
 
-        # TODO: Trajectories class
         def trajectory_from_data(traj_data):
             try:
                 return JointTrajectory.from_data(traj_data)
@@ -483,59 +468,25 @@ class ClayBullet(object):
         kwargs = {}
 
         location = Frame.from_data(data.pop("location"))
+        id_ = data.pop("id_")
 
         trajectory_attributes = (
             "trajectory_to",
-            "_trajectory_from",
-            "_trajectory_egress_to_top",
-            "_trajectory_top_to_egress",
-            "_trajectory_top_to_compressed_top",
-            "_trajectory_compressed_top_to_top",
+            "trajectory_from_",
+            "trajectory_egress_to_top_",
+            "trajectory_top_to_compressed_top_",
         )
 
         for key in trajectory_attributes:
             traj_data = data.pop(key, None)
 
             if traj_data:
-                # strip leading underscore
-                attr_keyword = re.sub("^_", "", key)
+                # strip underscore at end of line
+                attr_keyword = re.sub("_$", "", key)
 
                 kwargs[attr_keyword] = trajectory_from_data(traj_data)
-
-        measurements = data.pop("measurements", None)
-        if measurements:
-            kwargs["measurements"] = []
-            for measurement in measurements:
-                kwargs["measurements"].append(
-                    ClayCylinderMeasurement.from_data(measurement)
-                )
 
         # merge kwargs with data
         kwargs.update(data)
 
-        return cls(location, **kwargs)
-
-
-def check_id_collision(clay_bullets):
-    """Check for duplicate ids in list of ClayBullet instances.
-
-    Parameters
-    ----------
-    clay_bullets : list of :class:`ClayBullet`
-
-    Raises
-    ------
-    Exception
-        Raises exception when first duplicate is found
-    """
-    ids = [bullet.bullet_id for bullet in clay_bullets]
-
-    set_of_ids = set()
-    for id_ in ids:
-        if id_ in set_of_ids:
-            raise Exception(
-                "Id {} appears more than once in list of ClayBullet instances".format(
-                    id_
-                )
-            )
-        set_of_ids.add(id_)
+        return cls(location, id_, **kwargs)

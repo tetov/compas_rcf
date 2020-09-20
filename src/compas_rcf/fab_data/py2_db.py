@@ -4,37 +4,31 @@ from __future__ import print_function
 
 import couchdb
 
+from compas_rcf.fab_data import ClayBullet
 
-def _create_server(url, port, username, password):
+
+def get_server(url, port, username, password):
     return couchdb.Server("http://{}:{}@{}:{}/".format(username, password, url, port))
 
 
-def update_cylinders(
-    cylinders, url, port, db_name, username, password, fix_underscores=True
-):
-    server = _create_server(url, port, username, password)
-
-    if db_name in server:
-        db = server[db_name]
+def get_db(server, db_name, create_db=True):
+    if create_db:
+        if db_name in server:
+            return server[db_name]
+        return server.create(db_name)
     else:
-        db = server.create(db_name)
+        return server[db_name]
 
-    cylinders_data = [cylinder.to_data() for cylinder in cylinders]
 
-    if fix_underscores:
-        upload_data = []
-        for data in cylinders_data:
-            new_data = {}
-            for key in data.keys():
-                if key.startswith("_"):
-                    new_key = key[1:] + "_"
-                    new_data[new_key] = data[key]
-                else:
-                    new_data[key] = data[key]
-            upload_data.append(new_data)
-    else:
-        upload_data = cylinders_data
+def update_fab_elements(db, fab_elements):
+    for elem in fab_elements:
+        id_ = elem.id_
+        db[str(id_)] = elem.to_json_str()
 
-    for data in upload_data:
-        id_ = data.pop("id_", None) or data.pop("bullet_id", None)
-        db[id_] = data
+
+def get_fab_elements(db, id_list):
+    fab_elements = []
+    for id_ in id_list:
+        fab_elements.append(ClayBullet.from_data(db[str(id)]))
+
+    return fab_elements
