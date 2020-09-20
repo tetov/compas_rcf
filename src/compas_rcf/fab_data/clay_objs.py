@@ -3,12 +3,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import math
 import re
 from copy import deepcopy
 from itertools import count
-import json
-
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
@@ -17,8 +16,8 @@ from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
 from compas_rcf.robots import reverse_trajectory
-from compas_rcf.utils import wrap_list
 from compas_rcf.utils import CompasObjEncoder
+from compas_rcf.utils import wrap_list
 
 
 class ClayBullet(object):
@@ -64,8 +63,10 @@ class ClayBullet(object):
         height=100,
         compression_ratio=0.5,
         egress_frame_distance=200,
-        trajectory_to=None,
-        trajectory_from=None,
+        trajectory_pick_egress_to_segment_egress=None,
+        trajectory_segment_egress_to_pick_egress=None,
+        trajectory_segment_egress_to_place_egress=None,
+        trajectory_place_egress_to_segment_egress=None,
         trajectory_egress_to_top=None,
         trajectory_top_to_compressed_top=None,
         cycle_time=None,
@@ -77,14 +78,26 @@ class ClayBullet(object):
         if not isinstance(location, Frame):
             raise Exception("Location should be given as a compas.geometry.Frame")
         self.location = location
+        self.id_ = id_
 
         self.radius = radius
         self.height = height
         self.compression_ratio = compression_ratio
         self.egress_frame_distance = egress_frame_distance
 
-        self.trajectory_to = trajectory_to
-        self.trajectory_from = trajectory_from
+        self.trajectory_pick_egress_to_segment_egress = (
+            trajectory_pick_egress_to_segment_egress
+        )
+        self.trajectory_segment_egress_to_pick_egress = (
+            trajectory_segment_egress_to_pick_egress
+        )
+
+        self.trajectory_segment_egress_to_place_egress = (
+            trajectory_segment_egress_to_place_egress
+        )
+        self.trajectory_place_egress_to_segment_egress = (
+            trajectory_place_egress_to_segment_egress
+        )
 
         self.trajectory_egress_to_top = trajectory_egress_to_top
 
@@ -98,37 +111,48 @@ class ClayBullet(object):
         self.attrs.update(kwargs)
 
     @property
-    def trajectory_from(self):
+    def trajectory_segment_egress_to_pick_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self.trajectory_from_ or reverse_trajectory(self.trajectory_to)
+        return self.trajectory_segment_egress_to_pick_egress_ or reverse_trajectory(
+            self.trajectory_pick_egress_to_segment_egress
+        )
 
-    @trajectory_from.setter
-    def trajectory_from(self, trajectory):
-        self.trajectory_from_ = trajectory
+    @trajectory_segment_egress_to_pick_egress.setter
+    def trajectory_segment_egress_to_pick_egress(self, trajectory):
+        self.trajectory_segment_egress_to_pick_egress_ = trajectory
 
     @property
-    def trajectory_egress_to_top(self):
+    def trajectory_place_egress_to_segment_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self.trajectory_egress_to_top_ or [
-            self.get_egress_frame(),
-            self.get_uncompressed_top_frame(),
-        ]
+        return self.trajectory_place_egress_to_segment_egress_ or reverse_trajectory(
+            self.trajectory_segment_egress_to_place_egress
+        )
 
-    @trajectory_egress_to_top.setter
-    def trajectory_egress_to_top(self, trajectory):
-        self.trajectory_egress_to_top_ = trajectory
+    @trajectory_place_egress_to_segment_egress.setter
+    def trajectory_place_egress_to_segment_egress(self, trajectory):
+        self.trajectory_place_egress_to_segment_egress_ = trajectory
 
     @property
-    def trajectory_top_to_compressed_top(self):
+    def trajectory_top_to_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self.trajectory_top_to_compressed_top_ or [
-            self.get_compressed_top_frame(),
-            self.get_uncompressed_top_frame(),
-        ]
+        return self.trajectory_top_to_egress_ or reverse_trajectory(
+            self.trajectory_egress_to_top
+        )
 
-    @trajectory_top_to_compressed_top.setter
-    def trajectory_top_to_compressed_top(self, trajectory):
-        self.trajectory_top_to_compressed_top_ = trajectory
+    @trajectory_top_to_egress.setter
+    def trajectory_top_to_egress(self, trajectory):
+        self.trajectory_top_to_egress_ = trajectory
+
+    @property
+    def trajectory_compressed_top_to_top(self):
+        """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
+        return self.trajectory_compressed_top_to_top_ or reverse_trajectory(
+            self.trajectory_top_to_compressed_top
+        )
+
+    @trajectory_compressed_top_to_top.setter
+    def trajectory_compressed_top_to_top(self, trajectory):
+        self.trajectory_compressed_top_to_top_ = trajectory
 
     def get_level(self):
         if type(self.id_) == str:
@@ -471,10 +495,14 @@ class ClayBullet(object):
         id_ = data.pop("id_")
 
         trajectory_attributes = (
-            "trajectory_to",
-            "trajectory_from_",
-            "trajectory_egress_to_top_",
-            "trajectory_top_to_compressed_top_",
+            "trajectory_pick_egress_to_segment_egress",
+            "trajectory_segment_egress_to_pick_egress_",
+            "trajectory_segment_egress_to_place_egress",
+            "trajectory_place_egress_to_segment_egress_",
+            "trajectory_egress_to_top",
+            "trajectory_top_to_egress",
+            "trajectory_top_to_compressed_top",
+            "trajectory_compressed_top_to_top_"
         )
 
         for key in trajectory_attributes:
