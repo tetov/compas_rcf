@@ -10,6 +10,7 @@ from compas.geometry import Frame
 from compas.geometry import Translation
 from compas_rrc import AbbClient
 from compas_rrc import FeedbackLevel
+from compas_rrc import Motion
 from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 from compas_rrc import Noop
@@ -24,6 +25,7 @@ from compas_rrc import StartWatch
 from compas_rrc import StopWatch
 from compas_rrc import TimeoutException
 from compas_rrc import WaitTime
+from compas_rrc import Zone
 
 from compas_rcf.docker import restart_container
 from compas_rcf.robots import FRAME_LIST_TRAJECTORY_TYPE
@@ -239,7 +241,10 @@ class AbbRcfClient(AbbClient):
 
         self.send(
             MoveToFrame(
-                cylinder.get_egress_frame(), self.speed.precise, self.zone.travel
+                cylinder.get_egress_frame(),
+                self.speed.precise,
+                self.zone.travel,
+                motion_type=Motion.LINEAR,
             )
         )
 
@@ -247,7 +252,9 @@ class AbbRcfClient(AbbClient):
 
         return self.send(ReadWatch())
 
-    def execute_trajectory(self, trajectory, speed, zone, blocking=False):
+    def execute_trajectory(
+        self, trajectory, speed, zone, blocking=False, stop_at_last=False
+    ):
         log.debug(f"Trajectory: {trajectory}")
 
         trajectory_type = get_trajectory_type(trajectory)
@@ -268,9 +275,13 @@ class AbbRcfClient(AbbClient):
         else:
             raise ValueError(f"No trajectory execution function for {trajectory}.")
 
-        execute_func(trajectory, speed, zone, blocking=blocking)
+        execute_func(
+            trajectory, speed, zone, blocking=blocking, stop_at_last=stop_at_last
+        )
 
-    def _execute_joint_trajectory(self, trajectory, speed, zone, blocking=False):
+    def _execute_joint_trajectory(
+        self, trajectory, speed, zone, blocking=False, stop_at_last=False
+    ):
         robot_joints_list = joint_trajectory_to_robot_joints_list(trajectory)
 
         for i, rob_joints in enumerate(robot_joints_list):
@@ -279,12 +290,21 @@ class AbbRcfClient(AbbClient):
             if rob_joints == self.LAST_ROB_JOINTS:
                 continue
 
-            cmd = MoveToJoints(rob_joints, self.EXTERNAL_AXIS_DUMMY, speed, zone)
-
-            if blocking and i == len(robot_joints_list) - 1:
-                self.send_and_wait(cmd)
+            if i == len(robot_joints_list) - 1:
+                if blocking:
+                    send_func = self.send_and_wait
+                else:
+                    send_func = self.send
+                if stop_at_last:
+                    _zone = Zone.FINE
+                else:
+                    _zone = zone
             else:
-                self.send(cmd)
+                send_func = self.send
+                _zone = zone
+
+            cmd = MoveToJoints(rob_joints, self.EXTERNAL_AXIS_DUMMY, speed, _zone)
+            send_func(cmd)
 
             self.LAST_ROB_JOINTS = rob_joints
 
@@ -354,7 +374,10 @@ class AbbRcfClient(AbbClient):
                 raise Exception("Unacceptable distance difference.")
 
         self.execute_trajectory(
-            cylinder.trajectory_egress_to_top, self.speed.precise, self.zone.precise
+            cylinder.trajectory_egress_to_top,
+            self.speed.precise,
+            self.zone.precise,
+            stop_at_last=True,
         )
 
         self.send(WaitTime(self.pick_place_tool.needles_pause))
