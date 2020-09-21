@@ -25,7 +25,7 @@ Install
 
     .. code:: bash
 
-       virtualenv --python=python3.7 {{path/to/venv}}
+       virtualenv --python=python3.8 {{path/to/venv}}
        source {{path/to/venv}}/bin/activate
 
 #.  Install ``compas_rrc`` & ``compas_rcf``
@@ -33,12 +33,13 @@ Install
     .. code:: bash
 
        # install compas_rrc separately
-       pip install git+https://bitbucket.org/ethrfl/compas_rrc@v0.2.3-pre
+       pip install git+https://bitbucket.org/ethrfl/compas_rrc@v1.0.0
        # from latest commit on git
        pip install git+https://github.com/tetov/compas_rcf
        # or last version
        pip install compas_rcf
-       # or compas_rcf=={version} for specific version
+       # or specific version
+       compas_rcf=={version}
 
     If you have authentication issues with BitBucket (for compas_rrc), see :ref:`git_cred_windows`
 
