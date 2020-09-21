@@ -43,8 +43,10 @@ class ClayBullet(object):
         Density of clay in g/mm\ :sup:`3`
     cycle_time : :class:`float`, optional
         Cycle time from pick to place and back.
-    placed : :class:`int`, optional
-        Time in epoch (seconds from 1970) of bullet placement.
+    placed : :obj:`bool`, optional
+        If fabrication element has been placed or not.
+    time_placed : :obj:`int`, optional
+        Time in epoch (seconds from 1970) of fabrication element placement.
     attrs : :obj:`dict`, optional
         Any other attributes needed.
     kwargs : :class:`dict`, optional
@@ -70,7 +72,8 @@ class ClayBullet(object):
         trajectory_egress_to_top=None,
         trajectory_top_to_compressed_top=None,
         cycle_time=None,
-        placed=None,
+        placed=False,
+        time_placed=None,
         ignore=False,
         attrs=None,
         **kwargs
@@ -106,6 +109,7 @@ class ClayBullet(object):
         self.cycle_time = cycle_time
         self.placed = placed
         self.ignore = ignore
+        self.time_placed = time_placed
 
         self.attrs = attrs or {}
         self.attrs.update(kwargs)
@@ -502,7 +506,7 @@ class ClayBullet(object):
             "trajectory_egress_to_top",
             "trajectory_top_to_egress",
             "trajectory_top_to_compressed_top",
-            "trajectory_compressed_top_to_top_"
+            "trajectory_compressed_top_to_top_",
         )
 
         for key in trajectory_attributes:
