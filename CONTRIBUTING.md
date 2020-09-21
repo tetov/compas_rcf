@@ -13,7 +13,7 @@ In short, this is how that works.
 
 1. Fork [the repository](https://github.com/tetov/compas_rcf) and clone the fork.
 
-2. (Optional) Create a virtual environment using your tool of choice (e.g. `virtualenv`, `conda`, etc).
+2. Create a virtual environment using your tool of choice (e.g. `virtualenv`, `conda`, etc).
 
     * Using [Anaconda](https://www.anaconda.com/)
 
@@ -35,7 +35,7 @@ In short, this is how that works.
 
    ```bash
    cd path/to/compas_rcf
-   pip install git+https://bitbucket.org/ethrfl/compas_rrc@v0.2.3-pre
+   pip install git+https://bitbucket.org/ethrfl/compas_rrc@v1.0.0
    pip install -e .[dev]
    ```
 
