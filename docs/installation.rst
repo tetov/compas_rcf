@@ -9,7 +9,7 @@ Install
     All code related to fabrication with ABB industrial robots requires
     `compas_rrc <https://bitbucket.org/ethrfl/compas_rrc/>`__ which is hosted in a private repository.
 
-#.  (Optional) Create a virtual environment using your tool of choice
+#.  Create a virtual environment using your tool of choice
     (e.g. ``virtualenv``, ``conda``, etc).
 
     -  Using `Anaconda <https://www.anaconda.com/>`__
@@ -18,7 +18,7 @@ Install
 
        conda config --add channels conda-forge
        # use conda to install compas_fab if possible
-       conda create -n compas_rcf python=3.7 git compas_fab
+       conda create -n compas_rcf python=3.8 git compas_fab==0.11
        conda activate compas_rcf
 
     -  Using `virtualenv <https://github.com/pypa/virtualenv>`__
@@ -34,12 +34,15 @@ Install
 
        # install compas_rrc separately
        pip install git+https://bitbucket.org/ethrfl/compas_rrc@v0.2.3-pre
+       # from latest commit on git
+       pip install git+https://github.com/tetov/compas_rcf
+       # or last version
        pip install compas_rcf
        # or compas_rcf=={version} for specific version
 
     If you have authentication issues with BitBucket (for compas_rrc), see :ref:`git_cred_windows`
 
-#.  (Optional) Make package accessible in Rhino and Grasshopper
+#.  Make package accessible in Rhino and Grasshopper
 
     .. code:: bash
 
@@ -53,3 +56,5 @@ To update the repository run:
 .. code:: bash
 
    pip install -U compas_rcf
+   # or if you installed directly from github
+   pip install -U git+https://github.com/tetov/compas_rcf
