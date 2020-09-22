@@ -105,7 +105,7 @@ def _edit_fab_data(fab_elems, run_conf):
             "From which index would you like to start?",
             validate=lambda val: val.isdigit() and 0 <= int(val) < len(fab_elems),
         ).ask()
-        set_placed_list(int(idx))
+        set_placed_list(int(idx) - 1)
     else:
         selection_ui()
 
@@ -146,6 +146,7 @@ def fab_run(run_conf, run_data):
     # TODO: Integrate into AbbRcfClient?
     with run_conf.pick_conf.open(mode="r") as fp:
         pick_station = PickStation.from_data(json.load(fp))
+    log.info(f"Pick station setup read from {run_conf.pick_conf}")
 
     run_data_path = run_conf.run_data_path
 
@@ -176,6 +177,8 @@ def fab_run(run_conf, run_data):
         progress_file = run_data_path.with_name(
             run_data_path.stem + progress_identifier + run_data_path.suffix
         )
+
+    log.info(f"Progress will be saved to {progress_file}.")
 
     done_file_name = re.sub(progress_identifier_regex, "-DONE", progress_file.name)
     done_file = progress_file.with_name(done_file_name)
