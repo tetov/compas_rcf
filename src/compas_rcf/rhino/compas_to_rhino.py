@@ -97,8 +97,10 @@ def cgframe_to_rgplane(frame):  # type: (compas.geometry.Frame) -> Rhino.Geometr
     :class:`Rhino.Geometry.Plane`
         Resulting plane.
     """
-    plane = cg.Plane(frame.point, frame.normal)
-    return cgplane_to_rgplane(plane)
+    o = cgpoint_to_rgpoint(frame.point)
+    x = cgvector_to_rgvector(frame.xaxis)
+    y = cgvector_to_rgvector(frame.yaxis)
+    return rg.Plane(o, x, y)
 
 
 def matrix_to_rgtransform(M):
