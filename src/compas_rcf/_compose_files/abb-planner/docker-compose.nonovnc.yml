@@ -7,4 +7,4 @@ services:
   abb-planner:
     environment:
       - DISPLAY=host.docker.internal:0.0
-      - LIBGL_ALWAYS_INDIRECT=1
+      - LIBGL_ALWAYS_INDIRECT=0
