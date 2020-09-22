@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   ros-master-ppl:
-    image: gramaziokohler/ros-abb-planner:20.09
+    image: tetov/ros-melodic-abb-planner:v1.0.0
     container_name: ros-master
     environment:
       - "ROS_HOSTNAME=ros-master"
@@ -12,7 +12,7 @@ services:
       - roscore
 
   ros-bridge-ppl:
-    image: gramaziokohler/ros-abb-planner:20.09
+    image: tetov/ros-melodic-abb-planner:v1.0.0
     container_name: ros-bridge
     environment:
       - "ROS_HOSTNAME=ros-bridge"
@@ -26,7 +26,7 @@ services:
       - rosbridge_websocket.launch
 
   ros-fileserver:
-    image: gramaziokohler/ros-abb-planner:20.09
+    image: tetov/ros-melodic-abb-planner:v1.0.0
     container_name: ros-fileserver
     environment:
       - "ROS_HOSTNAME=ros-fileserver"
@@ -44,7 +44,7 @@ services:
 
   # Runs once but can be invoked again with different transformation
   abb-tf-base_link:
-    image: gramaziokohler/ros-abb-planner:20.09
+    image: tetov/ros-melodic-abb-planner:v1.0.0
     container_name: abb-tf-base_link
     environment:
       - "ROS_HOSTNAME=abb-tf-base_link"
@@ -65,7 +65,7 @@ services:
       - '100'
 
   abb-description:
-    image: gramaziokohler/ros-abb-planner:20.09
+    image: tetov/ros-melodic-abb-planner:v1.0.0
     container_name: abb-description
     environment:
       - ROS_HOSTNAME=abb-description
@@ -78,7 +78,7 @@ services:
       - load_robot_description:=true
 
   abb-planner:
-    image: gramaziokohler/ros-abb-planner:20.09
+    image: tetov/ros-melodic-abb-planner:v1.0.0
     container_name: abb-planner
     environment:
       - ROS_HOSTNAME=abb-planner
