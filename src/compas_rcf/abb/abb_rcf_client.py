@@ -389,18 +389,12 @@ class AbbRcfClient(AbbClient):
             self.speed.precise,
             self.zone.precise,
         )
-
-        self.execute_trajectory(
-            cylinder.trajectory_compressed_top_to_top,
-            self.speed.precise,
-            self.zone.travel,
-        )
-
-        self.execute_trajectory(
-            cylinder.trajectory_top_to_egress, 
-            self.speed.precise, 
-            self.zone.travel
-        )
+        # TODO: make this frame compatible, maybe set trajectory to either
+        # reverse last of egress or frame and execute trajectory?
+        last_pt_compressed_top_to_top = joint_trajectory_to_robot_joints_list(cylinder.trajectory_compressed_top_to_top)[-1]
+        self.send(MoveToJoints(last_pt_compressed_top_to_top,  self.EXTERNAL_AXIS_DUMMY, self.speed.precise, self.zone.travel))
+        last_pt_top_to_egress = joint_trajectory_to_robot_joints_list(cylinder.trajectory_top_to_egress)[-1]
+        self.send(MoveToJoints(last_pt_compressed_top_to_top,  self.EXTERNAL_AXIS_DUMMY, self.speed.travel, self.zone.travel))
 
         self.execute_trajectory(
             cylinder.trajectory_place_egress_to_segment_egress,
