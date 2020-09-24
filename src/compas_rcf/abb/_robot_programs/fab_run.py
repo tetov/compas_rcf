@@ -68,7 +68,7 @@ def _edit_fab_data(fab_elems, run_conf):
         "set_start_idx": "Select start index.",
     }
 
-    possible_choices = ["ignore_placed", "selection_ui"]
+    possible_choices = ["ignore_placed", "selection_ui", "set_start_idx"]
 
     marked_placed_idx = [i for i in range(len(fab_elems)) if fab_elems[i].placed]
 
@@ -78,7 +78,7 @@ def _edit_fab_data(fab_elems, run_conf):
         return
 
     if len(marked_placed_idx) > 0:
-        possible_choices = ["respect_placed", "set_start_idx"] + possible_choices
+        possible_choices.insert(0, "respect_placed")
 
         last_marked_placed_idx = marked_placed_idx[-1]
         last_marked_placed = fab_elems[last_marked_placed_idx]
@@ -186,18 +186,21 @@ def fab_run(run_conf, run_data):
     # Fabrication loop
     _edit_fab_data(fab_elements, run_conf)
 
-    # Create Ros Client                                                        #
+    # Create Ros Client
     with RosClient(port=9090) as ros:
 
         # Create AbbRcf client (subclass of AbbClient)
         rob_client = AbbRcfClient(ros, run_conf.robot_client)
 
-        rob_client.check_reconnect()
-
         confirm_start()
+
+        rob_client.check_reconnect()
 
         # Set speed, accel, tool, wobj and move to start pos
         rob_client.pre_procedure()
+
+        # Initialize this before first run, it gets set after placement
+        cycle_time_msg = None
 
         for i, elem in enumerate(fab_elements):
             if elem.placed:
@@ -205,9 +208,15 @@ def fab_run(run_conf, run_data):
             current_elem_desc = "Fabrication element {:03}/{:03} with id {}.".format(
                 i, len(fab_elements) - 1, elem.bullet_id
             )
-
-            rob_client.send(PrintText(current_elem_desc))
             log.info(current_elem_desc)
+
+            pendant_msg = ""
+
+            if cycle_time_msg:
+                pendant_msg += cycle_time_msg + "\n"
+
+            pendant_msg += current_elem_desc
+            rob_client.send(PrintText(pendant_msg))
 
             pick_frame = pick_station.get_next_frame(elem)
 
@@ -227,7 +236,11 @@ def fab_run(run_conf, run_data):
             cycle_time = pick_future.result() + place_future.result()
 
             elem.cycle_time = cycle_time
-            log.info(f"Cycle time was {elem.cycle_time}")
+            cycle_time_msg = (
+                f"Cycle time for previous element was {elem.cycle_time:.02}"
+            )
+            log.info(cycle_time_msg)
+
             elem.time_placed = time.time()
             log.debug(f"Time placed was {elem.time_placed}")
 
@@ -235,6 +248,6 @@ def fab_run(run_conf, run_data):
         run_data["fab_data"] = fab_elements
         with done_file.open(mode="w") as fp:
             json.dump(run_data, fp, cls=CompasObjEncoder)
-        log.debug("Wrote run_data to {}".format(done_file.name))
+        log.info("Wrote final run_data to {}".format(done_file.name))
 
         rob_client.post_procedure()
