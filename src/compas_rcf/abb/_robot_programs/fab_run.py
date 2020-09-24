@@ -210,13 +210,13 @@ def fab_run(run_conf, run_data):
             )
             log.info(current_elem_desc)
 
-            pendant_msg = ""
+            #pendant_msg = ""
 
-            if cycle_time_msg:
-                pendant_msg += cycle_time_msg + "\n"
+            #if cycle_time_msg:
+            #    pendant_msg += cycle_time_msg + "\n"
 
-            pendant_msg += current_elem_desc
-            rob_client.send(PrintText(pendant_msg))
+            #pendant_msg += current_elem_desc
+            rob_client.send(PrintText(current_elem_desc))
 
             pick_frame = pick_station.get_next_frame(elem)
 
@@ -237,7 +237,7 @@ def fab_run(run_conf, run_data):
 
             elem.cycle_time = cycle_time
             cycle_time_msg = (
-                f"Cycle time for previous element was {elem.cycle_time:.02}"
+                f"Cycle time for previous element was {elem.cycle_time}"
             )
             log.info(cycle_time_msg)
 
