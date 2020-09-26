@@ -247,9 +247,9 @@ class AbbRcfClient(AbbClient):
 
         self.send(
             MoveToFrame(
-                cylinder.get_egress_frame(),
+                egress_frame,
                 self.speed.precise,
-                self.zone.travel,
+                self.zone.precise,
                 motion_type=Motion.LINEAR,
             )
         )
