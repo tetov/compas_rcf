@@ -205,18 +205,17 @@ def fab_run(run_conf, run_data):
         for i, elem in enumerate(fab_elements):
             if elem.placed:
                 continue
-            current_elem_desc = "Fabrication element {:03}/{:03} with id {}.".format(
-                i, len(fab_elements) - 1, elem.bullet_id
-            )
+            current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.bullet_id}."
             log.info(current_elem_desc)
 
-            #pendant_msg = ""
+            pendant_msg = ""
 
-            #if cycle_time_msg:
-            #    pendant_msg += cycle_time_msg + "\n"
+            if cycle_time_msg:
+                pendant_msg += cycle_time_msg + "\n"
+            pendant_msg += current_elem_desc
 
-            #pendant_msg += current_elem_desc
-            rob_client.send(PrintText(current_elem_desc))
+            # TP write limited to 40 char / line
+            rob_client.send(PrintText(current_elem_desc[:41]))
 
             pick_frame = pick_station.get_next_frame(elem)
 
@@ -236,9 +235,7 @@ def fab_run(run_conf, run_data):
             cycle_time = pick_future.result() + place_future.result()
 
             elem.cycle_time = cycle_time
-            cycle_time_msg = (
-                f"Cycle time for previous element was {elem.cycle_time}"
-            )
+            cycle_time_msg = f"Last cycle: {elem.cycle_time:d}"
             log.info(cycle_time_msg)
 
             elem.time_placed = time.time()

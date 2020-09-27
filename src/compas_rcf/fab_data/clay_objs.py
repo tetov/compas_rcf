@@ -475,7 +475,6 @@ class ClayBullet(object):
         :class:`ClayBullet`
             The constructed ClayBullet instance
         """
-
         # TODO: Trajectories class
         def trajectory_from_data(traj_data):
             try:
