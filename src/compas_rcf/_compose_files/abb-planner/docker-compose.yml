@@ -86,6 +86,10 @@ services:
       - abb_irb4600_40_255_moveit_config
       - demo.launch
 
+  gui:
+    # dummy here to be overriden by docker-compose.novnc.yml
+    image: hello-world
+
 networks:
     default:
         name: ros-planner
