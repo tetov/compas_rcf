@@ -356,13 +356,13 @@ class AbbRcfClient(AbbClient):
 
         # start watch
         self.send(StartWatch())
-        """
-        self.execute_trajectory(
-            cylinder.trajectory_pick_egress_to_segment_egress,
-            self.speed.travel,
-            self.zone.travel,
-        )
-        """
+        if True:
+            self.execute_trajectory(
+                cylinder.trajectory_pick_egress_to_segment_egress,
+                self.speed.travel,
+                self.zone.travel,
+            )
+
         self.execute_trajectory(
             cylinder.trajectory_segment_egress_to_place_egress,
             self.speed.travel,
@@ -428,13 +428,13 @@ class AbbRcfClient(AbbClient):
             self.speed.travel,
             self.zone.travel,
         )
-        """
-        self.execute_trajectory(
-            cylinder.trajectory_segment_egress_to_pick_egress,
-            self.speed.travel,
-            self.zone.travel,
-        )
-        """
+        if True:
+            self.execute_trajectory(
+                cylinder.trajectory_segment_egress_to_pick_egress,
+                self.speed.travel,
+                self.zone.travel,
+            )
+
         self.send(StopWatch())
 
         return self.send(ReadWatch())
