@@ -215,7 +215,7 @@ def fab_run(run_conf, run_data):
             pendant_msg += current_elem_desc
 
             # TP write limited to 40 char / line
-            rob_client.send(PrintText(current_elem_desc[:41]))
+            rob_client.send(PrintText(pendant_msg[:41]))
 
             pick_frame = pick_station.get_next_frame(elem)
 
@@ -235,7 +235,8 @@ def fab_run(run_conf, run_data):
             cycle_time = pick_future.result() + place_future.result()
 
             elem.cycle_time = cycle_time
-            cycle_time_msg = f"Last cycle: {elem.cycle_time:d}"
+            # format float to int to save characters on teach pendant
+            cycle_time_msg = f"Last cycle: {elem.cycle_time:0.0f}"
             log.info(cycle_time_msg)
 
             elem.time_placed = time.time()
