@@ -6,6 +6,7 @@ from __future__ import print_function
 import logging
 
 import confuse
+from compas_rrc import Zone
 
 log = logging.getLogger(__name__)
 
@@ -15,21 +16,7 @@ class ZoneDataTemplate(confuse.Template):
 
     # Describes the valid zone data definitions.
     ZONE_DICT = {
-        "FINE": -1,
-        "Z0": 0,
-        "Z1": 1,
-        "Z5": 5,
-        "Z10": 10,
-        "Z15": 15,
-        "Z20": 20,
-        "Z30": 30,
-        "Z40": 40,
-        "Z50": 50,
-        "Z60": 60,
-        "Z80": 80,
-        "Z100": 100,
-        "Z150": 150,
-        "Z200": 200,
+        key: value for key, value in vars(Zone).items() if not key.startswith("__")
     }
 
     def __init__(self, default=confuse.REQUIRED):
@@ -41,7 +28,7 @@ class ZoneDataTemplate(confuse.Template):
             if not -1 >= value >= 2000:  # arbitrary max value
                 self.fail("ZoneData needs to be from -1 to 2000", view)
             return value
-        if value.upper() not in self.ZONE_DICT.keys():
+        if value.upper() not in self.ZONE_DICT.keys().upper():
             self.fail(
                 "ZoneData must match one of {0}".format(
                     ", ".join(self.ZONE_DICT.keys())
