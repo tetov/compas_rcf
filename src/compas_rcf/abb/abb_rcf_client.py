@@ -223,15 +223,12 @@ class AbbRcfClient(AbbClient):
 
         # hotfix for <100 mm egress distance (knocks down cylinders when leaving)
         from compas.geometry import Translation
+
         vector = cylinder.get_normal() * 150
         T = Translation(vector)
         egress_frame = cylinder.get_uncompressed_top_frame().transformed(T)
 
-        self.send(
-            MoveToFrame(
-                egress_frame, self.speed.travel, self.zone.travel
-            )
-        )
+        self.send(MoveToFrame(egress_frame, self.speed.travel, self.zone.travel))
 
         self.send(
             MoveToFrame(
@@ -356,13 +353,12 @@ class AbbRcfClient(AbbClient):
 
         # start watch
         self.send(StartWatch())
-        """
-        self.execute_trajectory(
-            cylinder.trajectory_pick_egress_to_segment_egress,
-            self.speed.travel,
-            self.zone.travel,
-        )
-        """
+        if cylinder.trajectory_pick_egress_to_segment_egress:
+            self.execute_trajectory(
+                cylinder.trajectory_pick_egress_to_segment_egress,
+                self.speed.travel,
+                self.zone.travel,
+            )
         self.execute_trajectory(
             cylinder.trajectory_segment_egress_to_place_egress,
             self.speed.travel,
@@ -428,13 +424,13 @@ class AbbRcfClient(AbbClient):
             self.speed.travel,
             self.zone.travel,
         )
-        """
-        self.execute_trajectory(
-            cylinder.trajectory_segment_egress_to_pick_egress,
-            self.speed.travel,
-            self.zone.travel,
-        )
-        """
+        if cylinder.trajectory_pick_egress_to_segment_egress:
+            self.execute_trajectory(
+                cylinder.trajectory_segment_egress_to_pick_egress,
+                self.speed.travel,
+                self.zone.travel,
+            )
+
         self.send(StopWatch())
 
         return self.send(ReadWatch())
