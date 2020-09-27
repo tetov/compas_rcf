@@ -9,7 +9,9 @@ from compas_rcf.fab_data import ClayBullet
 from compas_rcf.utils import CompasObjEncoder
 
 
-def create_fab_elements(username, password, url, db_name, fab_elements, create_db=True):
+def create_fab_elements(
+    username, password, url, db_name, fab_elements, create_db=False
+):
     with couchdb(username, password, url=url, encoder=CompasObjEncoder) as client:
         if create_db:
             if db_name in client:
@@ -20,8 +22,13 @@ def create_fab_elements(username, password, url, db_name, fab_elements, create_d
             db = client[db_name]
 
         for elem in fab_elements:
-            with Document(db, elem.id_) as doc:
-                doc = elem  # noqa: F841
+            if isinstance(elem, dict):
+                id_ = elem["id_"]
+            else:
+                id_ = elem.id_
+            with Document(db, id_) as doc:
+                for key, value in elem.items():
+                    doc[key] = value
 
 
 def update_fab_elements(username, password, url, db_name, ids, new_data):

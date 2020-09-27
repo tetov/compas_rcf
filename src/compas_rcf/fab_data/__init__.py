@@ -53,6 +53,7 @@ from .clay_objs import *  # noqa: F401,F403
 from .csv_report import *  # noqa: F401,F403
 from .pick_station import *  # noqa: F401,F403
 from .tools import *  # noqa: F401,F403
+from ._db import *  # noqa: F401,F403
 
 if not IPY:
     from .fab_conf import *  # noqa: F401,F403
