@@ -3,8 +3,12 @@
 version: "3.5"
 services:
   gui:
-    entrypoint: ["echo", "Service novnc disabled"]
+    image: gramaziokohler/novnc:19.05
+    ports:
+      - "8080:8080"
+
   abb-planner:
     environment:
-      - DISPLAY=host.docker.internal:0.0
-      - LIBGL_ALWAYS_INDIRECT=0
+      - DISPLAY=gui:0.0
+    depends_on:
+      - gui

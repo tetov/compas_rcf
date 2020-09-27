@@ -37,11 +37,6 @@ services:
       - file_server
       - file_server.launch
 
-  gui:
-    image: gramaziokohler/novnc:19.05
-    ports:
-      - "8080:8080"
-
   # Runs once but can be invoked again with different transformation
   abb-tf-base_link:
     image: tetov/ros-melodic-abb-planner:v1.0.0
@@ -83,9 +78,8 @@ services:
     environment:
       - ROS_HOSTNAME=abb-planner
       - ROS_MASTER_URI=http://ros-master:11311
-      - DISPLAY=gui:0.0
-    depends_on:
-      - gui
+      - DISPLAY=host.docker.internal:0.0
+      - LIBGL_ALWAYS_INDIRECT=0
     command:
       - roslaunch
       - --wait
