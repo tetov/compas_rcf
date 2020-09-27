@@ -223,7 +223,7 @@ class AbbRcfClient(AbbClient):
 
         # hotfix for <100 mm egress distance (knocks down cylinders when leaving)
         from compas.geometry import Translation
-        vector = cylinder.get_normal() * 150
+        vector = cylinder.get_normal() * 175
         T = Translation(vector)
         egress_frame = cylinder.get_uncompressed_top_frame().transformed(T)
 
