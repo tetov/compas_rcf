@@ -6,8 +6,6 @@ from __future__ import print_function
 import json
 import math
 import re
-from copy import deepcopy
-from itertools import count
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
@@ -25,37 +23,52 @@ class ClayBullet(object):
 
     Parameters
     ----------
-    location : :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
-        Bottom centroid frame of clay volume.
-    trajectory_to : :class:`list` of :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
-        Frames defining path to take to place location.
-    trajectory_from : :class:`list` of :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
-        Frames defining path from place location to pick location.
-    bullet_id : :class:`int`, optional
-        Unique identifier.
-    radius : :class:`float`, optional
+    location : :class:`compas.geometry.Frame`
+        Frame at placement position of element.
+    id_ : :obj:`str`
+        Unique identifier. Should be specified as
+        ``<Level><Segment>-<Layer>-<Layer index>`` e.g. ``5A-04-032``. Also
+        used for ``doc_id`` in database.
+    trajectory_pick_egress_to_segment_egress : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`, optional
+        Joint trajectory points or frames defining path from egress from
+        picking station to segment egress.
+    trajectory_segment_egress_to_pick_egress : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`, optional
+        Joint trajectory points or frames defining path from egress from
+        segment to egress at pick station.
+    trajectory_segment_egress_to_place_egress : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`, optional
+        Joint trajectory points or frames defining path from segment egress
+        to place egress.
+    trajectory_place_egress_to_segment_egress : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`, optional
+        Joint trajectory points or frames defining path from place egress
+        to segment egress.
+    trajectory_egress_to_top : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`, optional
+        Joint trajectory points or frames defining path from place egress
+        to uncompressed top of element.
+    trajectory_top_to_compressed_top : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`, optional
+        Joint trajectory points or frames defining path from top of
+        uncompressed element to top of compressed element.
+        to uncompressed top of element.
+    radius : :obj:`float`, optional
         The radius of the initial cylinder.
-    height : :class:`float`, optional
+    height : :obj:`float`, optional
         The height of the initial cylinder.
-    compression_ratio : :class:`float` (>0, <=1), optional
+    compression_ratio : :obj:`float` (>0, <=1), optional
         The compression height ratio applied to the initial cylinder.
-    clay_density : :class:`float`, optional
-        Density of clay in g/mm\ :sup:`3`
-    cycle_time : :class:`float`, optional
+    cycle_time : :obj:`float`, optional
         Cycle time from pick to place and back.
     placed : :obj:`bool`, optional
         If fabrication element has been placed or not.
-    time_placed : :obj:`int`, optional
+    time_placed : :obj:`float`, optional
         Time in epoch (seconds from 1970) of fabrication element placement.
+    ignore : :obj:`bool:, optional
+        If set to ``True`` this element is ignored during fabrication runs.
+        Defaults to ``False``.
     attrs : :obj:`dict`, optional
         Any other attributes needed.
     kwargs : :class:`dict`, optional
         Keyword arguments added as key-value pair to `attrs` and replaces value
         if key already present.
     """  # noqa: E501
-
-    # creates id-s for objects
-    _ids = count(0)
 
     def __init__(
         self,
@@ -78,10 +91,22 @@ class ClayBullet(object):
         attrs=None,
         **kwargs
     ):
-        if not isinstance(location, Frame):
-            raise Exception("Location should be given as a compas.geometry.Frame")
         self.location = location
         self.id_ = id_
+
+        if isinstance(id_, str) and "-" in id_:
+            try:
+                # id_ should be in the form of LEVELSEGMENT-LAYER-IDX
+                # e.g. 5A-5-024
+                self.level = int(self.id_[0])
+                self.segment = self.id_.split("-")[0][1:]
+                self.layer = int(self.id_.split("-")[1])
+                self.idx = int(self.id_.split("-")[2])
+            except IndexError:
+                try:
+                    self.idx = int(self.id_)
+                except ValueError:
+                    pass
 
         self.radius = radius
         self.height = height
@@ -157,24 +182,6 @@ class ClayBullet(object):
     @trajectory_compressed_top_to_top.setter
     def trajectory_compressed_top_to_top(self, trajectory):
         self.trajectory_compressed_top_to_top_ = trajectory
-
-    def get_level(self):
-        if type(self.id_) == str:
-            return self.id_.parts("-")[0][0]
-
-    def get_segment(self):
-        if type(self.id_) == str:
-            return self.id_.parts("-")[0][1]
-
-    def get_layer(self):
-        if type(self.id_) == str:
-            return self.id_.parts("-")[1]
-
-    def get_idx(self):
-        if type(self.id_) == str:
-            return self.id_.parts("-")[2]
-        else:
-            return self.id_
 
     def get_location_plane(self):
         """Get location as Rhino.Geometry.Plane.
@@ -335,24 +342,6 @@ class ClayBullet(object):
 
         return Cylinder(self.get_rgcircle(), self.get_compressed_height())
 
-    def get_rgvector_from_bullet_zaxis(self):
-        """Vector through center of bullet.
-
-        Returns
-        -------
-        :class:`compas.geometry.Vector`
-        """
-        return self.get_normal() * self.get_compressed_height()
-
-    def copy(self):
-        """Get a copy of instance.
-
-        Returns
-        -------
-        :class:`compas_rcf.fab_data.ClayBullet`
-        """
-        return deepcopy(self)
-
     def get_cgmesh(self, face_count=18):
         """Generate mesh representation of bullet with custom resolution.
 
@@ -439,7 +428,7 @@ class ClayBullet(object):
 
         Parameters
         ----------
-        face_count : :class:`int`, optional
+        face_count : :obj:`int`, optional
             Desired number of faces, by default 18
             Used as a guide for the resolution of the mesh cylinder
 
@@ -455,8 +444,9 @@ class ClayBullet(object):
 
         return rgmesh
 
+    """
     def to_data(self):
-        """Get :obj:`dict` representation of :class:`ClayBullet`."""
+        \"\"\"Get :obj:`dict` representation of :class:`ClayBullet`.\"\"\"
         # TODO: Check if this is at all needed, or can be done just using
         # CompasObjEncoder
         data = {}
@@ -468,8 +458,10 @@ class ClayBullet(object):
                 data[key] = value
 
         return data
+    """
 
     def to_json_str(self):
+        """Get a JSON dictionary string representation of object."""
         return json.dumps(self, cls=CompasObjEncoder)
 
     @classmethod
