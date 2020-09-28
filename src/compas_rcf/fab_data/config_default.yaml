@@ -11,7 +11,7 @@ robot_client:
     publish_tf_xform: false  # publish a TF topic w xform
     wobjs:
         pick: wobj0
-        place: ob_A057_WobjPlacing01
+        place: wobj0
 
     tools:
         pick_place:
@@ -21,7 +21,7 @@ robot_client:
             retract_signal: 0 # state (0 or 1)
             needles_pause: 0.5 # Seconds to wait before and after extending or
                                # retracting needles
-            compress_at_pick: 0.05 # controls compression before lifting
+            elem_pick_egress_dist: 150 # controls height where descent for pick starts
 
         dist_sensor:
             name: t_A057_DistSensor01 # name of tool
