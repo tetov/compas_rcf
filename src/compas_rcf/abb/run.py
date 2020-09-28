@@ -97,8 +97,6 @@ def main():
     log.debug(f"argparse input: {args}")
     log.debug(f"config after set_args: {fab_conf}")
 
-    # if args.measurement:
-    #     measure_run(run_conf, run_data)
     fab_run(run_conf, run_data)
 
 

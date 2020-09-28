@@ -23,13 +23,6 @@ robot_client:
                                # retracting needles
             compress_at_pick: 0.05 # controls compression before lifting
 
-        dist_sensor:
-            name: t_A057_DistSensor01 # name of tool
-            # serial_port: COM1 # Set when starting script
-            serial_baudrate: 115200
-            max_z_adjustment: 300
-            adjust_loc_frames: false
-
     robot_movement:
         global_speed_accel:
             speed_override: 100 # %

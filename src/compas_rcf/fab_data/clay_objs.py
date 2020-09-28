@@ -15,7 +15,6 @@ from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
 from compas_rcf.robots import reverse_trajectory
-from compas_rcf.sensing import ClayCylinderMeasurement
 from compas_rcf.utils import wrap_list
 
 
@@ -76,7 +75,6 @@ class ClayBullet(object):
         cycle_time=None,
         placed=False,
         time_placed=None,
-        measurements=None,
         attrs=None,
         **kwargs
     ):
@@ -505,14 +503,6 @@ class ClayBullet(object):
                 attr_keyword = re.sub("^_", "", key)
 
                 kwargs[attr_keyword] = trajectory_from_data(traj_data)
-
-        measurements = data.pop("measurements", None)
-        if measurements:
-            kwargs["measurements"] = []
-            for measurement in measurements:
-                kwargs["measurements"].append(
-                    ClayCylinderMeasurement.from_data(measurement)
-                )
 
         # merge kwargs with data
         kwargs.update(data)

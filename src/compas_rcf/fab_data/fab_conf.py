@@ -57,13 +57,6 @@ ABB_RCF_CONF_TEMPLATE = {
                 "needles_pause": float,
                 "compress_at_pick": float,
             },
-            "dist_sensor": {
-                "name": str,
-                "serial_port": confuse.String(default=None),
-                "serial_baudrate": int,
-                "max_z_adjustment": float,
-                "adjust_loc_frames": bool,
-            },
         },
         "robot_movement": {
             "global_speed_accel": {

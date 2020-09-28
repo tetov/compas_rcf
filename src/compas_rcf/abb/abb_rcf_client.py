@@ -6,8 +6,6 @@ from __future__ import print_function
 import logging
 import time
 
-from compas.geometry import Frame
-from compas.geometry import Translation
 from compas_rrc import AbbClient
 from compas_rrc import FeedbackLevel
 from compas_rrc import Motion
@@ -47,7 +45,6 @@ class AbbRcfClient(AbbClient):
         super().__init__(ros)
 
         self.pick_place_tool = rob_conf.tools.get("pick_place")
-        self.dist_sensor_tool = rob_conf.tools.get("dist_sensor")
 
         self.wobjs = rob_conf.wobjs
 
@@ -59,8 +56,6 @@ class AbbRcfClient(AbbClient):
         self.zone = rob_conf.robot_movement.zone
 
         self.docker_cfg = rob_conf.docker
-
-        self.use_dist_sensor = self.dist_sensor_tool.serial_port is not None
 
     def ping(self, timeout=10):
         """Ping ABB robot controller.
@@ -178,29 +173,6 @@ class AbbRcfClient(AbbClient):
         )
 
         self.send_and_wait(PrintText("Finished"))
-
-    def measure_cylinder(self, cylinder):
-
-        port = self.dist_sensor_tool.serial_port
-        baudrate = self.dist_sensor_tool.serial_baudrate
-
-        self.send(SetTool(self.dist_sensor_tool.name))
-        self.send(SetWorkObject(self.wobjs.pick))
-
-        for measurement in cylinder.measurements:
-            trajectory = [Frame.from_data(measurement.frame)]
-            log.debug("frame")
-            self.execute_trajectory(
-                trajectory, self.speed.precise, self.zone.precise, blocking=True,
-            )
-
-            if not self.use_dist_sensor:
-                log.info(
-                    "Using dummy value for measurement since no distance sensor port is specified."  # noqa: E501
-                )
-
-            measurement.measure(port, baudrate, use_dummy=not self.use_dist_sensor)
-            log.debug("Measurement: {}".format(measurement))
 
     def pick_bullet(self, cylinder):
         """Send movement and IO instructions to pick up a clay cylinder.
@@ -335,18 +307,11 @@ class AbbRcfClient(AbbClient):
             Object which blocks while waiting for feedback from robot. Calling result on
             this object will return the time the procedure took.
         """
-        log.debug("Location frame: {}".format(cylinder.location))
+        log.debug(f"Location frame: {cylinder.location}")
 
         # change work object before placing
         self.send(SetWorkObject(self.wobjs.place))
-
-        # move there with distance sensor TCP active
-        if self.use_dist_sensor:
-            tcp = self.dist_sensor_tool.name
-        else:
-            tcp = self.pick_place_tool.name
-
-        self.send(SetTool(tcp))
+        self.send(SetTool(self.pick_place_tool.name))
 
         # start watch
         self.send(StartWatch())
@@ -362,16 +327,6 @@ class AbbRcfClient(AbbClient):
             self.speed.travel,
             self.zone.travel,
         )
-
-        if self.use_dist_sensor:
-            self.send(SetTool(self.pick_place_tool.name))
-
-            dist_diff = self.measure_z_diff(cylinder)
-
-            if self.max_z_diff and self.is_dist_diff_ok(dist_diff):
-                self.correct_location(cylinder, dist_diff)
-            else:
-                raise Exception("Unacceptable distance difference.")
 
         self.execute_trajectory(
             cylinder.trajectory_egress_to_top,
@@ -450,16 +405,3 @@ class AbbRcfClient(AbbClient):
         self.send(SetDigital(pin, state))
 
         log.debug("IO {} set to {}.".format(pin, state))
-
-    @staticmethod
-    def correct_location_in_z(cylinder, dist_diff):
-        corr_vector = cylinder.get_normal() * dist_diff
-        T = Translation(corr_vector)
-
-        cylinder.location.transform(T)
-
-        cylinder.attrs["location_correction"] = corr_vector
-
-    @classmethod
-    def from_confuse_conf(cls, ros, conf):
-        pass
