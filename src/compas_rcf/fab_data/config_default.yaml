@@ -23,13 +23,6 @@ robot_client:
                                # retracting needles
             elem_pick_egress_dist: 150 # controls height where descent for pick starts
 
-        dist_sensor:
-            name: t_A057_DistSensor01 # name of tool
-            # serial_port: COM1 # Set when starting script
-            serial_baudrate: 115200
-            max_z_adjustment: 300
-            adjust_loc_frames: false
-
     robot_movement:
         global_speed_accel:
             speed_override: 100 # %
