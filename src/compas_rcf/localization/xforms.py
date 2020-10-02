@@ -70,12 +70,17 @@ def _get_matrix(xform):
         if isinstance(xform, Transform):
             return rgtransform_to_matrix(xform)
 
+    try:
+        from numpy import ndarray
+    except ImportError:
+        pass
+    else:
+        if isinstance(xform, ndarray):
+            return xform.tolist()
+
     if isinstance(xform, Transformation):
         return xform.matrix
 
-    # TODO: Maybe add np array?
-
-    # TODO: Maybe check that it actually is list of list of float
     return xform
 
 
