@@ -142,8 +142,7 @@ def fab_run(run_conf, run_data):
 
     log.info(f"{len(fab_elements)} fabrication elements..")
 
-    # setup pick station
-    # TODO: Integrate into AbbRcfClient?
+    # Setup pick station
     with run_conf.pick_conf.open(mode="r") as fp:
         pick_station = PickStation.from_data(json.load(fp))
     log.info(f"Pick station setup read from {run_conf.pick_conf}")

@@ -351,7 +351,8 @@ class AbbRcfClient(AbbClient):
         # start watch
         self.send(StartWatch())
 
-        # TODO: create attr with list of trajectories between pick and place
+        # TODO: Tracked in #56. Create attr with list of trajectories between
+        # pick and place
         # egresses to give flexibility to number of traj between pick and
         # place
         self.execute_trajectory(

@@ -358,7 +358,7 @@ class ClayBullet(object):
         -------
         :class:`Rhino.Geometry.Mesh`
         """
-        # TODO: Rewrite as pure compas
+        # TODO: Rewrite as pure compas (unnecessary but neat)
         import Rhino.Geometry as rg
 
         from compas_rcf.rhino import cgvector_to_rgvector
@@ -449,7 +449,8 @@ class ClayBullet(object):
 
     def to_data(self):
         """Get :obj:`dict` representation of :class:`ClayBullet`."""
-        # TODO: Check if this is at all needed, or can be done just using
+        # TODO: Remove method. #62 blocks.
+        # Check if this is at all needed, or can be done just using
         # CompasObjEncoder
         data = {}
 
@@ -475,7 +476,6 @@ class ClayBullet(object):
         :class:`ClayBullet`
             The constructed ClayBullet instance
         """
-        # TODO: Trajectories class
         def trajectory_from_data(traj_data):
             try:
                 return JointTrajectory.from_data(traj_data)

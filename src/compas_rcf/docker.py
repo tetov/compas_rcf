@@ -45,7 +45,7 @@ def _run(cmd, check_output=False, print_output=True, **kwargs):
     if sys.version_info.major < 3:
         subprocess.call(cmd, universal_newlines=print_output, **kwargs)
 
-        # TODO: Get check_call to work
+        # TODO: Get check_call to work. Tracked in #61
         # if check_output:
         #     try:
         #         subprocess.check_call(cmd, universal_newlines=print_output, **kwargs)
