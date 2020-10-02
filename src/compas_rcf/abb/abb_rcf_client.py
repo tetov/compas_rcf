@@ -202,17 +202,16 @@ class AbbRcfClient(AbbClient):
             measurement.measure(port, baudrate, use_dummy=not self.use_dist_sensor)
             log.debug("Measurement: {}".format(measurement))
 
-    def pick_bullet(self, cylinder):
-        """Send movement and IO instructions to pick up a clay cylinder.
+    def pick_bullet(self, pick_elem):
+        """Send movement and IO instructions to pick up fabrication element.
 
         Uses `fab_conf` set up with command line arguments and configuration
         file.
 
-        Parameters
+        Parameter
         ----------
-        client : :class:`compas_rrc.AbbClient`
-        picking_frame : :class:`compas.geometry.Frame`
-            Target frame to pick up cylinder
+        pick_elem : :class:`~compas_rcf.fab_data.ClayBullet`
+            Representation of fabrication element to pick up.
         """
         # change work object before picking
         self.send(SetTool(self.pick_place_tool.name))
@@ -221,15 +220,16 @@ class AbbRcfClient(AbbClient):
         # start watch
         self.send(StartWatch())
 
-        self.send(
-            MoveToFrame(
-                cylinder.get_egress_frame(), self.speed.travel, self.zone.travel
-            )
-        )
+        # hotfix for <100 mm egress distance (knocks down cylinders when leaving)
+        vector = pick_elem.get_normal() * self.pick_place_tool.elem_pick_egress_dist
+        T = Translation(vector)
+        egress_frame = pick_elem.get_uncompressed_top_frame().transformed(T)
+
+        self.send(MoveToFrame(egress_frame, self.speed.travel, self.zone.travel))
 
         self.send(
             MoveToFrame(
-                cylinder.get_uncompressed_top_frame(),
+                pick_elem.get_uncompressed_top_frame(),
                 self.speed.travel,
                 self.zone.precise,
             )
@@ -241,9 +241,9 @@ class AbbRcfClient(AbbClient):
 
         self.send(
             MoveToFrame(
-                cylinder.get_egress_frame(),
+                egress_frame,
                 self.speed.precise,
-                self.zone.travel,
+                self.zone.precise,
                 motion_type=Motion.LINEAR,
             )
         )
@@ -342,15 +342,18 @@ class AbbRcfClient(AbbClient):
 
         # move there with distance sensor TCP active
         if self.use_dist_sensor:
-            tcp = self.dist_sensor_tool.name
+            tool_name = self.dist_sensor_tool.name
         else:
-            tcp = self.pick_place_tool.name
+            tool_name = self.pick_place_tool.name
 
-        self.send(SetTool(tcp))
+        self.send(SetTool(tool_name))
 
         # start watch
         self.send(StartWatch())
 
+        # TODO: create attr with list of trajectories between pick and place
+        # egresses to give flexibility to number of traj between pick and
+        # place
         self.execute_trajectory(
             cylinder.trajectory_pick_egress_to_segment_egress,
             self.speed.travel,

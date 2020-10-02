@@ -55,7 +55,7 @@ ABB_RCF_CONF_TEMPLATE = {
                 "extend_signal": int,
                 "retract_signal": int,
                 "needles_pause": float,
-                "compress_at_pick": float,
+                "elem_pick_egress_dist": float,
             },
             "dist_sensor": {
                 "name": str,
