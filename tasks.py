@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
 import contextlib
@@ -8,9 +10,11 @@ import sys
 from shutil import rmtree
 
 from invoke import task
+from invoke.exceptions import UnexpectedExit
 
 try:
-    input = raw_input
+    input = raw_input  # type: ignore [name-defined] # noqa: F821
+    # flake8 reports F821 for prev line for parts of comment??
 except NameError:
     pass
 
@@ -41,22 +45,9 @@ class Log(object):
 log = Log()
 
 
-def confirm(question):
-    while True:
-        response = input(question).lower().strip()
-
-        if not response or response in ("n", "no"):
-            return False
-
-        if response in ("y", "yes"):
-            return True
-
-        print("Focus, kid! It is either (y)es or (n)o", file=sys.stderr)
-
-
 @task(default=True)
 def help(ctx):
-    """Lists available tasks and usage."""
+    """List available tasks and usage."""
     ctx.run("invoke --list")
     log.write('Use "invoke -h <taskname>" to get detailed help for a task.')
 
@@ -69,8 +60,7 @@ def help(ctx):
     }
 )
 def clean(ctx, clean_docs=True, clean_bytecode=True, clean_builds=True):
-    """Cleans the local copy from compiled artifacts."""
-
+    """Clean the local copy from compiled artifacts."""
     with chdir(BASE_FOLDER):
         if clean_builds:
             ctx.run("python setup.py clean")
@@ -110,8 +100,7 @@ def clean(ctx, clean_docs=True, clean_bytecode=True, clean_builds=True):
     }
 )
 def docs(ctx, doctest=False, rebuild=True, check_links=False):
-    """Builds package's HTML documentation."""
-
+    """Build package's HTML documentation."""
     if rebuild:
         clean(ctx)
 
@@ -128,7 +117,6 @@ def docs(ctx, doctest=False, rebuild=True, check_links=False):
 @task()
 def check(ctx):
     """Check the consistency of documentation, coding style and a few other things."""
-
     with chdir(BASE_FOLDER):
         log.write("Checking metadata...")
         ctx.run("python setup.py check --strict --metadata")
@@ -179,13 +167,22 @@ def build(ctx):
     ctx.run("python setup.py clean --all sdist bdist_wheel")
 
 
-@task(help={"new_version": "Version number to release"})
-def release(ctx, new_version):
-    """Releases the project in one swift command!"""
-    # Run checks
-    ctx.run("invoke check test build docs")
+@task
+def raise_if_dirty(ctx):
+    """Raise if there's modified or untracked files in repository."""
+    try:
+        ctx.run('test -z "$(git status --porcelain)"')
+    except UnexpectedExit:
+        raise Exception("Working directory contains changes or untracked files.")
 
-    # TODO: check if dirty
+
+@task(
+    pre=[raise_if_dirty, check, test, build, docs],
+    help={"new_version": "Version number to release"},
+)
+def release(ctx, new_version):
+    """Releases the project in one swift command."""
+    # Run checks
 
     # Bump version and git tag it
     ctx.run("git -s tag {}".format(new_version))
