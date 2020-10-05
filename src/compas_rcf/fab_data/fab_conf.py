@@ -28,7 +28,7 @@ class ZoneDataTemplate(confuse.Template):
             if not -1 >= value >= 2000:  # arbitrary max value
                 self.fail("ZoneData needs to be from -1 to 2000", view)
             return value
-        if value.upper() not in self.ZONE_DICT.keys().upper():
+        if value.upper() not in self.ZONE_DICT.keys():
             self.fail(
                 "ZoneData must match one of {0}".format(
                     ", ".join(self.ZONE_DICT.keys())
