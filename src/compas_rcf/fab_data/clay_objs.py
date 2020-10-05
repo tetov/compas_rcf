@@ -14,7 +14,7 @@ from compas.geometry import Translation
 from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.robots import reverse_trajectory
+from compas_rcf.robots import reversed_trajectory
 from compas_rcf.utils import wrap_list
 
 
@@ -125,7 +125,7 @@ class ClayBullet(object):
     @property
     def trajectory_segment_egress_to_pick_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_segment_egress_to_pick_egress or reverse_trajectory(
+        return self._trajectory_segment_egress_to_pick_egress or reversed_trajectory(
             self.trajectory_pick_egress_to_segment_egress
         )
 
@@ -136,7 +136,7 @@ class ClayBullet(object):
     @property
     def trajectory_place_egress_to_segment_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_place_egress_to_segment_egress or reverse_trajectory(
+        return self._trajectory_place_egress_to_segment_egress or reversed_trajectory(
             self.trajectory_segment_egress_to_place_egress
         )
 
@@ -147,7 +147,7 @@ class ClayBullet(object):
     @property
     def trajectory_top_to_egress(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_top_to_egress or reverse_trajectory(
+        return self._trajectory_top_to_egress or reversed_trajectory(
             self.trajectory_egress_to_top
         )
 
@@ -158,7 +158,7 @@ class ClayBullet(object):
     @property
     def trajectory_compressed_top_to_top(self):
         """:class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`."""  # noqa: E501
-        return self._trajectory_compressed_top_to_top or reverse_trajectory(
+        return self._trajectory_compressed_top_to_top or reversed_trajectory(
             self.trajectory_top_to_compressed_top
         )
 
