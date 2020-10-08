@@ -321,34 +321,29 @@ class AbbRcfClient(AbbClient):
         # pick and place
         # egresses to give flexibility to number of traj between pick and
         # place
-        self.execute_trajectory(
-            cylinder.trajectory_pick_egress_to_segment_egress,
-            self.speed.travel,
-            self.zone.travel,
-        )
+        for trajectory in cylinder.travel_trajectories:
+            self.execute_trajectory(
+                trajectory, self.speed.travel, self.zone.travel,
+            )
 
-        self.execute_trajectory(
-            cylinder.trajectory_segment_egress_to_place_egress,
-            self.speed.travel,
-            self.zone.travel,
-        )
+        # Execute trajectories in pushing motion until the last
+        for trajectory in cylinder.push_trajectories[:-1]:
+            self.execute_trajectory(
+                trajectory, self.speed.precise, self.zone.travel,
+            )
 
-        self.execute_trajectory(
-            cylinder.trajectory_egress_to_top,
-            self.speed.precise,
-            self.zone.travel,
-            stop_at_last=True,
-        )
-
-        self.send(WaitTime(self.pick_place_tool.needles_pause))
+        # Before executing last pushing trajectory, retract the needles.
         self.retract_needles()
         self.send(WaitTime(self.pick_place_tool.needles_pause))
 
+        # Last pushing motion
         self.execute_trajectory(
-            cylinder.trajectory_top_to_compressed_top,
+            cylinder.push_trajectories[-1],
             self.speed.precise,
-            self.zone.precise,
+            self.zone.push,
+            stop_at_last=True,
         )
+
         # TODO: make this frame compatible, maybe set trajectory to either
         # reverse last of egress or frame and execute trajectory?
         last_pt_compressed_top_to_top = joint_trajectory_to_robot_joints_list(
