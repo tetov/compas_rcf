@@ -70,7 +70,7 @@ ABB_RCF_CONF_TEMPLATE = {
             "speed": {"precise": float, "travel": float},
             "zone": {
                 "pick": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
-                "push": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
+                "place": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
                 "travel": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
             },
             "set_joint_pos": {

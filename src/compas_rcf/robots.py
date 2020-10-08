@@ -58,6 +58,23 @@ def reversed_trajectory(trajectory):
     return copy
 
 
+def reversed_trajectories(trajectories):
+    """Get a reversed list of reversed trajectories.
+
+    Parameters
+    ----------
+    trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`
+        Trajectories described by joint positions or frames.
+
+    Returns
+    -------
+    :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`
+        Reversed trajectories.
+    """  # noqa: E501
+    reversed_list = trajectories[::-1]
+    return [reversed_trajectory(trajectory) for trajectory in reversed_list]
+
+
 def joint_trajectory_to_robot_joints_list(joint_trajectory):
     """Convert a compas_fab ``JointTrajectory`` object to a list of compas_rrc ``RobotJoints``.
 

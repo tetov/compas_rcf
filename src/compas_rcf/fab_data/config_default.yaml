@@ -40,7 +40,7 @@ robot_client:
             pick:
                 frame: Z10
                 joints: Z10
-            push:
+            place:
                 frame: FINE
                 joints: Z10
             travel:

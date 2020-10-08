@@ -325,21 +325,21 @@ class AbbRcfClient(AbbClient):
                 trajectory, self.speed.travel, self.zone.travel,
             )
 
-        # Execute trajectories in pushing motion until the last
-        for trajectory in cylinder.push_trajectories[:-1]:
+        # Execute trajectories in place motion until the last
+        for trajectory in cylinder.place_trajectories[:-1]:
             self.execute_trajectory(
                 trajectory, self.speed.precise, self.zone.travel,
             )
 
-        # Before executing last pushing trajectory, retract the needles.
+        # Before executing last place trajectory, retract the needles.
         self.retract_needles()
         self.send(WaitTime(self.pick_place_tool.needles_pause))
 
-        # Last pushing motion
+        # Last place motion
         self.execute_trajectory(
-            cylinder.push_trajectories[-1],
+            cylinder.place_trajectories[-1],
             self.speed.precise,
-            self.zone.push,
+            self.zone.place,
             stop_at_last=True,
         )
 

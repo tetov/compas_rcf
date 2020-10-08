@@ -13,7 +13,7 @@ from compas.geometry import Translation
 from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.robots import reversed_trajectory
+from compas_rcf.robots import reversed_trajectories
 from compas_rcf.utils import wrap_list
 
 
@@ -27,8 +27,8 @@ class ClayBullet(object):
     travel_trajectories: :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :class:`compas.geometry.Frame`
         List of trajectories describing motion between picking egress and
         placing egress.
-    push_trajectories:  :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :class:`compas.geometry.Frame`
-        List of trajectories describing pushing motion.
+    place_trajectories:  :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :class:`compas.geometry.Frame`
+        List of trajectories describing place motion.
     bullet_id : :class:`int`, optional
         Unique identifier.
     radius : :class:`float`, optional
@@ -63,7 +63,7 @@ class ClayBullet(object):
         compression_ratio=0.5,
         egress_frame_distance=200,
         travel_trajectories=None,
-        push_trajectories=None,
+        place_trajectories=None,
         bullet_id=None,
         clay_density=2.0,
         cycle_time=None,
@@ -82,7 +82,7 @@ class ClayBullet(object):
         self.egress_frame_distance = egress_frame_distance
 
         self.travel_trajectories = travel_trajectories or [[self.get_egress_frame()]]
-        self.push_trajectories = push_trajectories or [
+        self.place_trajectories = place_trajectories or [
             [self.get_uncompressed_top_frame()],
             [self.get_compressed_top_frame()],
         ]
@@ -109,20 +109,16 @@ class ClayBullet(object):
         -------
         :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`.
         """  # noqa: E501
-        return self._get_reversed_trajectories(self.travel_trajectories)
+        return reversed_trajectories(self.travel_trajectories)
 
-    def get_reversed_push_trajectories(self):
-        """Get reversed list of push_trajectories where trajectories have also been reversed.
+    def get_reversed_place_trajectories(self):
+        """Get reversed list of place_trajectories where trajectories have also been reversed.
 
         Returns
         -------
         :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`.
         """  # noqa: E501
-        return self._get_reversed_trajectories(self.push_trajectories)
-
-    def _get_reversed_trajectories(self, trajectories):
-        reversed_list = trajectories[::-1]
-        return [reversed_trajectory(trajectory) for trajectory in reversed_list]
+        return reversed_trajectories(self.place_trajectories)
 
     def get_location_plane(self):
         """Get location as Rhino.Geometry.Plane.
@@ -443,7 +439,7 @@ class ClayBullet(object):
 
         location = Frame.from_data(data.pop("location"))
 
-        trajectory_attributes = ("travel_trajectories", "push_trajectories")
+        trajectory_attributes = ("travel_trajectories", "place_trajectories")
 
         for key in trajectory_attributes:
             trajectories_data = data.pop(key, None)
