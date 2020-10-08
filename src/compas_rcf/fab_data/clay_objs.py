@@ -24,10 +24,10 @@ class ClayBullet(object):
     ----------
     location : :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
         Bottom centroid frame of clay volume.
-    travel_trajectories: :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :class:`compas.geometry.Frame`
+    travel_trajectories: :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         List of trajectories describing motion between picking egress and
         placing egress.
-    place_trajectories:  :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :class:`compas.geometry.Frame`
+    place_trajectories:  :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         List of trajectories describing place motion.
     bullet_id : :class:`int`, optional
         Unique identifier.
@@ -50,7 +50,7 @@ class ClayBullet(object):
     kwargs : :class:`dict`, optional
         Keyword arguments added as key-value pair to `attrs` and replaces value
         if key already present.
-    """  # noqa: E501
+    """
 
     # creates id-s for objects
     _ids = count(0)
@@ -81,11 +81,8 @@ class ClayBullet(object):
         self.compression_ratio = compression_ratio
         self.egress_frame_distance = egress_frame_distance
 
-        self.travel_trajectories = travel_trajectories or [[self.get_egress_frame()]]
-        self.place_trajectories = place_trajectories or [
-            [self.get_uncompressed_top_frame()],
-            [self.get_compressed_top_frame()],
-        ]
+        self.travel_trajectories = travel_trajectories
+        self.place_trajectories = place_trajectories
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:

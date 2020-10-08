@@ -3,37 +3,9 @@ from __future__ import division
 from __future__ import print_function
 
 import math
-from collections import Sequence
 from copy import deepcopy
 
-from compas.geometry import Frame
-from compas_fab.robots import JointTrajectory
 from compas_rrc import RobotJoints
-
-JOINT_TRAJECTORY_TYPE = 0
-FRAME_LIST_TRAJECTORY_TYPE = 1
-
-
-def get_trajectory_type(trajectory):
-    """Get trajectory type.
-
-    Returns
-    -------
-    :obj:`int`
-        Identifier for trajectory type.
-    """
-    if isinstance(trajectory, JointTrajectory):
-        return JOINT_TRAJECTORY_TYPE
-    if isinstance(trajectory, Sequence):
-        for elem in trajectory:
-            if not isinstance(elem, Frame):
-                raise ValueError(
-                    "Trajectory should be JointTrajectory or Frames, not {}.".format(
-                        type(elem)
-                    )
-                )
-
-        return FRAME_LIST_TRAJECTORY_TYPE
 
 
 def reversed_trajectory(trajectory):
@@ -41,20 +13,16 @@ def reversed_trajectory(trajectory):
 
     Parameters
     ----------
-    trajectory : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`
+    trajectory : :class:`compas_fab.robots.JointTrajectory`
         Trajectory described by joint positions or frames.
 
     Returns
     -------
-    :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`
+    :class:`compas_fab.robots.JointTrajectory`
         Reversed trajectory.
-    """  # noqa: E501
+    """
     copy = deepcopy(trajectory)
-    type_ = get_trajectory_type(trajectory)
-    if type_ == JOINT_TRAJECTORY_TYPE:
-        copy.points.reverse()
-    elif type_ == FRAME_LIST_TRAJECTORY_TYPE:
-        copy.reverse()
+    copy.points.reverse()
     return copy
 
 
@@ -63,12 +31,12 @@ def reversed_trajectories(trajectories):
 
     Parameters
     ----------
-    trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`
-        Trajectories described by joint positions or frames.
+    trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+        Trajectories described by joint positions.
 
     Returns
     -------
-    :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`
+    :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         Reversed trajectories.
     """  # noqa: E501
     reversed_list = trajectories[::-1]
