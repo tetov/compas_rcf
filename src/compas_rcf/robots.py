@@ -36,7 +36,19 @@ def get_trajectory_type(trajectory):
         return FRAME_LIST_TRAJECTORY_TYPE
 
 
-def reverse_trajectory(trajectory):
+def reversed_trajectory(trajectory):
+    """Get a reversed copy of a trajectory.
+
+    Parameters
+    ----------
+    trajectory : :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`
+        Trajectory described by joint positions or frames.
+
+    Returns
+    -------
+    :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :class:`compas.geometry.Frame`
+        Reversed trajectory.
+    """  # noqa: E501
     copy = deepcopy(trajectory)
     type_ = get_trajectory_type(trajectory)
     if type_ == JOINT_TRAJECTORY_TYPE:
@@ -47,6 +59,16 @@ def reverse_trajectory(trajectory):
 
 
 def joint_trajectory_to_robot_joints_list(joint_trajectory):
+    """Convert a compas_fab ``JointTrajectory`` object to a list of compas_rrc ``RobotJoints``.
+
+    Parameter
+    ---------
+    joint_trajectory : :class:`compas_fab.robots.JointTrajectory`
+
+    Returns
+    -------
+    :obj:`list` of :class:`compas_rrc.RobotJoints`.
+    """  # noqa: E501
     robot_joints_list = []
     for pt in joint_trajectory.points:
         in_degrees = [math.degrees(pos) for pos in pt.values]

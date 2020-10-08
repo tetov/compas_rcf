@@ -37,9 +37,15 @@ robot_client:
 
         zone:
             # Either rapid variable name or mm
-            precise: 'Fine' # case doesn't matter here
-            travel: 'Z150'
-            absj_precise : 'Z1'
+            pick:
+                frame: Z10
+                joints: Z10
+            push:
+                frame: FINE
+                joints: Z10
+            travel:
+                frame: Z100
+                joints: Z100
 
         set_joint_pos: # used at start and end of fabrication run
             start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees

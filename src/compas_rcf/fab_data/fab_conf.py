@@ -5,8 +5,8 @@ from __future__ import print_function
 
 import logging
 
+import compas_rrc
 import confuse
-from compas_rrc import Zone
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,9 @@ class ZoneDataTemplate(confuse.Template):
 
     # Describes the valid zone data definitions.
     ZONE_DICT = {
-        key: value for key, value in vars(Zone).items() if not key.startswith("__")
+        key: value
+        for key, value in vars(compas_rrc.Zone).items()
+        if not key.startswith("__")
     }
 
     def __init__(self, default=confuse.REQUIRED):
@@ -67,9 +69,9 @@ ABB_RCF_CONF_TEMPLATE = {
             },
             "speed": {"precise": float, "travel": float},
             "zone": {
-                "precise": ZoneDataTemplate(),
-                "travel": ZoneDataTemplate(),
-                "absj_precise": ZoneDataTemplate(),
+                "pick": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
+                "push": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
+                "travel": {"frame": ZoneDataTemplate(), "joints": ZoneDataTemplate()},
             },
             "set_joint_pos": {
                 "start": confuse.Sequence([float] * 6),

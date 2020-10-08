@@ -13,7 +13,7 @@ from compas.geometry import Translation
 from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.robots import reverse_trajectory
+from compas_rcf.robots import reversed_trajectory
 from compas_rcf.utils import wrap_list
 
 
@@ -122,7 +122,7 @@ class ClayBullet(object):
 
     def _get_reversed_trajectories(self, trajectories):
         reversed_list = trajectories[::-1]
-        return [reverse_trajectory(trajectory) for trajectory in reversed_list]
+        return [reversed_trajectory(trajectory) for trajectory in reversed_list]
 
     def get_location_plane(self):
         """Get location as Rhino.Geometry.Plane.
