@@ -45,8 +45,6 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        client : :class:`compas_rrc.AbbClient`
-            Client connected to controller.
         timeout : :class:`float`, optional
             Timeout for reply. Defaults to ``10``.
 
@@ -65,8 +63,6 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        client : :class:`compas_rrc.AbbClient`
-            Client connected to controller.
         timeout_ping : :class:`float`, optional
             Timeout for ping response.
         wait_after_up : :class:`float`, optional
@@ -91,23 +87,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
             raise compas_rrc.TimeoutException("Failed to connect to robot.")
 
     def pre_procedure(self):
-        """Pre fabrication setup, speed, acceleration, tool, work object and initial pose.
-
-        Uses ``fab_conf`` set up using
-        :func:`compas_rcf.fab_data.interactive_conf_setup` for fabrication settings.
-
-        Parameters
-        ----------
-        client : :class:`compas_rrc.AbbClient`
-            Client connected to controller procedure should be sent to.
-        """
+        """Pre fabrication setup, speed, acceleration and initial pose."""
         # for safety
         self.retract_needles()
-
-        self.send(compas_rrc.SetTool(self.pick_place_tool.name))
-        log.debug("Tool {} set.".format(self.pick_place_tool.name))
-        self.send(compas_rrc.SetWorkObject(self.wobjs.place))
-        log.debug("Work object {} set.".format(self.wobjs.place))
 
         # Set Acceleration
         self.send(
@@ -132,18 +114,13 @@ class AbbRcfClient(compas_rrc.AbbClient):
                 self.set_joint_pos.start,
                 self.EXTERNAL_AXIS_DUMMY,
                 self.speed.travel,
-                self.zone.travel["joints"],
+                self.zone.travel,
             )
         )
         log.debug("Sent move to safe joint position")
 
     def post_procedure(self):
-        """Post fabrication procedure.
-
-        Parameters
-        ----------
-        client : :class:`compas_rrc.AbbClient`
-        """
+        """Post fabrication procedure."""
         self.retract_needles()
 
         self.send(
@@ -165,9 +142,10 @@ class AbbRcfClient(compas_rrc.AbbClient):
         pick_elem : :class:`~compas_rcf.fab_data.ClayBullet`
             Representation of fabrication element to pick up.
         """
-        # change work object before picking
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
+        log.debug("Tool {} set.".format(self.pick_place_tool.name))
         self.send(compas_rrc.SetWorkObject(self.wobjs.pick))
+        log.debug("Work object {} set.".format(self.wobjs.pick))
 
         # start watch
         self.send(compas_rrc.StartWatch())
@@ -240,6 +218,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         if blocking:
             send_method_last_pt = self.send_and_wait
+        else:
+            send_method_last_pt = self.send
+
         if stop_at_last:
             zone = compas_rrc.Zone.FINE
 
@@ -256,8 +237,6 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        client : :class:`compas_rrc.AbbClient`
-            Client connected to controller procedure should be sent to.
         cylinder : :class:`compas_rcf.fab_data.ClayBullet`
             cylinder to place.
 
@@ -269,9 +248,10 @@ class AbbRcfClient(compas_rrc.AbbClient):
         """
         log.debug(f"Location frame: {cylinder.location}")
 
-        # change work object before placing
-        self.send(compas_rrc.SetWorkObject(self.wobjs.place))
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
+        log.debug("Tool {} set.".format(self.pick_place_tool.name))
+        self.send(compas_rrc.SetWorkObject(self.wobjs.place))
+        log.debug("Work object {} set.".format(self.wobjs.place))
 
         # start watch
         self.send(compas_rrc.StartWatch())
