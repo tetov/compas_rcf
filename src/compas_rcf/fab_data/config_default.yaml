@@ -16,7 +16,7 @@ robot_client:
     tools:
         pick_place:
             name: t_A057_ClayTool02 # name of tool
-            io_pin_needles: doDNetOut1 # name of DO
+            io_pin_needles: doUnitC1Out1 # name of DO
             extend_signal: 1 # state (0 or 1)
             retract_signal: 0 # state (0 or 1)
             needles_pause: 0.5 # Seconds to wait before and after extending or
