@@ -161,7 +161,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.send(
             MoveToFrame(
                 pick_elem.get_uncompressed_top_frame(),
-                self.speed.precise,
+                self.speed.pick_place,
                 self.zone.pick,
             )
         )
@@ -173,7 +173,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.send(
             MoveToFrame(
                 egress_frame,
-                self.speed.precise,
+                self.speed.pick_place,
                 self.zone.pick,
                 motion_type=Motion.LINEAR,
             )
@@ -260,7 +260,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # Execute trajectories in place motion until the last
         for trajectory in cylinder.place_trajectories[:-1]:
             self.execute_trajectory(
-                trajectory, self.speed.precise, self.zone.travel,
+                trajectory, self.speed.pick_place, self.zone.travel,
             )
 
         # Before executing last place trajectory, retract the needles.
@@ -271,13 +271,15 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # Last place motion
         self.execute_trajectory(
             cylinder.place_trajectories[-1],
-            self.speed.precise,
+            self.speed.pick_place,
             self.zone.place,
             stop_at_last=True,
         )
 
         self.execute_trajectory(
-            cylinder.return_place_trajectories[0], self.speed.precise, self.zone.place
+            cylinder.return_place_trajectories[0],
+            self.speed.pick_place,
+            self.zone.place,
         )
 
         # The last trajectory filtered down to only the last configuration
