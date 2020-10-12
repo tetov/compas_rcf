@@ -1,11 +1,12 @@
+"""Helper functions for :mod:`compas_fab.robots` and :mod:`compas_rrc`."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import math
 from copy import deepcopy
 
-from compas_rrc import RobotJoints
+import compas_rrc
+from compas_fab.robots import to_degrees
 
 
 def reversed_trajectory(trajectory):
@@ -14,7 +15,6 @@ def reversed_trajectory(trajectory):
     Parameters
     ----------
     trajectory : :class:`compas_fab.robots.JointTrajectory`
-        Trajectory described by joint positions or frames.
 
     Returns
     -------
@@ -39,24 +39,23 @@ def reversed_trajectories(trajectories):
     :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         Reversed trajectories.
     """  # noqa: E501
-    reversed_list = trajectories[::-1]
+    reversed_list = deepcopy(trajectories)  # added because of paranoia
+    reversed_list.reverse()
     return [reversed_trajectory(trajectory) for trajectory in reversed_list]
 
 
-def joint_trajectory_to_robot_joints_list(joint_trajectory):
-    """Convert a compas_fab ``JointTrajectory`` object to a list of compas_rrc ``RobotJoints``.
+def revolute_configuration_to_robot_joints(configuration):
+    """Convert a :class:`compas_fab.robots.Configuration` to a :class:`compas_rrc.RobotJoints`.
+
+    This function ignores non revolute values.
 
     Parameter
     ---------
-    joint_trajectory : :class:`compas_fab.robots.JointTrajectory`
+    configuration : :class:`Configuration`
 
     Returns
     -------
-    :obj:`list` of :class:`compas_rrc.RobotJoints`.
+    :class:`RobotJoints`
     """  # noqa: E501
-    robot_joints_list = []
-    for pt in joint_trajectory.points:
-        in_degrees = [math.degrees(pos) for pos in pt.values]
-        robot_joints_list.append(RobotJoints(*in_degrees))
-
-    return robot_joints_list
+    revolute_values_in_degrees = to_degrees(configuration.revolute_values)
+    return compas_rrc.RobotJoints(*revolute_values_in_degrees)

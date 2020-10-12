@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math
+import re
 from copy import deepcopy
 from itertools import count
 
@@ -24,11 +25,15 @@ class ClayBullet(object):
     ----------
     location : :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
         Bottom centroid frame of clay volume.
-    travel_trajectories: :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+    travel_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         List of trajectories describing motion between picking egress and
         placing egress.
-    place_trajectories:  :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+    place_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         List of trajectories describing place motion.
+    return_travel_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+        List of trajectories describing motion between placing and picking.
+    return_place_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+        List of trajectories describing return motion from last compression motion to placing egress.
     bullet_id : :class:`int`, optional
         Unique identifier.
     radius : :class:`float`, optional
@@ -50,7 +55,7 @@ class ClayBullet(object):
     kwargs : :class:`dict`, optional
         Keyword arguments added as key-value pair to `attrs` and replaces value
         if key already present.
-    """
+    """  # noqa: E501
 
     # creates id-s for objects
     _ids = count(0)
@@ -64,6 +69,8 @@ class ClayBullet(object):
         egress_frame_distance=200,
         travel_trajectories=None,
         place_trajectories=None,
+        return_travel_trajectories=None,
+        return_place_trajectories=None,
         bullet_id=None,
         clay_density=2.0,
         cycle_time=None,
@@ -83,6 +90,8 @@ class ClayBullet(object):
 
         self.travel_trajectories = travel_trajectories
         self.place_trajectories = place_trajectories
+        self.return_travel_trajectories = return_travel_trajectories
+        self.return_place_trajectories = return_place_trajectories
 
         # sortable ID, used for fabrication sequence
         if not bullet_id:
@@ -99,23 +108,25 @@ class ClayBullet(object):
         self.attrs = attrs or {}
         self.attrs.update(kwargs)
 
-    def get_reversed_travel_trajectories(self):
-        """Get reversed list of travel_trajectories where trajectories have also been reversed.
+    @property
+    def return_travel_trajectories(self):
+        return self.return_travel_trajectories_ or reversed_trajectories(
+            self.travel_trajectories
+        )
 
-        Returns
-        -------
-        :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`.
-        """  # noqa: E501
-        return reversed_trajectories(self.travel_trajectories)
+    @return_travel_trajectories.setter
+    def return_travel_trajectories(self, trajectories):
+        self.return_travel_trajectories_ = trajectories
 
-    def get_reversed_place_trajectories(self):
-        """Get reversed list of place_trajectories where trajectories have also been reversed.
+    @property
+    def return_place_trajectories(self):
+        return self.return_place_trajectories_ or reversed_trajectories(
+            self.place_trajectories
+        )
 
-        Returns
-        -------
-        :obj:`list` of :class:`compas_fab.robots.JointTrajectory` or :obj:`list` of :obj:`list` of :class:`compas.geometry.Frame`.
-        """  # noqa: E501
-        return reversed_trajectories(self.place_trajectories)
+    @return_place_trajectories.setter
+    def return_place_trajectories(self, trajectories):
+        self.return_place_trajectories_ = trajectories
 
     def get_location_plane(self):
         """Get location as Rhino.Geometry.Plane.
@@ -436,17 +447,23 @@ class ClayBullet(object):
 
         location = Frame.from_data(data.pop("location"))
 
-        trajectory_attributes = ("travel_trajectories", "place_trajectories")
+        trajectory_attributes = (
+            "travel_trajectories",
+            "place_trajectories",
+            "return_travel_trajectories_",
+            "return_place_trajectories_"
+        )
 
         for key in trajectory_attributes:
             trajectories_data = data.pop(key, None)
 
             if trajectories_data:
+                keyword = re.sub(r"_$", "", key)  # Strip underscore from end of key
                 trajectories = []
                 for traj_data in trajectories_data:
                     trajectories.append(trajectory_from_data(traj_data))
 
-                kwargs[key] = trajectories
+                kwargs[keyword] = trajectories
 
         # merge kwargs with data
         kwargs.update(data)

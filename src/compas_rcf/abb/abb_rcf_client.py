@@ -13,7 +13,7 @@ from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 
 from compas_rcf.docker import restart_container
-from compas_rcf.robots import joint_trajectory_to_robot_joints_list
+from compas_rcf.robots import revolute_configuration_to_robot_joints
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 class AbbRcfClient(compas_rrc.AbbClient):
     DOCKER_IMAGE = "abb-driver"
 
-    # Define external axis, will not be used but required in move cmds
-    EXTERNAL_AXIS_DUMMY: list = []
+    # Define external axes, will not be used but required in move cmds
+    EXTERNAL_AXES_DUMMY = compas_rrc.ExternalAxes()
 
     def __init__(self, ros, rob_conf):
         super().__init__(ros)
@@ -109,30 +109,31 @@ class AbbRcfClient(compas_rrc.AbbClient):
         log.debug("Speed set.")
 
         # Initial configuration
-        self.send(
+        log.debug("Sending move to safe joint position")
+        self.send_and_wait(
             MoveToJoints(
                 self.set_joint_pos.start,
-                self.EXTERNAL_AXIS_DUMMY,
+                self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
             )
         )
-        log.debug("Sent move to safe joint position")
 
     def post_procedure(self):
         """Post fabrication procedure."""
         self.retract_needles()
 
+        log.debug("Sending move to safe joint position.")
         self.send(
             MoveToJoints(
                 self.set_joint_pos.end,
-                self.EXTERNAL_AXIS_DUMMY,
+                self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
             )
         )
 
-        self.send_and_wait(compas_rrc.PrintText("Finished"))
+        self.send(compas_rrc.PrintText("Finished"))
 
     def pick_bullet(self, pick_elem):
         """Send movement and IO instructions to pick up a clay cylinder.
@@ -202,19 +203,14 @@ class AbbRcfClient(compas_rrc.AbbClient):
         stop_at_last : :obj:`bool`, optional
             If last trajectory point should be sent as a non fly-by point, i.e.
             should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
-
-        Raises
-        ------
-        ValueError
-            If the trajectory argument is not a list of frames or a JointTrajectory.
         """
         # Convert JointTrajectoryPoints to robot_joints_list from rrc
-        _trajectory = joint_trajectory_to_robot_joints_list(trajectory)
+        robot_joints_list = [
+            revolute_configuration_to_robot_joints(pt) for pt in trajectory.points
+        ]
 
-        for trajectory_pt in _trajectory[:-1]:  # skip last
-            self.send(
-                MoveToJoints(trajectory_pt, self.EXTERNAL_AXIS_DUMMY, speed, zone)
-            )
+        for robot_joints in robot_joints_list[:-1]:  # skip last
+            self.send(MoveToJoints(robot_joints, self.EXTERNAL_AXES_DUMMY, speed, zone))
 
         if blocking:
             send_method_last_pt = self.send_and_wait
@@ -226,7 +222,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         # send last
         send_method_last_pt(
-            MoveToJoints(_trajectory[-1], self.EXTERNAL_AXIS_DUMMY, speed, zone)
+            MoveToJoints(robot_joints_list[-1], self.EXTERNAL_AXES_DUMMY, speed, zone)
         )
 
     def place_bullet(self, cylinder):
@@ -269,6 +265,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         # Before executing last place trajectory, retract the needles.
         self.retract_needles()
+        # Wait to let needles retract fully.
         self.send(compas_rrc.WaitTime(self.pick_place_tool.needles_pause))
 
         # Last place motion
@@ -279,28 +276,24 @@ class AbbRcfClient(compas_rrc.AbbClient):
             stop_at_last=True,
         )
 
-        reversed_place_trajectories = cylinder.get_reversed_place_trajectories()
-
         self.execute_trajectory(
-            reversed_place_trajectories[0], self.speed.precise, self.zone.place
+            cylinder.return_place_trajectories[0], self.speed.precise, self.zone.place
         )
 
-        # TODO: Make this work with more than two trajectories
-        # The trajectory is filtered down to only the last configuration
-        last_pt_top_to_egress = joint_trajectory_to_robot_joints_list(
-            reversed_place_trajectories[1]
-        )[-1]
+        # The last trajectory filtered down to only the last configuration
+        last_return_place_trajectory = cylinder.return_place_trajectories[-1]
+        last_return_trajectory_conf = last_return_place_trajectory.points[-1]
 
         self.send(
             MoveToJoints(
-                last_pt_top_to_egress,
-                self.EXTERNAL_AXIS_DUMMY,
+                revolute_configuration_to_robot_joints(last_return_trajectory_conf),
+                self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
             )
         )
 
-        for trajectory in cylinder.get_reversed_travel_trajectories():
+        for trajectory in cylinder.return_travel_trajectories:
             self.execute_trajectory(
                 trajectory, self.speed.travel, self.zone.travel,
             )
