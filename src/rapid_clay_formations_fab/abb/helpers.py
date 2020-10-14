@@ -19,7 +19,7 @@ from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 from compas_rrc import Zone
 
-from compas_rcf import DOCKER_COMPOSE_DIR
+from rapid_clay_formations_fab import DOCKER_COMPOSE_DIR
 
 log = logging.getLogger(__name__)
 

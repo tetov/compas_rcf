@@ -10,7 +10,7 @@ max-line-length = 120
 [tool.isort]
 force_single_line = true
 line_length = 120
-known_first_party = "compas_rcf"
+known_first_party = "rapid_clay_formations_fab"
 known_third_party = "compas,compas_fab,compas_rrc,Rhino"
 default_section = "THIRDPARTY"
 add_imports = "__future__.absolute_import,__future__.division,__future__.print_function"

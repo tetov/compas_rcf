@@ -8,7 +8,7 @@ from compas.geometry import Transformation
 from compas.geometry import quaternion_from_matrix
 from compas.geometry import translation_from_matrix
 
-from compas_rcf.utils import temp_change_compas_precision
+from rapid_clay_formations_fab.utils import temp_change_compas_precision
 
 
 @temp_change_compas_precision("12f")
@@ -63,7 +63,7 @@ def _get_matrix(xform):
     try:
         from Rhino.Geometry import Transform
 
-        from compas_rcf.rhino import rgtransform_to_matrix
+        from rapid_clay_formations_fab.rhino import rgtransform_to_matrix
     except ImportError:
         pass
     else:

@@ -1,9 +1,9 @@
 """
 ********************************************************************************
-compas_rcf
+rapid_clay_formations_fab
 ********************************************************************************
 
-.. currentmodule:: compas_rcf
+.. currentmodule:: rapid_clay_formations_fab
 
 python module for MAS DFAB project Rapid Clay Formations
 
@@ -13,7 +13,7 @@ Fabrication data setup and configuration
 .. toctree::
    :maxdepth: 3
 
-   compas_rcf.fab_data
+   rapid_clay_formations_fab.fab_data
 
 Robot system specific code
 --------------------------
@@ -21,7 +21,7 @@ Robot system specific code
 .. toctree::
    :maxdepth: 3
 
-   compas_rcf.abb
+   rapid_clay_formations_fab.abb
 
 Tools
 -----
@@ -29,10 +29,10 @@ Tools
 .. toctree::
    :maxdepth: 3
 
-   compas_rcf.docker
-   compas_rcf.rhino
-   compas_rcf.utils
-   compas_rcf.ui
+   rapid_clay_formations_fab.docker
+   rapid_clay_formations_fab.rhino
+   rapid_clay_formations_fab.utils
+   rapid_clay_formations_fab.ui
 """
 import os
 

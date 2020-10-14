@@ -1,5 +1,5 @@
 ********************************************************************************
-compas_rcf
+rapid_clay_formations_fab
 ********************************************************************************
 
 python module for MAS DFAB project Rapid Clay Formations
@@ -7,7 +7,7 @@ python module for MAS DFAB project Rapid Clay Formations
 COMPAS
 ======
 
-compas_rcf is part is built on top of `compas`_, `compas_fab`_ and
+rapid_clay_formations_fab is part is built on top of `compas`_, `compas_fab`_ and
 `compas_rrc`_.
 
 Note on compatibility

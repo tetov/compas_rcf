@@ -1,9 +1,9 @@
 """
 ********************************************************************************
-compas_rcf.fab_data
+rapid_clay_formations_fab.fab_data
 ********************************************************************************
 
-.. currentmodule:: compas_rcf.fab_data
+.. currentmodule:: rapid_clay_formations_fab.fab_data
 
 
 Fabrication datastructures
@@ -19,10 +19,11 @@ Fabrication datastructures
 Fabrication configuration
 -------------------------
 
-Some fabrication settings can be set while running :any:`compas_rcf.abb.run`
-but most are set before a run in YAML format. Here is the default config:
+Some fabrication settings can be set while running
+:any:`rapid_clay_formations_fab.abb.run` but most are set before a run in YAML
+format. Here is the default config:
 
-.. literalinclude:: ../../src/compas_rcf/fab_data/config_default.yaml
+.. literalinclude:: ../../src/rapid_clay_formations_fab/fab_data/config_default.yaml
    :language: yaml
 
 .. autosummary::

@@ -1,8 +1,8 @@
 """
 ********************************************************************************
-compas_rcf.abb
+rapid_clay_formations_fab.abb
 ********************************************************************************
-.. currentmodule:: compas_rcf.abb
+.. currentmodule:: rapid_clay_formations_fab.abb
 
 Runner
 ======

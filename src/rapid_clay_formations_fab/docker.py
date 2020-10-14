@@ -1,9 +1,9 @@
 """
 ******************************************************************************
-compas_rcf.docker
+rapid_clay_formations_fab.docker
 ******************************************************************************
 
-.. currentmodule:: compas_rcf.docker
+.. currentmodule:: rapid_clay_formations_fab.docker
 
 Docker compose commands to be used from python scripts.
 

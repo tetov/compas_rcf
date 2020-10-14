@@ -7,8 +7,8 @@ import csv
 import json
 from collections import OrderedDict
 
-from compas_rcf.fab_data import ClayBullet
-from compas_rcf.utils import CompasObjEncoder
+from rapid_clay_formations_fab.fab_data import ClayBullet
+from rapid_clay_formations_fab.utils import CompasObjEncoder
 
 try:
     from pathlib import Path
@@ -19,7 +19,7 @@ except ImportError:
 def csv_reports(args):
     """Convert fabrication data json files to CSV files.
 
-    Use by running ``python -m compas_rcf.fab_data.csv_report``
+    Use by running ``python -m rapid_clay_formations_fab.fab_data.csv_report``
     """
     json_files = []
 

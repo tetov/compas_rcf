@@ -10,11 +10,11 @@ import sphinx_compas_theme
 
 #
 # needs_sphinx = "1.0"
-from compas_rcf import __version__
+from rapid_clay_formations_fab import __version__
 
 # -- General configuration ------------------------------------------------
 
-project = "compas_rcf"
+project = "rapid_clay_formations_fab"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
 version = release = __version__
@@ -108,10 +108,10 @@ html_theme = "compaspkg"
 html_theme_path = sphinx_compas_theme.get_html_theme_path()
 
 html_theme_options = {
-    "package_name": "compas_rcf",
+    "package_name": "rapid_clay_formations_fab",
     "package_title": project,
     "package_version": release,
-    "package_repo": "https://github.com/tetov/compas_rcf",
+    "package_repo": "https://github.com/gramaziokohler/rapid_clay_formations_fab",
 }
 
 html_context: dict = {}

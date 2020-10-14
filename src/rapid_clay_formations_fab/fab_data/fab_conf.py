@@ -81,4 +81,4 @@ ABB_RCF_CONF_TEMPLATE = {
     },
 }
 
-fab_conf = confuse.LazyConfig("compas_rcf", modname=__name__)
+fab_conf = confuse.LazyConfig("rapid_clay_formations_fab", modname=__name__)

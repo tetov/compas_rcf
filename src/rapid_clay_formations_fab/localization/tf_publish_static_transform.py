@@ -4,8 +4,8 @@ from __future__ import print_function
 
 import docker
 
-from compas_rcf.abb import DRIVER_IMAGE_NAME
-from compas_rcf.localization import xform_to_xyz_quaternion
+from rapid_clay_formations_fab.abb import DRIVER_IMAGE_NAME
+from rapid_clay_formations_fab.localization import xform_to_xyz_quaternion
 
 
 def publish_static_transform(

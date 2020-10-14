@@ -18,8 +18,8 @@ Install
 
        conda config --add channels conda-forge
        # use conda to install compas_fab if possible
-       conda create -n compas_rcf python=3.8 git compas_fab==0.11
-       conda activate compas_rcf
+       conda create -n rapid_clay_formations_fab python=3.8 git compas_fab==0.11
+       conda activate rapid_clay_formations_fab
 
     -  Using `virtualenv <https://github.com/pypa/virtualenv>`__
 
@@ -28,18 +28,18 @@ Install
        virtualenv --python=python3.8 {{path/to/venv}}
        source {{path/to/venv}}/bin/activate
 
-#.  Install ``compas_rrc`` & ``compas_rcf``
+#.  Install ``compas_rrc`` & ``rapid_clay_formations_fab``
 
     .. code:: bash
 
        # install compas_rrc separately
        pip install git+https://bitbucket.org/ethrfl/compas_rrc@v1.0.0
        # from latest commit on git
-       pip install git+https://github.com/tetov/compas_rcf
+       pip install git+https://github.com/gramaziokohler/rapid_clay_formations_fab
        # or last version
-       pip install compas_rcf
+       pip install rapid_clay_formations_fab
        # or specific version
-       compas_rcf=={version}
+       rapid_clay_formations_fab=={version}
 
     If you have authentication issues with BitBucket (for compas_rrc), see :ref:`git_cred_windows`
 
@@ -47,7 +47,7 @@ Install
 
     .. code:: bash
 
-       python -m compas_rcf.rhino.install
+       python -m rapid_clay_formations_fab.rhino.install
 
 Update
 ======
@@ -56,6 +56,6 @@ To update the repository run:
 
 .. code:: bash
 
-   pip install -U compas_rcf
+   pip install -U rapid_clay_formations_fab
    # or if you installed directly from github
-   pip install -U git+https://github.com/tetov/compas_rcf
+   pip install -U git+https://github.com/gramaziokohler/rapid_clay_formations_fab

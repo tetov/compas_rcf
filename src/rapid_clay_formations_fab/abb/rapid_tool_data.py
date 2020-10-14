@@ -6,7 +6,7 @@ import math
 
 from compas.geometry import Frame
 
-from compas_rcf.utils import ensure_frame
+from rapid_clay_formations_fab.utils import ensure_frame
 
 
 class RapidToolData(object):
@@ -64,7 +64,7 @@ class RapidToolData(object):
     @property
     def tcp_plane(self):
         """TCP represented as a :class:`Rhino.Geometry.Plane`."""
-        from compas_rcf.rhino.compas_to_rhino import cgframe_to_rgplane
+        from rapid_clay_formations_fab.rhino.compas_to_rhino import cgframe_to_rgplane
 
         return cgframe_to_rgplane(self.tcp_frame)
 

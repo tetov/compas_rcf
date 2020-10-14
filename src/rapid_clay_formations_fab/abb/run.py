@@ -1,6 +1,6 @@
 """Fabrication runner for Rapid Clay Fabrication project for fullscale structure.
 
-Run from command line using :code:`python -m compas_rcf.abb.run`
+Run from command line using :code:`python -m rapid_clay_formations_fab.abb.run`
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -13,10 +13,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from compas_rcf import __version__
-from compas_rcf.abb._robot_programs import fab_run
-from compas_rcf.fab_data import ABB_RCF_CONF_TEMPLATE
-from compas_rcf.fab_data import fab_conf
+from rapid_clay_formations_fab import __version__
+from rapid_clay_formations_fab.abb._robot_programs import fab_run
+from rapid_clay_formations_fab.fab_data import ABB_RCF_CONF_TEMPLATE
+from rapid_clay_formations_fab.fab_data import fab_conf
 
 # This reduces latency, see:
 # https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
@@ -92,7 +92,7 @@ def main():
     # Validate conf
     run_conf = fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
-    log.info(f"compas_rcf version: {__version__}")
+    log.info(f"rapid_clay_formations_fab version: {__version__}")
     log.info(f"Using {run_conf.robot_client.controller} controller.")
     log.debug(f"argparse input: {args}")
     log.debug(f"config after set_args: {fab_conf}")

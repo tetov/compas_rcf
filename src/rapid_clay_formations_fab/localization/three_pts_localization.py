@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import compas.geometry as cg
 
-from compas_rcf.utils import temp_change_compas_precision
+from rapid_clay_formations_fab.utils import temp_change_compas_precision
 
 
 @temp_change_compas_precision("12f")

@@ -8,9 +8,9 @@ import sys
 
 import questionary
 
-from compas_rcf.abb import DOCKER_COMPOSE_PATHS
-from compas_rcf.abb import ROBOT_IPS
-from compas_rcf.docker import compose_up
+from rapid_clay_formations_fab.abb import DOCKER_COMPOSE_PATHS
+from rapid_clay_formations_fab.abb import ROBOT_IPS
+from rapid_clay_formations_fab.docker import compose_up
 
 log = logging.getLogger(__name__)
 

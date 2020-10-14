@@ -12,13 +12,13 @@ from compas.geometry import Transformation
 from compas_fab.backends.ros import RosClient
 from compas_rrc import PrintText
 
-from compas_rcf.abb import AbbRcfClient
-from compas_rcf.abb._robot_programs import compose_up_driver
-from compas_rcf.abb._robot_programs import confirm_start
-from compas_rcf.fab_data import ClayBullet
-from compas_rcf.fab_data import PickStation
-from compas_rcf.localization import publish_static_transform
-from compas_rcf.utils import CompasObjEncoder
+from rapid_clay_formations_fab.abb import AbbRcfClient
+from rapid_clay_formations_fab.abb._robot_programs import compose_up_driver
+from rapid_clay_formations_fab.abb._robot_programs import confirm_start
+from rapid_clay_formations_fab.fab_data import ClayBullet
+from rapid_clay_formations_fab.fab_data import PickStation
+from rapid_clay_formations_fab.localization import publish_static_transform
+from rapid_clay_formations_fab.utils import CompasObjEncoder
 
 log = logging.getLogger(__name__)
 
@@ -28,9 +28,9 @@ def _edit_fab_data(fab_elems, run_conf):
 
     Parameters
     ----------
-    fab_elems : list of :class:`compas_rcf.fabrication.clay_objs.ClayBullet`
+    fab_elems : list of :class:`rapid_clay_formations_fab.fabrication.clay_objs.ClayBullet`
         List of fabrication elements.
-    """
+    """  # noqa: E501
 
     def set_placed_list(idx_last_placed):
         for i, elem in enumerate(fab_elems):

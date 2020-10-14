@@ -12,8 +12,8 @@ from compas_rrc import Motion
 from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 
-from compas_rcf.docker import restart_container
-from compas_rcf.robots import revolute_configuration_to_robot_joints
+from rapid_clay_formations_fab.docker import restart_container
+from rapid_clay_formations_fab.robots import revolute_configuration_to_robot_joints
 
 log = logging.getLogger(__name__)
 
@@ -140,7 +140,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameter
         ----------
-        pick_elem : :class:`~compas_rcf.fab_data.ClayBullet`
+        pick_elem : :class:`~rapid_clay_formations_fab.fab_data.ClayBullet`
             Representation of fabrication element to pick up.
         """
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
@@ -190,7 +190,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        trajectory : :class:`compas_rcf.robots.JointTrajectory`
+        trajectory : :class:`rapid_clay_formations_fab.robots.JointTrajectory`
             Trajectory defined by trajectory points, i.e. configurations.
         speed : :obj:`float`
             Speed in mm/s.
@@ -233,7 +233,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        cylinder : :class:`compas_rcf.fab_data.ClayBullet`
+        cylinder : :class:`rapid_clay_formations_fab.fab_data.ClayBullet`
             cylinder to place.
 
         Returns

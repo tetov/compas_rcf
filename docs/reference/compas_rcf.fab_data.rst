@@ -1,1 +1,1 @@
-.. automodule:: compas_rcf.fab_data
+.. automodule:: rapid_clay_formations_fab.fab_data

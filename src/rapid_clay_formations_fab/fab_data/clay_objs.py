@@ -14,8 +14,8 @@ from compas.geometry import Translation
 from compas_fab.robots import JointTrajectory
 from compas_ghpython.artists import MeshArtist
 
-from compas_rcf.robots import reversed_trajectories
-from compas_rcf.utils import wrap_list
+from rapid_clay_formations_fab.robots import reversed_trajectories
+from rapid_clay_formations_fab.utils import wrap_list
 
 
 class ClayBullet(object):
@@ -135,7 +135,7 @@ class ClayBullet(object):
         -------
         :class:`Rhino.Geometry.Plane`
         """
-        from compas_rcf.rhino import cgframe_to_rgplane
+        from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
         return cgframe_to_rgplane(self.location)
 
@@ -301,7 +301,7 @@ class ClayBullet(object):
 
         Returns
         -------
-        :class:`compas_rcf.fab_data.ClayBullet`
+        :class:`rapid_clay_formations_fab.fab_data.ClayBullet`
         """
         return deepcopy(self)
 
@@ -321,7 +321,7 @@ class ClayBullet(object):
         # TODO: Rewrite as pure compas (unnecessary but neat)
         import Rhino.Geometry as rg
 
-        from compas_rcf.rhino import cgvector_to_rgvector
+        from rapid_clay_formations_fab.rhino import cgvector_to_rgvector
 
         if face_count < 6:
             sides = 3

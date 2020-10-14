@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize
 
-from compas_rcf.utils import temp_change_compas_precision
+from rapid_clay_formations_fab.utils import temp_change_compas_precision
 
 
 def _objective_function(x, rcs_coords, wcs_coords):

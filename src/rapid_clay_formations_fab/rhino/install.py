@@ -1,9 +1,10 @@
 """
 ******************************************************************************
-compas_rcf.rhino.install
+rapid_clay_formations_fab.rhino.install
 ******************************************************************************
 
-Installs ``compas_rcf`` and its dependencies to the Rhino IronPython environment.
+Installs ``rapid_clay_formations_fab`` and its dependencies to the Rhino
+IronPython environment.
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -13,7 +14,7 @@ import pkgutil
 
 from compas_rhino import install
 
-STD_PKGS = ("compas_fab", "roslibpy", "compas_rcf", "compas_rrc")
+STD_PKGS = ("compas_fab", "roslibpy", "rapid_clay_formations_fab", "compas_rrc")
 
 OPTIONAL_PKGS = ["couchdb"]
 

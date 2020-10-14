@@ -6385,8 +6385,8 @@ from __future__ import print_function
 from compas.geometry import Frame
 from compas.geometry import Translation
 
-from compas_rcf.abb import std_move_to_frame
-from compas_rcf.rhino import cgframe_to_rgplane
+from rapid_clay_formations_fab.abb import std_move_to_frame
+from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
 if localization_origin_frame is None:
     raise Exception("No origin supplied.")
@@ -6999,7 +6999,7 @@ from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 
-from compas_rcf.rhino import cgframe_to_rgplane
+from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
 TIMEOUT = 5 # controller communicaton timeout
 
@@ -7690,7 +7690,7 @@ unload_modules(module)</item>
                     <item name="Optional" type_name="gh_bool" type_code="1">false</item>
                     <item name="ScrollRatio" type_name="gh_double" type_code="6">0</item>
                     <item name="SourceCount" type_name="gh_int32" type_code="3">0</item>
-                    <item name="UserText" type_name="gh_string" type_code="10">compas_rcf</item>
+                    <item name="UserText" type_name="gh_string" type_code="10">rapid_clay_formations_fab</item>
                   </items>
                   <chunks count="2">
                     <chunk name="Attributes">
@@ -7744,10 +7744,10 @@ unload_modules(module)</item>
               <chunks count="1">
                 <chunk name="Container">
                   <items count="11">
-                    <item name="CodeInput" type_name="gh_string" type_code="10">from compas_rcf.localization import three_pts_localization
-from compas_rcf.localization import worldxy_to_robot_base_xform
-from compas_rcf.rhino import matrix_to_rgtransform
-from compas_rcf.rhino import rgpoint_to_cgpoint
+                    <item name="CodeInput" type_name="gh_string" type_code="10">from rapid_clay_formations_fab.localization import three_pts_localization
+from rapid_clay_formations_fab.localization import worldxy_to_robot_base_xform
+from rapid_clay_formations_fab.rhino import matrix_to_rgtransform
+from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
 from compas.geometry import Transformation, Frame
 from compas import PRECISION
 
@@ -8032,13 +8032,13 @@ print(PRECISION)</item>
               <chunks count="1">
                 <chunk name="Container">
                   <items count="11">
-                    <item name="CodeInput" type_name="gh_string" type_code="10">from compas_rcf.docker import compose_up
-from compas_rcf.docker import compose_down
-from compas_rcf.docker import restart_container
+                    <item name="CodeInput" type_name="gh_string" type_code="10">from rapid_clay_formations_fab.docker import compose_up
+from rapid_clay_formations_fab.docker import compose_down
+from rapid_clay_formations_fab.docker import restart_container
 
-from compas_rcf.abb import ROBOT_IPS
-from compas_rcf.abb import DOCKER_COMPOSE_PATHS
-from compas_rcf.abb import DRIVER_CONTAINER_NAME
+from rapid_clay_formations_fab.abb import ROBOT_IPS
+from rapid_clay_formations_fab.abb import DOCKER_COMPOSE_PATHS
+from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 
 if target is None:
     target = "virtual"
@@ -9680,7 +9680,7 @@ from compas_rrc import SetWorkObject
 from compas_rrc import Zone
 from compas_rrc import Motion
 
-from compas_rcf.utils import ensure_frame
+from rapid_clay_formations_fab.utils import ensure_frame
 
 if tool_name is None:
     tool_name = "tool0"
@@ -10124,7 +10124,7 @@ from compas_rrc import SetMaxSpeed
 from compas_rrc import MoveToJoints
 from compas_rrc import Zone
 
-from compas_rcf.utils import ensure_frame
+from rapid_clay_formations_fab.utils import ensure_frame
 
 TIMEOUT = 5
 TIMEOUT_LONG = 30
@@ -10467,7 +10467,7 @@ from compas_rrc import GetJoints
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 
-from compas_rcf.rhino import cgframe_to_rgplane
+from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
 TIMEOUT = 5
 TIMEOUT_LONG = 30
@@ -11691,9 +11691,9 @@ if "joint_values" in sticky.keys():
 from compas.geometry import Frame
 from compas.rpc import Proxy
 
-from compas_rcf.rhino import rgpoint_to_cgpoint
-from compas_rcf.localization import worldxy_to_robot_base_xform
-from compas_rcf.rhino import matrix_to_rgtransform
+from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
+from rapid_clay_formations_fab.localization import worldxy_to_robot_base_xform
+from rapid_clay_formations_fab.rhino import matrix_to_rgtransform
 
 kwargs = {}
 
@@ -11712,7 +11712,7 @@ rcs_coords = [rgpoint_to_cgpoint(pt) for pt in rcs_coords]
 wcs_coords = [rgpoint_to_cgpoint(pt) for pt in wcs_coords]
 
 if run:
-    with Proxy("compas_rcf.localization", port=12457) as localization:
+    with Proxy("rapid_clay_formations_fab.localization", port=12457) as localization:
         try:
             result = localization.arbitrary_pts_localization(
                 rcs_coords, wcs_coords, **kwargs

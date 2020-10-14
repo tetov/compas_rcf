@@ -35,7 +35,7 @@ class PickStation(object):
 
         Parameters
         ----------
-        cylinder : :class:`compas_rcf.fab_data.Claycylinder`
+        cylinder : :class:`rapid_clay_formations_fab.fab_data.Claycylinder`
             cylinder to place
 
         Returns

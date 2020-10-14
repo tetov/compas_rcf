@@ -1,21 +1,17 @@
-# compas\_rcf
+# rapid_clay_formations_fab
 
-[![Travis (.com)](https://img.shields.io/travis/com/tetov/compas_rcf?style=for-the-badge)](https://travis-ci.com/tetov/compas_rcf)
-[![GitHub](https://img.shields.io/github/license/tetov/compas_rcf?style=for-the-badge)](https://github.com/tetov/compas_rcf/blob/master/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/compas_rcf?style=for-the-badge)](https://pypi.org/project/compas-rcf/)
+Fabrication code for Rapid Clay Formations.
 
-python module for MAS DFAB project Rapid Clay Formations
-
-* [Getting started](https://compas_rcf.tetov.se/getting_started.html) - for installation and update instructions
-* [Example files](https://compas_rcf.tetov.se/examples.html) - for demonstration purposes
-* [Contributing](https://compas_rcf.tetov.se/contributing.html) - how to start working on the code
-* [Known issues](https://compas_rcf.tetov.se/known_issues.html) - for things that we know don't work
-* [Issues](https://github.com/tetov/compas_rcf/issues) - for unknown issues, as well as suggestions and questions
-* [Documentation](https://compas_rcf.tetov.se/)
+* [Getting started](https://gramaziokohler.github.io/rapid_clay_formations_fab/getting_started.html) - for installation and update instructions
+* [Example files](https://gramaziokohler.github.io/rapid_clay_formations_fab/examples.html) - for demonstration purposes
+* [Contributing](https://gramaziokohler.github.io/rapid_clay_formations_fab/contributing.html) - how to start working on the code
+* [Known issues](https://gramaziokohler.github.io/rapid_clay_formations_fab/known_issues.html) - for things that we know don't work
+* [Issues](https://github.com/gramaziokohler/rapid_clay_formations_fab/issues) - for unknown issues, as well as suggestions and questions
+* [Documentation](https://gramaziokohler.github.io/rapid_clay_formations_fab/)
 
 ## COMPAS
 
-`compas_rcf` is part is built on top of [`compas`](https://compas-dev.github.io/),
+`rapid_clay_formations_fab` is part is built on top of [`compas`](https://compas-dev.github.io/),
  [`compas_fab`](https://gramaziokohler.github.io/compas_fab/) and
  [`compas_rrc`](https://bitbucket.org/ethrfl/compas_rrc/).
 

@@ -1,8 +1,8 @@
 """
 ******************************************************************************
-compas_rcf.ui
+rapid_clay_formations_fab.ui
 ******************************************************************************
-.. currentmodule:: compas_rcf.ui
+.. currentmodule:: rapid_clay_formations_fab.ui
 """
 from __future__ import absolute_import
 from __future__ import division

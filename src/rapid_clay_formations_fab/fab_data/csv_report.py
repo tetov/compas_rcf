@@ -1,7 +1,7 @@
 """Format CSV reports from JSON files."""
 import argparse
 
-from compas_rcf.fab_data.tools import csv_reports
+from rapid_clay_formations_fab.fab_data.tools import csv_reports
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Format CSV reports from JSON files")

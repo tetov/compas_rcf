@@ -1,9 +1,9 @@
 """
 ********************************************************************************
-compas_rcf.utils
+rapid_clay_formations_fab.utils
 ********************************************************************************
 
-.. currentmodule:: compas_rcf.utils
+.. currentmodule:: rapid_clay_formations_fab.utils
 
 .. autosummary::
     :toctree: generated/
@@ -22,8 +22,8 @@ import compas
 import compas.geometry as cg
 from compas import raise_if_ironpython
 
-from compas_rcf.rhino import rgplane_to_cgframe
-from compas_rcf.rhino import rgpoint_to_cgpoint
+from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
+from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
 
 try:
     import Rhino.Geometry as rg
