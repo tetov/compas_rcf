@@ -85,7 +85,7 @@ setup(
     install_requires=requirements,
     extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README
-    obsoletes="compas_rcf",
+    obsoletes=["compas_rcf"],
     entry_points={
         "console_scripts": ["rcf_run = rapid_clay_formations_fab.abb.run:main"]
     },
