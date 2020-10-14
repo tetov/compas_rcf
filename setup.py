@@ -22,30 +22,8 @@ def _read(*names, **kwargs):
 long_description = _read("README.md")
 
 requirements = [
-    "compas_fab ~= 0.11",
-    "compas_rrc ~= 1.0.0",
-    "questionary ~= 1.5.1",
-    "confuse ~= 1.3.0",
-    "docker ~= 4.2.2",
-    "couchdb == 1.2",
+    "rapid_clay_formations_fab",
 ]
-
-extras_require = {
-    "dev": [
-        "attrs ~= 19.3",
-        "black ~= 19.10b0",
-        "doc8",
-        "flake8",
-        "invoke >= 0.14",
-        "isort",
-        "pydocstyle",
-        "pytest >= 3.2",
-        "recommonmark >=0.6",
-        "sphinx_compas_theme >= 0.4",
-        "sphinx >=1.6",
-        "setuptools_scm[toml]",
-    ]
-}
 
 setup(
     name="compas_rcf",
@@ -57,7 +35,7 @@ setup(
     author_email="anton@tetov.se",
     license="MIT",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 7 - Inactive",
         "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: MIT License",
@@ -82,7 +60,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=requirements,
-    extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README
-    entry_points={"console_scripts": ["rcf_run = compas_rcf.abb.run:main"]},
 )

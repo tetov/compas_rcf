@@ -1,39 +1,3 @@
-"""
-********************************************************************************
-compas_rcf
-********************************************************************************
-
-.. currentmodule:: compas_rcf
-
-python module for MAS DFAB project Rapid Clay Formations
-
-Fabrication data setup and configuration
-----------------------------------------
-
-.. toctree::
-   :maxdepth: 3
-
-   compas_rcf.fab_data
-
-Robot system specific code
---------------------------
-
-.. toctree::
-   :maxdepth: 3
-
-   compas_rcf.abb
-
-Tools
------
-
-.. toctree::
-   :maxdepth: 3
-
-   compas_rcf.docker
-   compas_rcf.rhino
-   compas_rcf.utils
-   compas_rcf.ui
-"""
 import os
 
 HERE = os.path.dirname(__file__)
