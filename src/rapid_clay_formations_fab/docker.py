@@ -162,8 +162,7 @@ def restart_container(container_name):
 def _get_restart_container_func():
     if IPY:
         return _restart_container_subprocess
-    else:
-        return _restart_container_dockerpy
+    return _restart_container_dockerpy
 
 
 def _restart_container_subprocess(container_name):

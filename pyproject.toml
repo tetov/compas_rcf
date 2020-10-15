@@ -17,5 +17,4 @@ add_imports = "__future__.absolute_import,__future__.division,__future__.print_f
 skip = "_version.py"
 
 [tool.black]
-include = '\.pyi?$'
 target-version = ['py27']

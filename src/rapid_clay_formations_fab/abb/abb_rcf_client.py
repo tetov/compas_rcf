@@ -254,13 +254,17 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         for trajectory in element.travel_trajectories:
             self.execute_trajectory(
-                trajectory, self.speed.travel, self.zone.travel,
+                trajectory,
+                self.speed.travel,
+                self.zone.travel,
             )
 
         # Execute trajectories in place motion until the last
         for trajectory in element.place_trajectories[:-1]:
             self.execute_trajectory(
-                trajectory, self.speed.pick_place, self.zone.travel,
+                trajectory,
+                self.speed.pick_place,
+                self.zone.travel,
             )
 
         # Before executing last place trajectory, retract the needles.
@@ -297,7 +301,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         for trajectory in element.return_travel_trajectories:
             self.execute_trajectory(
-                trajectory, self.speed.travel, self.zone.travel,
+                trajectory,
+                self.speed.travel,
+                self.zone.travel,
             )
 
         self.send(compas_rrc.StopWatch())
