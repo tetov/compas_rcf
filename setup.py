@@ -7,8 +7,7 @@ from __future__ import print_function
 import io
 from os import path
 
-from setuptools import find_packages
-from setuptools import setup
+import setuptools
 
 here = path.abspath(path.dirname(__file__))
 
@@ -47,7 +46,7 @@ extras_require = {
     ]
 }
 
-setup(
+setuptools.setup(
     name="rapid_clay_formations_fab",
     description="Fabrication code for Rapid Clay Formations.",
     long_description=long_description,
@@ -78,7 +77,7 @@ setup(
         "Issues": "https://github.com/gramaziokohler/rapid_clay_formations_fab/issues",
         "Documentation": "https://gramaziokohler.github.io/rapid_clay_formations_fab",
     },
-    packages=find_packages(where="src"),
+    packages=setuptools.find_packages(where="src"),
     package_dir={"": "src"},
     include_package_data=True,
     zip_safe=False,
