@@ -1,0 +1,114 @@
+name: Build and publish package and docs
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v[0-9].[0-9]+.[0-9]+
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Install and build
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout repo
+        uses: actions/checkout@v2
+
+      -
+        name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      -
+        name: Install dependencies
+        env:
+          COMPAS_RRC_VER: v1.0.0
+          RRC_USERNAME: ${{ secrets.rrc_username }}
+          RRC_PASSWORD: ${{ secrets.rrc_password }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install cython --install-option="--no-cython-compile"
+          python -m pip install wheel  # https://stackoverflow.com/questions/34819221
+          mkdir ~/.ssh && ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts
+          pip install git+https://"$RRC_USERNAME":"$RRC_PASSWORD"@bitbucket.org/ethrfl/compas_rrc.git@"$COMPAS_RRC_VER"#egg=compas_rrc
+
+      -
+        name: Install
+        run: |
+          python -m pip install --no-cache-dir -e .[dev]
+          python -c "from setuptools_scm import get_version;get_version('.', write_to='src/rapid_clay_formations_fab/_version.py')"
+
+      -
+        name: Test
+        run: |
+          invoke test
+
+      -
+        name: Build docs
+        run: |
+          invoke docs
+
+      -
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs-dir
+          path: build/docs/
+          if-no-files-found: error
+          retention-days: 1
+
+      -
+        name: Build
+        run: |
+          python setup.py clean --all sdist bdist_wheel
+      -
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-files
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  publish_docs:
+    name: Publish docs
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/download-artifact@v2
+        with:
+          name: docs-dir
+          path: docs
+      -
+        uses: crazy-max/ghaction-github-pages@v2
+        with:
+          target_branch: gh-pages
+          build_dir: docs
+          jekyll: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish_pypi:
+    name: Publish package
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    steps:
+      -
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-files
+          path: dist
+      -
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}

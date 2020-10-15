@@ -1,1 +1,1 @@
-.. automodule:: compas_rcf.docker
+.. automodule:: rapid_clay_formations_fab.docker

@@ -7,8 +7,7 @@ from __future__ import print_function
 import io
 from os import path
 
-from setuptools import find_packages
-from setuptools import setup
+import setuptools
 
 here = path.abspath(path.dirname(__file__))
 
@@ -47,14 +46,15 @@ extras_require = {
     ]
 }
 
-setup(
-    name="compas_rcf",
-    description="python module for MAS DFAB project Rapid Clay Formations",
+setuptools.setup(
+    name="rapid_clay_formations_fab",
+    description="Fabrication code for Rapid Clay Formations.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/tetov/compas_rcf",
-    author="Anton T Johansson",
-    author_email="anton@tetov.se",
+    url="https://gramaziokohler.github.io/rapid_clay_formations_fab",
+    author="Gramazio Kohler Research",
+    maintainer="Anton Tetov",
+    maintainer_email="anton@tetov.se",
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -73,16 +73,19 @@ setup(
     ],
     keywords=["architecture", "engineering", "fabrication", "construction"],
     project_urls={
-        "Repository": "https://github.com/compas-dev/compas",
-        "Issues": "https://github.com/compas-dev/compas/issues",
-        "Documentation": "https://compas_rcf.tetov.se/",
+        "Repository": "https://github.com/gramaziokohler/rapid_clay_formations_fab",
+        "Issues": "https://github.com/gramaziokohler/rapid_clay_formations_fab/issues",
+        "Documentation": "https://gramaziokohler.github.io/rapid_clay_formations_fab",
     },
-    packages=find_packages(where="src"),
+    packages=setuptools.find_packages(where="src"),
     package_dir={"": "src"},
     include_package_data=True,
     zip_safe=False,
     install_requires=requirements,
     extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README
-    entry_points={"console_scripts": ["rcf_run = compas_rcf.abb.run:main"]},
+    obsoletes=["compas_rcf"],
+    entry_points={
+        "console_scripts": ["rcf_run = rapid_clay_formations_fab.abb.run:main"]
+    },
 )

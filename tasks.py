@@ -86,7 +86,7 @@ def clean(ctx, clean_docs=True, clean_bytecode=True, clean_builds=True):
 
         if clean_builds:
             folders.append("build/")
-            folders.append("src/compas_rcf.egg-info/")
+            folders.append("src/rapid_clay_formations_fab.egg-info/")
 
         for folder in folders:
             rmtree(os.path.join(BASE_FOLDER, folder), ignore_errors=True)

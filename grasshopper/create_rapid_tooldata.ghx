@@ -1268,7 +1268,7 @@ unload_modules(module)</item>
                     <item name="Optional" type_name="gh_bool" type_code="1">false</item>
                     <item name="ScrollRatio" type_name="gh_double" type_code="6">0</item>
                     <item name="SourceCount" type_name="gh_int32" type_code="3">0</item>
-                    <item name="UserText" type_name="gh_string" type_code="10">compas_rcf</item>
+                    <item name="UserText" type_name="gh_string" type_code="10">rapid_clay_formations_fab</item>
                   </items>
                   <chunks count="2">
                     <chunk name="Attributes">
@@ -1984,7 +1984,7 @@ unload_modules(module)</item>
                   <items count="11">
                     <item name="CodeInput" type_name="gh_string" type_code="10">import Rhino.Geometry as rg
 
-from compas_rcf.abb import RapidToolData
+from rapid_clay_formations_fab.abb import RapidToolData
 
 kwargs = {}
 if cog_pt:
@@ -2789,7 +2789,7 @@ tooldata = tool.get_rapid_tooldata()
                   <items count="11">
                     <item name="CodeInput" type_name="gh_string" type_code="10">import Rhino.Geometry as rg
 
-from compas_rcf.abb import RapidToolData
+from rapid_clay_formations_fab.abb import RapidToolData
 
 kwargs = {}
 if cog_pt:
@@ -3204,7 +3204,7 @@ tooldata = tool.get_rapid_tooldata()
                   <items count="11">
                     <item name="CodeInput" type_name="gh_string" type_code="10">import Rhino.Geometry as rg
 
-from compas_rcf.abb import RapidToolData
+from rapid_clay_formations_fab.abb import RapidToolData
 
 kwargs = {}
 if cog_pt:
@@ -3794,7 +3794,7 @@ tooldata = tool.get_rapid_tooldata()
                   <items count="11">
                     <item name="CodeInput" type_name="gh_string" type_code="10">import Rhino.Geometry as rg
 
-from compas_rcf.abb import RapidToolData
+from rapid_clay_formations_fab.abb import RapidToolData
 
 kwargs = {}
 if cog_pt:
@@ -5126,7 +5126,7 @@ tooldata = tool.get_rapid_tooldata()
                   <items count="11">
                     <item name="CodeInput" type_name="gh_string" type_code="10">import Rhino.Geometry as rg
 
-from compas_rcf.abb import RapidToolData
+from rapid_clay_formations_fab.abb import RapidToolData
 
 kwargs = {}
 if cog_pt:

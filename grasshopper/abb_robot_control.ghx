@@ -1534,7 +1534,7 @@ from compas_rrc import SetWorkObject
 from compas_rrc import Zone
 from compas_rrc import Motion
 
-from compas_rcf.utils import ensure_frame
+from rapid_clay_formations_fab.utils import ensure_frame
 
 if tool_name is None:
     tool_name = "tool0"
@@ -1977,7 +1977,7 @@ from compas_rrc import SetMaxSpeed
 from compas_rrc import MoveToJoints
 from compas_rrc import Zone
 
-from compas_rcf.utils import ensure_frame
+from rapid_clay_formations_fab.utils import ensure_frame
 
 TIMEOUT = 5 
 TIMEOUT_LONG = 30 
@@ -2318,7 +2318,7 @@ from scriptcontext import sticky
 from compas_rrc import GetFrame
 from compas_rrc import GetJoints
 
-from compas_rcf.rhino import cgframe_to_rgplane
+from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
 TIMEOUT = 5 
 TIMEOUT_LONG = 30 
@@ -2709,13 +2709,13 @@ if "joint_values" in sticky.keys():
               <chunks count="1">
                 <chunk name="Container">
                   <items count="11">
-                    <item name="CodeInput" type_name="gh_string" type_code="10">from compas_rcf.docker import compose_up
-from compas_rcf.docker import compose_down
-from compas_rcf.docker import restart_container
+                    <item name="CodeInput" type_name="gh_string" type_code="10">from rapid_clay_formations_fab.docker import compose_up
+from rapid_clay_formations_fab.docker import compose_down
+from rapid_clay_formations_fab.docker import restart_container
 
-from compas_rcf.abb import ROBOT_IPS
-from compas_rcf.abb import DOCKER_COMPOSE_PATHS
-from compas_rcf.abb import DRIVER_CONTAINER_NAME
+from rapid_clay_formations_fab.abb import ROBOT_IPS
+from rapid_clay_formations_fab.abb import DOCKER_COMPOSE_PATHS
+from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 
 if target is None:
     target = "virtual"
@@ -3166,7 +3166,7 @@ unload_modules(module)</item>
                     <item name="Optional" type_name="gh_bool" type_code="1">false</item>
                     <item name="ScrollRatio" type_name="gh_double" type_code="6">0</item>
                     <item name="SourceCount" type_name="gh_int32" type_code="3">0</item>
-                    <item name="UserText" type_name="gh_string" type_code="10">compas_rcf</item>
+                    <item name="UserText" type_name="gh_string" type_code="10">rapid_clay_formations_fab</item>
                   </items>
                   <chunks count="2">
                     <chunk name="Attributes">

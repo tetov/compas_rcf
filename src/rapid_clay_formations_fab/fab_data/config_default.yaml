@@ -1,0 +1,46 @@
+# Fabrication run config for abb_rcf_runner
+# YAML format, https://yaml.org/spec/1.2
+# All values are required unless marked optional
+log_dir: G:\Shared drives\2020_MAS\T3\RCF-T3-Thesis\09-robot-control\03_fabrication_logs
+verbose: 1 # 1 means INFO messages, 2 DEBUG messages
+robot_client:
+    controller: virtual
+    docker:
+        timeout_ping: 2
+        sleep_after_up: 2
+    publish_tf_xform: false  # publish a TF topic w xform
+    wobjs:
+        pick: wobj0
+        place: wobj0
+
+    tools:
+        pick_place:
+            name: t_A057_ClayTool02 # name of tool
+            io_pin_needles: doUnitC1Out1 # name of DO
+            extend_signal: 1 # state (0 or 1)
+            retract_signal: 0 # state (0 or 1)
+            needles_pause: 0.5 # Seconds to wait before and after extending or
+                               # retracting needles
+            elem_pick_egress_dist: 150 # controls height where descent for pick starts
+
+    robot_movement:
+        global_speed_accel:
+            speed_override: 100 # %
+            speed_max_tcp: 500 # mm/s
+            accel: 100 # mm/s^2
+            accel_ramp: 100 # %, optional, default 100, the rate at which acceleration
+                        # increases or decreases as a percentage of the normal values
+        speed:
+            # velocities defined as mm/s
+            pick_place: 150 # mm/s
+            travel: 250 # mm/s
+
+        zone:
+            # Either rapid variable name or mm
+            pick: Z10
+            place: Z10
+            travel: Z100
+
+        set_joint_pos: # used at start and end of fabrication run
+            start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees
+            end: [ -127.0, 54.0, 9.0 , 2.0 , 30.0, 7.0 ] # 6 joint values in degrees

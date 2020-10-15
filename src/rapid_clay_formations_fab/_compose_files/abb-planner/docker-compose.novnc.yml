@@ -1,0 +1,14 @@
+# run using this command
+# docker-compose -f docker-compose.yml -f docker-compose.nonovnc.yml up -d
+version: "3.5"
+services:
+  gui:
+    image: gramaziokohler/novnc:19.05
+    ports:
+      - "8080:8080"
+
+  abb-planner:
+    environment:
+      - DISPLAY=gui:0.0
+    depends_on:
+      - gui

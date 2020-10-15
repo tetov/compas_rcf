@@ -1,0 +1,95 @@
+version: "3.5"
+services:
+  ros-master-ppl:
+    image: tetov/ros-melodic-abb-planner:v1.0.0
+    container_name: ros-master
+    environment:
+      - "ROS_HOSTNAME=ros-master"
+      - "ROS_MASTER_URI=http://ros-master:11311"
+    ports:
+      - "11311:11311"
+    command:
+      - roscore
+
+  ros-bridge-ppl:
+    image: tetov/ros-melodic-abb-planner:v1.0.0
+    container_name: ros-bridge
+    environment:
+      - "ROS_HOSTNAME=ros-bridge"
+      - "ROS_MASTER_URI=http://ros-master:11311"
+    ports:
+      - "9090:9090"
+    command:
+      - roslaunch
+      - --wait
+      - rosbridge_server
+      - rosbridge_websocket.launch
+
+  ros-fileserver:
+    image: tetov/ros-melodic-abb-planner:v1.0.0
+    container_name: ros-fileserver
+    environment:
+      - "ROS_HOSTNAME=ros-fileserver"
+      - "ROS_MASTER_URI=http://ros-master:11311"
+    command:
+      - roslaunch
+      - --wait
+      - file_server
+      - file_server.launch
+
+  # Runs once but can be invoked again with different transformation
+  abb-tf-base_link:
+    image: tetov/ros-melodic-abb-planner:v1.0.0
+    container_name: abb-tf-base_link
+    environment:
+      - "ROS_HOSTNAME=abb-tf-base_link"
+      - "ROS_MASTER_URI=http://ros-master:11311"
+    command:
+      - rosrun
+      - tf
+      - static_transform_publisher
+      - '0'
+      - '0'
+      - '0'
+      - '0'
+      - '0'
+      - '0'
+      - '1'
+      - world
+      - base_link
+      - '100'
+
+  abb-description:
+    image: tetov/ros-melodic-abb-planner:v1.0.0
+    container_name: abb-description
+    environment:
+      - ROS_HOSTNAME=abb-description
+      - ROS_MASTER_URI=http://ros-master:11311
+    command:
+      - roslaunch
+      - --wait
+      - abb_irb4600_40_255_moveit_config
+      - planning_context.launch
+      - load_robot_description:=true
+
+  abb-planner:
+    image: tetov/ros-melodic-abb-planner:v1.0.0
+    container_name: abb-planner
+    environment:
+      - ROS_HOSTNAME=abb-planner
+      - ROS_MASTER_URI=http://ros-master:11311
+      - DISPLAY=host.docker.internal:0.0
+      - LIBGL_ALWAYS_INDIRECT=0
+    command:
+      - roslaunch
+      - --wait
+      - abb_irb4600_40_255_moveit_config
+      - demo.launch
+
+  gui:
+    # dummy here to be overriden by docker-compose.novnc.yml
+    image: hello-world
+
+networks:
+    default:
+        name: ros-planner

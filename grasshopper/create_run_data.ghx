@@ -1983,7 +1983,7 @@ unload_modules(module)</item>
                     <item name="Optional" type_name="gh_bool" type_code="1">false</item>
                     <item name="ScrollRatio" type_name="gh_double" type_code="6">0</item>
                     <item name="SourceCount" type_name="gh_int32" type_code="3">0</item>
-                    <item name="UserText" type_name="gh_string" type_code="10">compas_rcf</item>
+                    <item name="UserText" type_name="gh_string" type_code="10">rapid_clay_formations_fab</item>
                   </items>
                   <chunks count="2">
                     <chunk name="Attributes">
@@ -2219,11 +2219,11 @@ unload_modules(module)</item>
                     <item name="CodeInput" type_name="gh_string" type_code="10">import Rhino.Geometry as rg
 import ghpythonlib
 
-import compas_rcf
-from compas_rcf.utils import wrap_list
-from compas_rcf.utils import ensure_frame
-from compas_rcf.fab_data import ClayBullet
-from compas_rcf.rhino import cgframe_to_rgplane
+import rapid_clay_formations_fab
+from rapid_clay_formations_fab.utils import wrap_list
+from rapid_clay_formations_fab.utils import ensure_frame
+from rapid_clay_formations_fab.fab_data import ClayBullet
+from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
 def generate_mesh(cls):
     return cls.get_rgmesh(face_count=face_count)
@@ -2733,10 +2733,10 @@ from time import localtime
 
 import System
 from Rhino.Geometry.Plane import WorldXY
-from compas_rcf.utils import CompasObjEncoder
+from rapid_clay_formations_fab.utils import CompasObjEncoder
 
-from compas_rcf.rhino import rgtransform_to_matrix
-from compas_rcf.rhino import rgplane_to_cgframe
+from rapid_clay_formations_fab.rhino import rgtransform_to_matrix
+from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
 
 if fab_data is None:
     raise Exception("No fab_data specified.")

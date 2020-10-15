@@ -1,0 +1,12 @@
+# run using this command:
+# docker-compose -f docker-compose.yml -f docker-compose.moveit-setup.yml up -d
+version: "3.5"
+services:
+  abb-planner:
+    command:
+      - roslaunch
+      - --wait
+      - moveit_setup_assistant
+      - setup_assistant.launch
+    volumes:
+        - ./volume:/volume

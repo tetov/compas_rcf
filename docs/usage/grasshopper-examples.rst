@@ -3,7 +3,7 @@ Grasshopper files
 *******************************************************************************
 
 .. note::
-   Requires ``compas_rcf`` installed and available from inside Rhino. Follow the
+   Requires ``rapid_clay_formations_fab`` installed and available from inside Rhino. Follow the
    installation steps in :doc:`../installation`.
 
 ClayBullet object creator and JSON read, write and edit

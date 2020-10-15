@@ -23,3 +23,6 @@ indent_size = 4
 
 [LICENSE]
 insert_final_newline = false
+
+[*.{yaml,yml,toml}]
+indent_size = 2

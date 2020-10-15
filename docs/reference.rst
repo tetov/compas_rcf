@@ -5,4 +5,4 @@ API Reference
 .. toctree::
     :maxdepth: 3
 
-    reference/compas_rcf
+    reference/rapid_clay_formations_fab

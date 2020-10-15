@@ -17,7 +17,7 @@ Fabrication data
 ================
 
 Fabrication data is created in Grasshopper, see :doc:`./grasshopper-examples`.
-The information is stored as a list of :obj:`compas_rcf.fab_data.ClayBullet`
+The information is stored as a list of :obj:`rapid_clay_formations_fab.fab_data.ClayBullet`
 dumped to a JSON file.
 
 The JSON file can be edited from Grasshopper after initial creation.
@@ -28,7 +28,7 @@ Fabrication configuration
 Fabrication configurations are stored as ``YAML`` files which allows for easy
 editing.
 
-.. literalinclude:: ../../src/compas_rcf/fab_data/config_default.yaml
+.. literalinclude:: ../../src/rapid_clay_formations_fab/fab_data/config_default.yaml
    :language: yaml
    :caption: Default configuration
 
@@ -36,12 +36,12 @@ Fabrication run
 ===============
 
 Run the script from a terminal using the command
-:code:``python -m compas_rcf.abb.run``. There are some flags that can be set
+:code:``python -m rapid_clay_formations_fab.abb.run``. There are some flags that can be set
 when running this command:
 
 .. code-block::
 
-   $ python -m compas_rcf.abb.run --help
+   $ python -m rapid_clay_formations_fab.abb.run --help
    usage: run.py [-h] [-t {real,virtual}] [-q] [--debug] [--skip-logfile]
               [--skip-progress-file]
 
@@ -61,8 +61,8 @@ Select target (real or virtual controller) and configuration file.
 
 .. code-block::
 
-   $ python -m compas_rcf.abb.run
-   {{timestamp}}:INFO:<module>:compas_rcf version: {{version}}
+   $ python -m rapid_clay_formations_fab.abb.run
+   {{timestamp}}:INFO:<module>:rapid_clay_formations_fab version: {{version}}
    ? Load config or use default?  (Use arrow keys)
    » Default.
      Load.
