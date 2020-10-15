@@ -447,12 +447,16 @@ class ClayBullet(object):
 
         location = Frame.from_data(data.pop("location"))
 
+        # fmt: off
+        # Stop black from adding comma after last element to retain py27 compat
+        # See https://github.com/psf/black/issues/1356
         trajectory_attributes = (
             "travel_trajectories",
             "place_trajectories",
             "return_travel_trajectories_",
             "return_place_trajectories_"
         )
+        # fmt: on
 
         for key in trajectory_attributes:
             trajectories_data = data.pop(key, None)

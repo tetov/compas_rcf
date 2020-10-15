@@ -52,7 +52,9 @@ def main():
         help="Set log level. -v adds INFO messages and -vv adds DEBUG messages.",
     )
     parser.add_argument(
-        "run_data_path", type=pathlib.Path, help="File containing fabrication setup.",
+        "run_data_path",
+        type=pathlib.Path,
+        help="File containing fabrication setup.",
     )
     parser.add_argument(
         "-c",
