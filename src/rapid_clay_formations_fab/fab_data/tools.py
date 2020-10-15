@@ -79,7 +79,7 @@ def _load_run_data(file_path):
 
 
 def _get_fab_data(path_or_dict):
-    if type(path_or_dict) == dict:
+    if isinstance(path_or_dict, dict):
         dict_ = path_or_dict
     else:
         dict_ = _load_run_data(path_or_dict)
@@ -134,7 +134,7 @@ def mark_placed(path, from_=None, to=None):
     to : :obj:`int`, optional
         Defines upper bound of element index to mark (exclusive).
     """
-    update_fabdata_attrs(path, {"bullet_id": 1}, from_=from_, to=None)
+    update_fabdata_attrs(path, {"bullet_id": 1}, from_=from_, to=to)
 
 
 def renumber_fab_elements(path, prefix=None):
