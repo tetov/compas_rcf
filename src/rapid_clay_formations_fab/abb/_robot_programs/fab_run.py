@@ -198,6 +198,9 @@ def fab_run(run_conf, run_data):
         # Set speed, accel, tool, wobj and move to start pos
         rob_client.pre_procedure()
 
+        # Confirm start on flexpendant
+        rob_client.confirm_start()
+
         # Initialize this before first run, it gets set after placement
         cycle_time_msg = None
 
@@ -234,7 +237,7 @@ def fab_run(run_conf, run_data):
             cycle_time = pick_future.result() + place_future.result()
 
             elem.cycle_time = cycle_time
-            # format float to int to save characters on teach pendant
+            # format float to int to save characters on flex pendant
             cycle_time_msg = f"Last cycle time: {elem.cycle_time:0.0f}"
             log.info(cycle_time_msg)
 

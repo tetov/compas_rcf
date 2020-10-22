@@ -1,4 +1,4 @@
-"""Procedures for pick and place operations on ABB robot arms."""
+"""Module for class AbbRcfClient, a client object made for the RCF fab process."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -39,6 +39,11 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.zone = rob_conf.robot_movement.zone
 
         self.docker_cfg = rob_conf.docker
+
+    def confirm_start(self):
+        """Stop program and prompt user to press play on pendant to resume."""
+        self.send(compas_rrc.PrintText("Press play when ready."))
+        self.send(compas_rrc.Stop())
 
     def ping(self, timeout=10):
         """Ping ABB robot controller.
