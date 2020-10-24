@@ -8,14 +8,12 @@ import re
 from copy import deepcopy
 from itertools import count
 
-from compas.datastructures import Mesh as cg_Mesh
-from compas.geometry import Frame
-from compas.geometry import Translation
+import compas.geometry as cg
+import compas.datastructures
+import compas_ghpython.artists
 from compas_fab.robots import JointTrajectory
-from compas_ghpython.artists import MeshArtist
 
 from rapid_clay_formations_fab.robots import reversed_trajectories
-from rapid_clay_formations_fab.utils import wrap_list
 
 
 class ClayBullet(object):
@@ -79,7 +77,7 @@ class ClayBullet(object):
         attrs=None,
         **kwargs
     ):
-        if not isinstance(location, Frame):
+        if not isinstance(location, cg.Frame):
             raise Exception("Location should be given as a compas.geometry.Frame")
         self.location = location
 
@@ -159,7 +157,7 @@ class ClayBullet(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.height
-        T = Translation(vector)
+        T = cg.Translation(vector)
 
         return self.location.transformed(T)
 
@@ -171,7 +169,7 @@ class ClayBullet(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.get_compressed_height()
-        T = Translation(vector)
+        T = cg.Translation(vector)
 
         return self.location.transformed(T)
 
@@ -183,7 +181,7 @@ class ClayBullet(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.egress_frame_distance
-        T = Translation(vector)
+        T = cg.Translation(vector)
 
         return self.get_uncompressed_top_frame().transformed(T)
 
@@ -195,7 +193,7 @@ class ClayBullet(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.height / 2
-        T = Translation(vector)
+        T = cg.Translation(vector)
 
         return self.location.transformed(T)
 
@@ -207,7 +205,7 @@ class ClayBullet(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.get_compressed_height() / 2
-        T = Translation(vector)
+        T = cg.Translation(vector)
 
         return self.location.transformed(T)
 
@@ -265,6 +263,19 @@ class ClayBullet(object):
         """
         return self.height * self.compression_ratio
 
+    def get_pt(self):
+        return self.location.point
+
+    def get_circle(self):
+        """Get :class:`compas.geometry.Circle` representing fabrication element.
+
+        Returns
+        -------
+        :class:`compas.geometry.Circle`
+        """
+        plane = cg.Plane(self.get_pt, self.get_normal)
+        return cg.Circle(plane, self.radius)
+
     def get_rgcircle(self):
         """Get :class:`Rhino.Geometry.Circle` representing bullet footprint.
 
@@ -275,6 +286,16 @@ class ClayBullet(object):
         from Rhino.Geometry import Circle
 
         return Circle(self.get_location_plane(), self.get_compressed_radius())
+
+    def get_cylinder(self):
+        """Get :class:`compas.geometry.Cylinder` representing fabrication element.
+
+        Returns
+        -------
+        :class:`compas.geometry.Cylinder`
+        """
+        circle = self.get_circle()
+        return cg.Cylinder(circle, self.height)
 
     def get_rgcylinder(self):
         """Get :class:`Rhino.Geometry.Cylinder` representing bullet.
@@ -305,7 +326,7 @@ class ClayBullet(object):
         """
         return deepcopy(self)
 
-    def get_cgmesh(self, face_count=18):
+    def get_cgmesh(self, u_res=18):
         """Generate mesh representation of bullet with custom resolution.
 
         Parameters
@@ -318,75 +339,10 @@ class ClayBullet(object):
         -------
         :class:`Rhino.Geometry.Mesh`
         """
-        # TODO: Rewrite as pure compas (unnecessary but neat)
-        import Rhino.Geometry as rg
+        cylinder = self.get_cylinder()
+        return compas.datastructures.Mesh.from_shape(cylinder, u=u_res)
 
-        from rapid_clay_formations_fab.rhino import cgvector_to_rgvector
-
-        if face_count < 6:
-            sides = 3
-        elif face_count < 15:
-            sides = 4
-        else:
-            sides = face_count // 3
-
-        circle = self.get_rgcircle()
-
-        polygons = []
-        polygons.append(rg.Polyline.CreateInscribedPolygon(circle, sides))
-
-        T = rg.Transform.Translation(
-            cgvector_to_rgvector(self.get_normal()) * self.get_compressed_height()
-        )
-
-        second_polygon = polygons[0].Duplicate()
-        second_polygon.Transform(T)
-
-        polygons.append(second_polygon)
-
-        mesh = cg_Mesh()
-        outer_verts_polygons = []
-
-        # generate verts at polygon corners
-        for polygon in polygons:
-            _temp_list = []
-
-            polygon_corners = list(polygon.Item)
-            polygon_corners.pop()  # remove end pt since == start pt
-
-            for pt in polygon_corners:
-                _temp_list.append(mesh.add_vertex(x=pt.X, y=pt.Y, z=pt.Z))
-            outer_verts_polygons.append(_temp_list)
-
-        polygon_faces = []
-        for vkeys in outer_verts_polygons:
-            polygon_faces.append(mesh.add_face(vkeys))
-
-        # if >4 sides polygon, create faces by tri subd
-        if sides > 4:
-
-            centroid_verts = []
-            for fkey in polygon_faces:
-                x, y, z = mesh.face_centroid(fkey)
-                centroid_verts.append(mesh.add_vertex(x=x, y=y, z=z))
-                mesh.delete_face(fkey)
-
-            # create new faces
-            for vkeys, ckey in zip(outer_verts_polygons, centroid_verts):
-                for i, vkey in enumerate(vkeys):
-                    next_vkey = wrap_list(vkeys, i + 1)
-                    mesh.add_face([ckey, vkey, next_vkey])
-
-        # generate faces between polygons
-        vertex_for_vertex = zip(*outer_verts_polygons)
-
-        for i, mirror_corners_1 in enumerate(vertex_for_vertex):
-            mirror_corners_2 = wrap_list(vertex_for_vertex, i + 1)
-            mesh.add_face(mirror_corners_1 + mirror_corners_2[::-1])
-
-        return mesh
-
-    def get_rgmesh(self, face_count=18):
+    def get_rgmesh(self, u_res=18):
         """Generate mesh representation of bullet with custom resolution.
 
         Parameters
@@ -399,13 +355,8 @@ class ClayBullet(object):
         -------
         :class:`Rhino.Geometry.Mesh`
         """
-        mesh = self.get_cgmesh(face_count=face_count)
-        # to Rhino.Geometry and clean it up
-        rgmesh = MeshArtist(mesh).draw_mesh()
-        rgmesh.UnifyNormals()
-        rgmesh.Normals.ComputeNormals()
-
-        return rgmesh
+        mesh = self.get_cgmesh(u_res=u_res)
+        return compas_ghpython.artists.MeshArtist(mesh).draw_mesh()
 
     def to_data(self):
         """Get :obj:`dict` representation of :class:`ClayBullet`."""
@@ -441,11 +392,11 @@ class ClayBullet(object):
             try:
                 return JointTrajectory.from_data(traj_data)
             except AttributeError:
-                return [Frame.from_data(frame_data) for frame_data in traj_data]
+                return [cg.Frame.from_data(frame_data) for frame_data in traj_data]
 
         kwargs = {}
 
-        location = Frame.from_data(data.pop("location"))
+        location = cg.Frame.from_data(data.pop("location"))
 
         # fmt: off
         # Stop black from adding comma after last element to retain py27 compat
