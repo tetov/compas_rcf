@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: "actions/checkout@master"
       - name: "TODO to Issue"
-        uses: "alstr/todo-to-issue-action@v2.0"
+        uses: "alstr/todo-to-issue-action@v2.1"
         with:
           REPO: ${{ github.repository }}
           BEFORE: ${{ github.event.before }}
