@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -14,7 +13,7 @@ from rapid_clay_formations_fab import __version__
 
 # -- General configuration ------------------------------------------------
 
-project = "rapid_clay_formations_fab"
+project = "Rapid Clay Formations Fabrication"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
 version = release = __version__
@@ -56,10 +55,7 @@ autodoc_default_options = {
     "show-inheritance": True,
 }
 
-autodoc_mock_imports = [
-    "Rhino",
-    "tkinter",
-]
+autodoc_mock_imports = ["Rhino"]
 autodoc_member_order = "alphabetical"
 
 autoclass_content = "class"
@@ -116,7 +112,7 @@ html_theme_options = {
 
 html_context: dict = {}
 html_static_path: list = []
-html_extra_path = [".nojekyll", "CNAME"]
+html_extra_path = [".nojekyll"]
 html_last_updated_fmt = ""
 html_copy_source = False
 html_show_sourcelink = True

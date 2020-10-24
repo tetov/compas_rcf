@@ -198,15 +198,16 @@ def fab_run(run_conf, run_data):
         # Set speed, accel, tool, wobj and move to start pos
         rob_client.pre_procedure()
 
+        # Confirm start on flexpendant
+        rob_client.confirm_start()
+
         # Initialize this before first run, it gets set after placement
         cycle_time_msg = None
 
-        for i, fab_element in enumerate(fab_elements):
-            if fab_element.placed:
+        for i, elem in enumerate(fab_elements):
+            if elem.placed:
                 continue
-            current_elem_desc = (
-                f"{i}/{len(fab_elements) - 1}, id {fab_element.bullet_id}."
-            )
+            current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.bullet_id}."
             log.info(current_elem_desc)
 
             pendant_msg = ""
@@ -218,14 +219,14 @@ def fab_run(run_conf, run_data):
             # TP write limited to 40 char / line
             rob_client.send(PrintText(pendant_msg[:40]))
 
-            pick_element = pick_station.get_next_pick_elem(fab_element)
+            pick_element = pick_station.get_next_pick_elem(elem)
 
             # Send instructions and store feedback obj
             pick_future = rob_client.pick_element(pick_element)
-            place_future = rob_client.place_element(fab_element)
+            place_future = rob_client.place_element(elem)
 
             # set placed to temporary value to mark it as "placed"
-            fab_element.placed = True
+            elem.placed = True
 
             # Write progress to json while waiting for robot
             run_data["fab_data"] = fab_elements
@@ -236,13 +237,13 @@ def fab_run(run_conf, run_data):
             # This blocks until cycle is finished
             cycle_time = pick_future.result() + place_future.result()
 
-            fab_element.cycle_time = cycle_time
+            elem.cycle_time = cycle_time
             # format float to int to save characters on teach pendant
-            cycle_time_msg = f"Last cycle time: {fab_element.cycle_time:0.0f}"
+            cycle_time_msg = f"Last cycle time: {elem.cycle_time:0.0f}"
             log.info(cycle_time_msg)
 
-            fab_element.time_placed = time.time()
-            log.debug(f"Time placed was {fab_element.time_placed}")
+            elem.time_placed = time.time()
+            log.debug(f"Time placed was {elem.time_placed}")
 
         # Write progress of last run of loop
         run_data["fab_data"] = fab_elements
