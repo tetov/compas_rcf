@@ -1,11 +1,9 @@
-"""Helpers for scripts interacting with ABB robots or RAPID code."""
+"""Standalone move to frame function using compas_rrc."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 from collections import Sequence
-from os.path import join
 
 from compas_fab.backends import RosClient
 from compas_rrc import AbbClient
@@ -19,27 +17,8 @@ from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 from compas_rrc import Zone
 
-from rapid_clay_formations_fab import DOCKER_COMPOSE_DIR
 
-log = logging.getLogger(__name__)
-
-
-_compose_file_name = "docker-compose.yml"
-_driver_compose_dir = "abb-driver"
-_planner_compose_dir = "abb-planner"
-
-DOCKER_COMPOSE_PATHS = {
-    "driver": join(DOCKER_COMPOSE_DIR, _driver_compose_dir, _compose_file_name),
-    "planner": join(DOCKER_COMPOSE_DIR, _planner_compose_dir, _compose_file_name),
-}
-
-DRIVER_CONTAINER_NAME = "abb-driver"
-DRIVER_IMAGE_NAME = "gramaziokohler/compas_rrc_driver"
-
-ROBOT_IPS = {"real": "192.168.125.1", "virtual": "host.docker.internal"}
-
-
-def std_move_to_frame(
+def standalone_move_to_frame(
     frame,
     tool="tool0",
     wobj="wobj0",
@@ -47,9 +26,9 @@ def std_move_to_frame(
     speed=200,
     accel=100,
     zone=Zone.FINE,
-    timeout=None,
+    timeout=None
 ):
-    """Move robot arm to target or targets.
+    """Move robot arm to frame or frames in one single function.
 
     Parameters
     ----------

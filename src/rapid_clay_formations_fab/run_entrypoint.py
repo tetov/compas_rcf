@@ -1,6 +1,6 @@
-"""Fabrication runner for Rapid Clay Fabrication project for fullscale structure.
+"""Fabrication runner entrypoint.
 
-Run from command line using :code:`python -m rapid_clay_formations_fab.abb.run`
+Run from command line using :code:`rcf_run`
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -14,29 +14,9 @@ from datetime import datetime
 from pathlib import Path
 
 from rapid_clay_formations_fab import __version__
-from rapid_clay_formations_fab.abb._robot_programs import fab_run
+from rapid_clay_formations_fab.abb import fab_run
 from rapid_clay_formations_fab.fab_data import ABB_RCF_CONF_TEMPLATE
 from rapid_clay_formations_fab.fab_data import fab_conf
-
-# This reduces latency, see:
-# https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
-from twisted.internet import reactor  # noqa: E402 isort:skip
-
-reactor.timeout = lambda: 0.0001
-
-
-def logging_setup(log_dir, log_level):
-    """Configure logging for module and imported modules."""
-    loglevel_dict = {0: log.WARNING, 1: log.INFO, 2: log.DEBUG}
-
-    timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M.%S.log")
-    log_file = Path(log_dir) / timestamp_file
-
-    log.basicConfig(
-        level=loglevel_dict[log_level],
-        format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
-        handlers=[log.FileHandler(log_file, mode="a"), log.StreamHandler(sys.stdout)],
-    )
 
 
 def main():
@@ -100,6 +80,20 @@ def main():
     log.debug(f"config after set_args: {fab_conf}")
 
     fab_run(run_conf, run_data)
+
+
+def logging_setup(log_dir, log_level):
+    """Configure logging for module and imported modules."""
+    loglevel_dict = {0: log.WARNING, 1: log.INFO, 2: log.DEBUG}
+
+    timestamp_file = datetime.now().strftime("%Y%m%d-%H.%M.%S.log")
+    log_file = Path(log_dir) / timestamp_file
+
+    log.basicConfig(
+        level=loglevel_dict[log_level],
+        format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
+        handlers=[log.FileHandler(log_file, mode="a"), log.StreamHandler(sys.stdout)],
+    )
 
 
 if __name__ == "__main__":
