@@ -6,7 +6,6 @@ from __future__ import print_function
 import math
 import re
 from copy import deepcopy
-from itertools import count
 
 from compas.datastructures import Mesh as cg_Mesh
 from compas.geometry import Frame
@@ -18,13 +17,18 @@ from rapid_clay_formations_fab.robots import reversed_trajectories
 from rapid_clay_formations_fab.utils import wrap_list
 
 
-class ClayBullet(object):
-    r"""Describes a clay cylinder.
+class FabricationElement(object):
+    r"""Describes a fabrication element for the RCF process.
+
+    The element is assumed to be a cylinder and is expected to be compressed
+    during fabrication.
 
     Parameters
     ----------
     location : :class:`Rhino.Geometry.Plane` or :class:`compas.geometry.Frame`
-        Bottom centroid frame of clay volume.
+        Bottom centroid frame of element.
+    id_: :obj:`str`
+        Unique identifier.
     travel_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         List of trajectories describing motion between picking egress and
         placing egress.
@@ -34,17 +38,15 @@ class ClayBullet(object):
         List of trajectories describing motion between placing and picking.
     return_place_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
         List of trajectories describing return motion from last compression motion to placing egress.
-    bullet_id : :class:`int`, optional
-        Unique identifier.
-    radius : :class:`float`, optional
+    radius : :obj:`float`, optional
         The radius of the initial cylinder.
-    height : :class:`float`, optional
+    height : :obj:`float`, optional
         The height of the initial cylinder.
-    compression_ratio : :class:`float` (>0, <=1), optional
+    compression_ratio : :obj:`float` (>0, <=1), optional
         The compression height ratio applied to the initial cylinder.
-    clay_density : :class:`float`, optional
-        Density of clay in g/mm\ :sup:`3`
-    cycle_time : :class:`float`, optional
+    density : :obj:`float`, optional
+        Density in g/mm\ :sup:`3`.
+    cycle_time : :obj:`float`, optional
         Cycle time from pick to place and back.
     placed : :obj:`bool`, optional
         If fabrication element has been placed or not.
@@ -52,61 +54,48 @@ class ClayBullet(object):
         Time in epoch (seconds from 1970) of fabrication element placement.
     attrs : :obj:`dict`, optional
         Any other attributes needed.
-    kwargs : :class:`dict`, optional
-        Keyword arguments added as key-value pair to `attrs` and replaces value
-        if key already present.
     """  # noqa: E501
-
-    # creates id-s for objects
-    _ids = count(0)
 
     def __init__(
         self,
         location,
+        id_,
         radius=45,
-        height=100,
+        height=150,
         compression_ratio=0.5,
         egress_frame_distance=200,
         travel_trajectories=None,
         place_trajectories=None,
         return_travel_trajectories=None,
         return_place_trajectories=None,
-        bullet_id=None,
-        clay_density=2.0,
+        density=2.0,
         cycle_time=None,
         placed=False,
         time_placed=None,
-        attrs=None,
-        **kwargs
+        attrs=None
     ):
         if not isinstance(location, Frame):
             raise Exception("Location should be given as a compas.geometry.Frame")
         self.location = location
+        self.id_ = id_
 
         self.radius = radius
         self.height = height
         self.compression_ratio = compression_ratio
         self.egress_frame_distance = egress_frame_distance
 
-        self.travel_trajectories = travel_trajectories
-        self.place_trajectories = place_trajectories
-        self.return_travel_trajectories = return_travel_trajectories
-        self.return_place_trajectories = return_place_trajectories
+        self.travel_trajectories = travel_trajectories or []
+        self.place_trajectories = place_trajectories or []
+        self.return_travel_trajectories = return_travel_trajectories or []
+        self.return_place_trajectories = return_place_trajectories or []
 
-        # sortable ID, used for fabrication sequence
-        if not bullet_id:
-            self.bullet_id = next(self._ids)
-        else:
-            self.bullet_id = bullet_id
-
-        self.clay_density = clay_density
+        self.density = density
 
         self.cycle_time = cycle_time
         self.placed = placed
         self.time_placed = time_placed
 
         self.attrs = attrs or {}
-        self.attrs.update(kwargs)
 
     @property
     def return_travel_trajectories(self):
@@ -187,32 +176,8 @@ class ClayBullet(object):
 
         return self.get_uncompressed_top_frame().transformed(T)
 
-    def get_uncompressed_centroid_frame(self):
-        """Get frame at middle of uncompressed bullet.
-
-        Returns
-        -------
-        :class:`compas.geometry.Frame`
-        """
-        vector = self.get_normal() * self.height / 2
-        T = Translation(vector)
-
-        return self.location.transformed(T)
-
-    def get_compressed_centroid_frame(self):
-        """Get frame at middle of compressed bullet.
-
-        Returns
-        -------
-        :class:`compas.geometry.Frame`
-        """
-        vector = self.get_normal() * self.get_compressed_height() / 2
-        T = Translation(vector)
-
-        return self.location.transformed(T)
-
     def get_volume(self):
-        r"""Get volume of clay bullet in mm\ :sup:`3`\ .
+        r"""Get volume in mm\ :sup:`3`\ .
 
         Returns
         -------
@@ -221,7 +186,7 @@ class ClayBullet(object):
         return math.pi * self.radius ** 2 * self.height
 
     def get_volume_m3(self):
-        r"""Get volume of clay bullet in m\ :sup:`3`\ .
+        r"""Get volume in m\ :sup:`3`\ .
 
         Returns
         -------
@@ -230,7 +195,7 @@ class ClayBullet(object):
         return self.volume * 1e-9
 
     def get_weight_kg(self):
-        """Get weight of clay bullet in kg.
+        """Get weight in kg.
 
         Returns
         -------
@@ -239,7 +204,7 @@ class ClayBullet(object):
         return self.density * self.volume * 1e-6
 
     def get_weight(self):
-        """Get weight of clay bullet in g.
+        """Get weight in g.
 
         Returns
         -------
@@ -248,7 +213,10 @@ class ClayBullet(object):
         return self.weight_kg * 1000
 
     def get_compressed_radius(self):
-        """Get radius of clay bullet in mm when compressed to defined compression ratio.
+        """Get radius in mm when compressed to defined compression ratio.
+
+        This value assumes that fabrication material is completely elastic
+        and that deformation is uniform.
 
         Returns
         -------
@@ -257,7 +225,7 @@ class ClayBullet(object):
         return math.sqrt(self.get_volume() / (self.get_compressed_height() * math.pi))
 
     def get_compressed_height(self):
-        """Get height of clay bullet in mm when compressed to defined compression ratio.
+        """Get height of mm when compressed to defined compression ratio.
 
         Returns
         -------
@@ -266,7 +234,7 @@ class ClayBullet(object):
         return self.height * self.compression_ratio
 
     def get_rgcircle(self):
-        """Get :class:`Rhino.Geometry.Circle` representing bullet footprint.
+        """Get :class:`Rhino.Geometry.Circle` representing element's footprint.
 
         Returns
         -------
@@ -277,7 +245,7 @@ class ClayBullet(object):
         return Circle(self.get_location_plane(), self.get_compressed_radius())
 
     def get_rgcylinder(self):
-        """Get :class:`Rhino.Geometry.Cylinder` representing bullet.
+        """Get :class:`Rhino.Geometry.Cylinder` representation of element.
 
         Returns
         -------
@@ -287,26 +255,17 @@ class ClayBullet(object):
 
         return Cylinder(self.get_rgcircle(), self.get_compressed_height())
 
-    def get_rgvector_from_bullet_zaxis(self):
-        """Vector through center of bullet.
-
-        Returns
-        -------
-        :class:`compas.geometry.Vector`
-        """
-        return self.get_normal() * self.get_compressed_height()
-
     def copy(self):
         """Get a copy of instance.
 
         Returns
         -------
-        :class:`rapid_clay_formations_fab.fab_data.ClayBullet`
+        :class:`FabricationElement`
         """
         return deepcopy(self)
 
     def get_cgmesh(self, face_count=18):
-        """Generate mesh representation of bullet with custom resolution.
+        """Get :class:`compas.datastructures.Mesh` representation of element.
 
         Parameters
         ----------
@@ -316,7 +275,7 @@ class ClayBullet(object):
 
         Returns
         -------
-        :class:`Rhino.Geometry.Mesh`
+        :class:`compas.geometry.datastructures.Mesh`
         """
         # TODO: Rewrite as pure compas (unnecessary but neat)
         import Rhino.Geometry as rg
@@ -387,11 +346,11 @@ class ClayBullet(object):
         return mesh
 
     def get_rgmesh(self, face_count=18):
-        """Generate mesh representation of bullet with custom resolution.
+        """Generate :class:`Rhino.Geometry.Mesh` representation of element.
 
         Parameters
         ----------
-        face_count : :class:`int`, optional
+        face_count : :obj:`int`, optional
             Desired number of faces, by default 18
             Used as a guide for the resolution of the mesh cylinder
 
@@ -408,10 +367,7 @@ class ClayBullet(object):
         return rgmesh
 
     def to_data(self):
-        """Get :obj:`dict` representation of :class:`ClayBullet`."""
-        # TODO: Remove method. #62 blocks.
-        # Check if this is at all needed, or can be done just using
-        # CompasObjEncoder
+        """Get :obj:`dict` representation of :class:`FabricationElement`."""
         data = {}
 
         for key, value in self.__dict__.items():
@@ -424,7 +380,7 @@ class ClayBullet(object):
 
     @classmethod
     def from_data(cls, data):
-        """Construct a :class:`ClayBullet` instance from its data representation.
+        """Construct a :class:`FabricationElement` from a dictionary representation.
 
         Parameters
         ----------
@@ -433,8 +389,7 @@ class ClayBullet(object):
 
         Returns
         -------
-        :class:`ClayBullet`
-            The constructed ClayBullet instance
+        :class:`FabricationElement`
         """
 
         def trajectory_from_data(traj_data):
@@ -473,28 +428,3 @@ class ClayBullet(object):
         kwargs.update(data)
 
         return cls(location, **kwargs)
-
-
-def check_id_collision(clay_bullets):
-    """Check for duplicate ids in list of ClayBullet instances.
-
-    Parameters
-    ----------
-    clay_bullets : list of :class:`ClayBullet`
-
-    Raises
-    ------
-    Exception
-        Raises exception when first duplicate is found
-    """
-    ids = [bullet.bullet_id for bullet in clay_bullets]
-
-    set_of_ids = set()
-    for id_ in ids:
-        if id_ in set_of_ids:
-            raise Exception(
-                "Id {} appears more than once in list of ClayBullet instances".format(
-                    id_
-                )
-            )
-        set_of_ids.add(id_)

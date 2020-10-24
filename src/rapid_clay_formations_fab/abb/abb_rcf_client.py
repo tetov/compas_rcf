@@ -140,7 +140,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameter
         ----------
-        element : :class:`~rapid_clay_formations_fab.fab_data.ClayBullet`
+        element : :class:`~rapid_clay_formations_fab.fab_data.FabricationElement`
             Representation of fabrication element to pick up.
         """
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
@@ -233,7 +233,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        element : :class:`rapid_clay_formations_fab.fab_data.ClayBullet`
+        element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
             Element to place.
 
         Returns

@@ -15,7 +15,7 @@ from compas_rrc import PrintText
 from rapid_clay_formations_fab.abb import AbbRcfClient
 from rapid_clay_formations_fab.abb._robot_programs import compose_up_driver
 from rapid_clay_formations_fab.abb._robot_programs import confirm_start
-from rapid_clay_formations_fab.fab_data import ClayBullet
+from rapid_clay_formations_fab.fab_data import FabricationElement
 from rapid_clay_formations_fab.fab_data import PickStation
 from rapid_clay_formations_fab.localization import publish_static_transform
 from rapid_clay_formations_fab.utils import CompasObjEncoder
@@ -28,7 +28,7 @@ def _edit_fab_data(fab_elems, run_conf):
 
     Parameters
     ----------
-    fab_elems : list of :class:`rapid_clay_formations_fab.fabrication.clay_objs.ClayBullet`
+    fab_elems : list of :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
         List of fabrication elements.
     """  # noqa: E501
 
@@ -137,7 +137,7 @@ def fab_run(run_conf, run_data):
     compose_up_driver(run_conf.robot_client.controller)
 
     # setup fab data
-    fab_elements = [ClayBullet.from_data(data) for data in run_data["fab_data"]]
+    fab_elements = [FabricationElement.from_data(data) for data in run_data["fab_data"]]
     log.info("Fabrication data read.")
 
     log.info(f"{len(fab_elements)} fabrication elements..")

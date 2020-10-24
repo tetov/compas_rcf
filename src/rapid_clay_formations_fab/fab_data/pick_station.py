@@ -30,18 +30,18 @@ class PickStation(object):
         Tr = Translation([0, 0, offset])
         return self.pick_frames[0].transformed(Tr)
 
-    def get_next_frame(self, place_cylinder):
+    def get_next_frame(self, place_element):
         """Get next frame to pick cylinder at.
 
         Parameters
         ----------
-        cylinder : :class:`rapid_clay_formations_fab.fab_data.Claycylinder`
+        place_element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
             cylinder to place
 
         Returns
         -------
         :class:`compas.geometry.Frame`
-        """
+        """  # noqa: E501
         idx = self.counter % self.n_pick_frames
         self.counter += 1
 
@@ -49,10 +49,10 @@ class PickStation(object):
 
         pick_location = self.pick_frames[idx]
 
-        T = Transformation.from_frame_to_frame(place_cylinder.location, pick_location)
+        T = Transformation.from_frame_to_frame(place_element.location, pick_location)
 
         # Copy place_cylinder to get same height properties
-        pick_cylinder = place_cylinder.copy()
+        pick_cylinder = place_element.copy()
         pick_cylinder.location.transform(T)
 
         return pick_cylinder

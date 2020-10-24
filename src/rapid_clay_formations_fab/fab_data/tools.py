@@ -7,7 +7,7 @@ import csv
 import json
 from collections import OrderedDict
 
-from rapid_clay_formations_fab.fab_data import ClayBullet
+from rapid_clay_formations_fab.fab_data import FabricationElement
 from rapid_clay_formations_fab.utils import CompasObjEncoder
 
 try:
@@ -46,7 +46,7 @@ def csv_reports(args):
             print("{} already exists, skipping.".format(csv_file))
             continue
 
-        clay_bullets = load_bullets(json_file)
+        elements = load_fabrication_elements(json_file)
 
         headers_attrs = OrderedDict(
             (
@@ -65,10 +65,10 @@ def csv_reports(args):
             csv_w = csv.writer(out_file)
             csv_w.writerow(headers_attrs.keys())
 
-            for bullet in clay_bullets:
+            for elem in elements:
                 row = []
                 for attr in headers_attrs.values():
-                    row.append(getattr(bullet, attr, None))
+                    row.append(getattr(elem, attr, None))
 
 
 def _load_run_data(file_path):
@@ -98,27 +98,22 @@ def load_fabrication_elements(path_or_dict):
 
     Returns
     -------
-    :obj:`list` of :class:`ClayBullet`
+    :obj:`list` of :class:`FabricationElement`
     """
     fab_data = _get_fab_data(path_or_dict)
 
-    return [ClayBullet.from_data(data) for data in fab_data]
-
-
-def load_bullets(path_or_dict):
-    print("load_bullets will be removed in the future.")
-    return load_fabrication_elements(path_or_dict)
+    return [FabricationElement.from_data(data) for data in fab_data]
 
 
 def get_average_cycle_time(path_or_dict):
-    cylinders = load_fabrication_elements(path_or_dict)
+    elements = load_fabrication_elements(path_or_dict)
 
     sum_ = 0
     count = 0
-    for cylinder in cylinders:
-        if cylinder.cycle_time:
+    for elem in elements:
+        if elem.cycle_time:
             count += 1
-            sum_ += cylinder.cycle_time
+            sum_ += elem.cycle_time
 
     return sum_ / count
 
@@ -173,38 +168,32 @@ def update_fabdata_attrs(
         Overwrite attributes. Defaults to ``False``.
     """
     run_data = _load_run_data(path)
-    cylinders = load_fabrication_elements(run_data)
+    elements = load_fabrication_elements(run_data)
 
     if not from_:
         from_ = 0
     if not to:
-        to = len(cylinders)
+        to = len(elements)
 
-    for i, cylinder in enumerate(cylinders):
+    for i, elem in enumerate(elements):
         modified = False
         if reset_ids:
-            print("Changing id from {} to {}".format(cylinder.bullet_id, i))
-            cylinder.bullet_id = i
+            print("Changing id from {} to {}".format(elem.bullet_id, i))
+            elem.bullet_id = i
 
         if from_ <= i < to:
             for key, value in updated_attrs.items():
-                if getattr(cylinder, key, None) is None or overwrite:
-                    setattr(cylinder, key, value)
+                if getattr(elem, key, None) is None or overwrite:
+                    setattr(elem, key, value)
                     modified |= True  # a fun OR gate
 
         if modified:
-            print(
-                "Cylinder with index {} and id {} updated.".format(
-                    i, cylinder.bullet_id
-                )
-            )
+            print("Element with index {} and id {} updated.".format(i, elem.bullet_id))
         else:
             print(
-                "Cylinder with index {} and id {} not updated.".format(
-                    i, cylinder.bullet_id
-                )
+                "Element with index {} and id {} not updated.".format(i, elem.bullet_id)
             )
 
-    run_data["fab_data"] = cylinders
+    run_data["fab_data"] = elements
     with open(path, mode="w") as fp:
         json.dump(run_data, fp, cls=CompasObjEncoder)
