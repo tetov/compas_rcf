@@ -32,7 +32,7 @@ robot_client:
                         # increases or decreases as a percentage of the normal values
         speed:
             # velocities defined as mm/s
-            precise: 150 # mm/s
+            pick_place: 150 # mm/s
             travel: 250 # mm/s
 
         zone:

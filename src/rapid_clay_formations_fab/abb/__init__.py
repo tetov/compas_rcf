@@ -20,12 +20,6 @@ Procedures
    :toctree: generated/
    :nosignatures:
 
-   pre_procedure
-   post_procedure
-   pick_bullet
-   place_bullet
-   grip_and_release
-
 Utilities
 =========
 

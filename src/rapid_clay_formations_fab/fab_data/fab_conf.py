@@ -67,7 +67,7 @@ ABB_RCF_CONF_TEMPLATE = {
                 "accel": float,
                 "accel_ramp": float,
             },
-            "speed": {"precise": float, "travel": float},
+            "speed": {"pick_place": float, "travel": float},
             "zone": {
                 "pick": ZoneDataTemplate(),
                 "place": ZoneDataTemplate(),

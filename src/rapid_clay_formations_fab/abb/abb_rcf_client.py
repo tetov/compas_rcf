@@ -140,12 +140,12 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         self.send(compas_rrc.PrintText("Finished"))
 
-    def pick_bullet(self, pick_elem):
-        """Send movement and IO instructions to pick up a clay cylinder.
+    def pick_element(self, element):
+        """Send movement and IO instructions to pick up fabrication element.
 
         Parameter
         ----------
-        pick_elem : :class:`~rapid_clay_formations_fab.fab_data.ClayBullet`
+        element : :class:`~rapid_clay_formations_fab.fab_data.FabricationElement`
             Representation of fabrication element to pick up.
         """
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
@@ -157,16 +157,16 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.send(compas_rrc.StartWatch())
 
         # TODO: Use separate obj for pick elems?
-        vector = pick_elem.get_normal() * self.pick_place_tool.elem_pick_egress_dist
+        vector = element.get_normal() * self.pick_place_tool.elem_pick_egress_dist
         T = Translation(vector)
-        egress_frame = pick_elem.get_uncompressed_top_frame().transformed(T)
+        egress_frame = element.get_uncompressed_top_frame().transformed(T)
 
         self.send(MoveToFrame(egress_frame, self.speed.travel, self.zone.travel))
 
         self.send(
             MoveToFrame(
-                pick_elem.get_uncompressed_top_frame(),
-                self.speed.precise,
+                element.get_uncompressed_top_frame(),
+                self.speed.pick_place,
                 self.zone.pick,
             )
         )
@@ -178,7 +178,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.send(
             MoveToFrame(
                 egress_frame,
-                self.speed.precise,
+                self.speed.pick_place,
                 self.zone.pick,
                 motion_type=Motion.LINEAR,
             )
@@ -230,16 +230,16 @@ class AbbRcfClient(compas_rrc.AbbClient):
             MoveToJoints(robot_joints_list[-1], self.EXTERNAL_AXES_DUMMY, speed, zone)
         )
 
-    def place_bullet(self, cylinder):
-        """Send movement and IO instructions to place a clay cylinder.
+    def place_element(self, element):
+        """Send movement and IO instructions to place a fabrication element.
 
         Uses `fab_conf` set up with command line arguments and configuration
         file.
 
         Parameters
         ----------
-        cylinder : :class:`rapid_clay_formations_fab.fab_data.ClayBullet`
-            cylinder to place.
+        element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
+            Element to place.
 
         Returns
         -------
@@ -247,7 +247,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
             Object which blocks while waiting for feedback from robot. Calling result on
             this object will return the time the procedure took.
         """
-        log.debug(f"Location frame: {cylinder.location}")
+        log.debug(f"Location frame: {element.location}")
 
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
         log.debug("Tool {} set.".format(self.pick_place_tool.name))
@@ -257,7 +257,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # start watch
         self.send(compas_rrc.StartWatch())
 
-        for trajectory in cylinder.travel_trajectories:
+        for trajectory in element.travel_trajectories:
             self.execute_trajectory(
                 trajectory,
                 self.speed.travel,
@@ -265,10 +265,10 @@ class AbbRcfClient(compas_rrc.AbbClient):
             )
 
         # Execute trajectories in place motion until the last
-        for trajectory in cylinder.place_trajectories[:-1]:
+        for trajectory in element.place_trajectories[:-1]:
             self.execute_trajectory(
                 trajectory,
-                self.speed.precise,
+                self.speed.pick_place,
                 self.zone.travel,
             )
 
@@ -279,18 +279,20 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         # Last place motion
         self.execute_trajectory(
-            cylinder.place_trajectories[-1],
-            self.speed.precise,
+            element.place_trajectories[-1],
+            self.speed.pick_place,
             self.zone.place,
             stop_at_last=True,
         )
 
         self.execute_trajectory(
-            cylinder.return_place_trajectories[0], self.speed.precise, self.zone.place
+            element.return_place_trajectories[0],
+            self.speed.pick_place,
+            self.zone.place,
         )
 
         # The last trajectory filtered down to only the last configuration
-        last_return_place_trajectory = cylinder.return_place_trajectories[-1]
+        last_return_place_trajectory = element.return_place_trajectories[-1]
         last_return_trajectory_conf = last_return_place_trajectory.points[-1]
 
         self.send(
@@ -302,7 +304,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
             )
         )
 
-        for trajectory in cylinder.return_travel_trajectories:
+        for trajectory in element.return_travel_trajectories:
             self.execute_trajectory(
                 trajectory,
                 self.speed.travel,

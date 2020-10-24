@@ -15,7 +15,7 @@ from compas_rrc import PrintText
 from rapid_clay_formations_fab.abb import AbbRcfClient
 from rapid_clay_formations_fab.abb._robot_programs import compose_up_driver
 from rapid_clay_formations_fab.abb._robot_programs import confirm_start
-from rapid_clay_formations_fab.fab_data import ClayBullet
+from rapid_clay_formations_fab.fab_data import FabricationElement
 from rapid_clay_formations_fab.fab_data import PickStation
 from rapid_clay_formations_fab.localization import publish_static_transform
 from rapid_clay_formations_fab.utils import CompasObjEncoder
@@ -28,7 +28,7 @@ def _edit_fab_data(fab_elems, run_conf):
 
     Parameters
     ----------
-    fab_elems : list of :class:`rapid_clay_formations_fab.fabrication.clay_objs.ClayBullet`
+    fab_elems : list of :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
         List of fabrication elements.
     """  # noqa: E501
 
@@ -137,7 +137,7 @@ def fab_run(run_conf, run_data):
     compose_up_driver(run_conf.robot_client.controller)
 
     # setup fab data
-    fab_elements = [ClayBullet.from_data(data) for data in run_data["fab_data"]]
+    fab_elements = [FabricationElement.from_data(data) for data in run_data["fab_data"]]
     log.info("Fabrication data read.")
 
     log.info(f"{len(fab_elements)} fabrication elements..")
@@ -219,13 +219,14 @@ def fab_run(run_conf, run_data):
             # TP write limited to 40 char / line
             rob_client.send(PrintText(pendant_msg[:40]))
 
-            pick_frame = pick_station.get_next_frame(elem)
+            pick_element = pick_station.get_next_pick_elem(elem)
 
             # Send instructions and store feedback obj
-            pick_future = rob_client.pick_bullet(pick_frame)
-            place_future = rob_client.place_bullet(elem)
+            pick_future = rob_client.pick_element(pick_element)
+            place_future = rob_client.place_element(elem)
 
-            elem.placed = True  # set placed to temporary value to mark it as "placed"
+            # set placed to temporary value to mark it as "placed"
+            elem.placed = True
 
             # Write progress to json while waiting for robot
             run_data["fab_data"] = fab_elements
@@ -237,7 +238,7 @@ def fab_run(run_conf, run_data):
             cycle_time = pick_future.result() + place_future.result()
 
             elem.cycle_time = cycle_time
-            # format float to int to save characters on flex pendant
+            # format float to int to save characters on teach pendant
             cycle_time_msg = f"Last cycle time: {elem.cycle_time:0.0f}"
             log.info(cycle_time_msg)
 

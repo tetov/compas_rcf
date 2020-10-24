@@ -112,7 +112,7 @@ def temp_change_compas_precision(precision):
 
 
 class CompasObjEncoder(json.JSONEncoder):
-    """JSON encoder for :class:`ClayBullet`.
+    """JSON encoder for :any:`compas` objects.
 
     Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
     """
