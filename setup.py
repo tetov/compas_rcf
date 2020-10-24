@@ -31,18 +31,18 @@ requirements = [
 
 extras_require = {
     "dev": [
-        "attrs ~= 19.3",
-        "black ~= 19.10b0",
+        "black >= 20.8b1",
         "doc8",
         "flake8",
-        "invoke >= 0.14",
-        "isort",
+        "invoke >= 1.4.1",
+        "isort >= 5.6.4",
+        "mypy >= 0.790",
         "pydocstyle",
         "pytest >= 3.2",
         "recommonmark >=0.6",
         "sphinx_compas_theme >= 0.4",
         "sphinx >=1.6",
-        "setuptools_scm[toml]",
+        "setuptools_scm[toml] >= 4.1.2",
     ]
 }
 
