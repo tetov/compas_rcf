@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Archive name="Root">
   <!--Grasshopper archive-->
   <!--Grasshopper and GH_IO.dll are copyrighted by Robert McNeel & Associates-->
@@ -2446,7 +2446,7 @@ if create_meshes:
                             <item name="AllowTreeAccess" type_name="gh_bool" type_code="1">true</item>
                             <item name="Description" type_name="gh_string" type_code="10">Script input id.</item>
                             <item name="InstanceGuid" type_name="gh_guid" type_code="9">d19dfc65-8853-4795-a1fc-d08bd47f9180</item>
-                            <item name="Name" type_name="gh_string" type_code="10">bullet_ids</item>
+                            <item name="Name" type_name="gh_string" type_code="10">ids</item>
                             <item name="NickName" type_name="gh_string" type_code="10">id</item>
                             <item name="Optional" type_name="gh_bool" type_code="1">true</item>
                             <item name="ScriptParamAccess" type_name="gh_int32" type_code="3">1</item>
@@ -2749,8 +2749,8 @@ run_data["rcf"] = rgplane_to_cgframe(plane)
 
 if save:
     # file name can not contain comma and microseconds are overkill
-    file_timestamp = datetime_now.strftime('%Y%m%dT%H.%M.%S') 
- 
+    file_timestamp = datetime_now.strftime('%Y%m%dT%H.%M.%S')
+
     file_name = file_timestamp + "-" + name + ".json"
     full_path = os.path.join(save_dir, file_name)
     with open(full_path, mode='w') as fp:

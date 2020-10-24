@@ -50,7 +50,7 @@ def csv_reports(args):
 
         headers_attrs = OrderedDict(
             (
-                ("id", "bullet_id"),
+                ("id", "id_"),
                 ("radius (mm)", "radius"),
                 ("height (mm)", "height"),
                 ("compression-height-ratio", "compression_ratio"),
@@ -129,7 +129,7 @@ def mark_placed(path, from_=None, to=None):
     to : :obj:`int`, optional
         Defines upper bound of element index to mark (exclusive).
     """
-    update_fabdata_attrs(path, {"bullet_id": 1}, from_=from_, to=to)
+    update_fabdata_attrs(path, {"id_": 1}, from_=from_, to=to)
 
 
 def renumber_fab_elements(path, prefix=None):
@@ -138,9 +138,9 @@ def renumber_fab_elements(path, prefix=None):
 
     for i, fab_elem in enumerate(fab_elems):
         if prefix:
-            fab_elem.bullet_id = "{}{:03d}".format(prefix, i)
+            fab_elem.id_ = "{}{:03d}".format(prefix, i)
         else:
-            fab_elem.bullet_id = i
+            fab_elem.id_ = i
 
     run_data["fab_data"] = fab_elems
     with open(path, mode="w") as fp:
@@ -162,7 +162,7 @@ def update_fabdata_attrs(
     to : :obj:`int`, optional
         Defines upper bound of element index to mark (exclusive).
     reset_ids : :obj:`bool`, optional
-        If true will change the `bullet_id` attribute to be the same as the
+        If true will change the `id_` attribute to be the same as the
         element's index in list. Defaults to ``False``.
     overwrite : :obj:`bool`, optional
         Overwrite attributes. Defaults to ``False``.
@@ -178,8 +178,8 @@ def update_fabdata_attrs(
     for i, elem in enumerate(elements):
         modified = False
         if reset_ids:
-            print("Changing id from {} to {}".format(elem.bullet_id, i))
-            elem.bullet_id = i
+            print("Changing id from {} to {}".format(elem.id_, i))
+            elem.id_ = i
 
         if from_ <= i < to:
             for key, value in updated_attrs.items():
@@ -188,11 +188,9 @@ def update_fabdata_attrs(
                     modified |= True  # a fun OR gate
 
         if modified:
-            print("Element with index {} and id {} updated.".format(i, elem.bullet_id))
+            print("Element with index {} and id {} updated.".format(i, elem.id_))
         else:
-            print(
-                "Element with index {} and id {} not updated.".format(i, elem.bullet_id)
-            )
+            print("Element with index {} and id {} not updated.".format(i, elem.id_))
 
     run_data["fab_data"] = elements
     with open(path, mode="w") as fp:

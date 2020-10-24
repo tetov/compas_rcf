@@ -73,7 +73,7 @@ def fab_run(run_conf, run_data):
                 continue
 
             # Setup log message and flex pendant message
-            current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.bullet_id}."
+            current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
             log.info(current_elem_desc)
 
             pendant_msg = ""
@@ -150,15 +150,13 @@ def _edit_fab_data(fab_elems, run_conf):
                 elem.placed = True
             else:
                 elem.placed = False
-            log.debug(
-                f"Element with index {i} and id {elem.bullet_id} marked {elem.placed}"
-            )
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.placed}")
 
     def selection_ui():
         not_placed_selection = questionary.checkbox(
             "Select fabrication elements to place:",
             [
-                f"{i:03} (id {elem.bullet_id}), marked placed: {bool(elem.placed)}"
+                f"{i:03} (id {elem.id_}), marked placed: {bool(elem.placed)}"
                 for i, elem in enumerate(fab_elems)
             ],
         ).ask()
@@ -169,9 +167,7 @@ def _edit_fab_data(fab_elems, run_conf):
                 elem.placed = False
             else:
                 elem.placed = True
-            log.debug(
-                f"Element with index {i} and id {elem.bullet_id} marked {elem.placed}"
-            )
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.placed}")
 
     choice_desc = {
         "ignore_placed": "Place all.",
