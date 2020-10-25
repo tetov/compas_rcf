@@ -1,4 +1,6 @@
-"""A minimal trajectory class to mix frame sequences and joint trajectories."""
+"""A minimal trajectory class to mix frame sequences and joint trajectories.
+
+Module name in reference to :mod:`class_fab.robots`"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -59,8 +61,9 @@ class MinimalTrajectory(MutableSequence):
         self._raise_if_mixed_types()
         if isinstance(self.points[0], JointTrajectoryPoint):
             return self.JOINT_TRAJECTORY
-        elif isinstance(self.points[0], Frame):
+        if isinstance(self.points[0], Frame):
             return self.FRAME_TRAJECTORY
+
         raise NotImplementedError("Trajectory not recognized: {}".format(self))
 
     def _raise_if_mixed_types(self):
