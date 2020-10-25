@@ -12,15 +12,14 @@ from compas_rrc import Motion
 from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
 
+from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 from rapid_clay_formations_fab.docker import restart_container
-from rapid_clay_formations_fab.robots import revolute_configuration_to_robot_joints
+from rapid_clay_formations_fab.robots import MinimalTrajectory
 
 log = logging.getLogger(__name__)
 
 
 class AbbRcfClient(compas_rrc.AbbClient):
-    DOCKER_IMAGE = "abb-driver"
-
     # Define external axes, will not be used but required in move cmds
     EXTERNAL_AXES_DUMMY = compas_rrc.ExternalAxes()
 
@@ -50,7 +49,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        timeout : :class:`float`, optional
+        timeout : :obj:`float`, optional
             Timeout for reply. Defaults to ``10``.
 
         Raises
@@ -68,9 +67,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        timeout_ping : :class:`float`, optional
+        timeout_ping : :obj:`float`, optional
             Timeout for ping response.
-        wait_after_up : :class:`float`, optional
+        wait_after_up : :obj:`float`, optional
             Time to wait to ping after `abb-driver` container started.
 
         Raises
@@ -86,7 +85,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
                 break
             except compas_rrc.TimeoutException:
                 log.info("No response from controller, restarting abb-driver service.")
-                restart_container(self.DOCKER_IMAGE)
+                restart_container(DRIVER_CONTAINER_NAME)
                 time.sleep(self.docker_cfg.sleep_after_up)
         else:
             raise compas_rrc.TimeoutException("Failed to connect to robot.")
@@ -209,13 +208,14 @@ class AbbRcfClient(compas_rrc.AbbClient):
             If last trajectory point should be sent as a non fly-by point, i.e.
             should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
         """
-        # Convert JointTrajectoryPoints to robot_joints_list from rrc
-        robot_joints_list = [
-            revolute_configuration_to_robot_joints(pt) for pt in trajectory.points
-        ]
+        if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
+            trajectory = trajectory.to_robot_joints()
+            instruction = compas_rrc.MoveToJoints
+        elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
+            instruction = compas_rrc.MoveToFrame
 
-        for robot_joints in robot_joints_list[:-1]:  # skip last
-            self.send(MoveToJoints(robot_joints, self.EXTERNAL_AXES_DUMMY, speed, zone))
+        for pt in trajectory[:-1]:  # skip last
+            self.send(instruction(pt, self.EXTERNAL_AXES_DUMMY, speed, zone))
 
         if blocking:
             send_method_last_pt = self.send_and_wait
@@ -227,7 +227,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         # send last
         send_method_last_pt(
-            MoveToJoints(robot_joints_list[-1], self.EXTERNAL_AXES_DUMMY, speed, zone)
+            instruction(trajectory[-1], self.EXTERNAL_AXES_DUMMY, speed, zone)
         )
 
     def place_element(self, element):
@@ -291,18 +291,8 @@ class AbbRcfClient(compas_rrc.AbbClient):
             self.zone.place,
         )
 
-        # The last trajectory filtered down to only the last configuration
-        last_return_place_trajectory = element.return_place_trajectories[-1]
-        last_return_trajectory_conf = last_return_place_trajectory.points[-1]
-
-        self.send(
-            MoveToJoints(
-                revolute_configuration_to_robot_joints(last_return_trajectory_conf),
-                self.EXTERNAL_AXES_DUMMY,
-                self.speed.travel,
-                self.zone.travel,
-            )
-        )
+        for trajectory in element.return_place_trajectories[1:]:
+            self.execute_trajectory(trajectory, self.speed.travel, self.zone.travel)
 
         for trajectory in element.return_travel_trajectories:
             self.execute_trajectory(

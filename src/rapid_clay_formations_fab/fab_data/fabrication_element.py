@@ -7,12 +7,12 @@ import math
 import re
 from copy import deepcopy
 
-import compas.geometry as cg
 import compas.datastructures
+import compas.geometry as cg
 import compas_ghpython.artists
-from compas_fab.robots import JointTrajectory
 
-from rapid_clay_formations_fab.robots import reversed_trajectories
+from rapid_clay_formations_fab.robots import MinimalTrajectory
+from rapid_clay_formations_fab.robots import two_levels_reversed
 
 
 class FabricationElement(object):
@@ -27,15 +27,16 @@ class FabricationElement(object):
         Bottom centroid frame of element.
     id_: :obj:`str`
         Unique identifier.
-    travel_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+    travel_trajectories : :obj:`list` of :class:`rapid_clay_formations_fab.robots.MinimalTrajectory`
         List of trajectories describing motion between picking egress and
         placing egress.
-    place_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+    place_trajectories : :obj:`list` of :class:`rapid_clay_formations_fab.robots.MinimalTrajectory`
         List of trajectories describing place motion.
-    return_travel_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
+    return_travel_trajectories : :obj:`list` of :class:`rapid_clay_formations_fab.robots.MinimalTrajectory`
         List of trajectories describing motion between placing and picking.
-    return_place_trajectories : :obj:`list` of :class:`compas_fab.robots.JointTrajectory`
-        List of trajectories describing return motion from last compression motion to placing egress.
+    return_place_trajectories : :obj:`list` of :class:`rapid_clay_formations_fab.robots.MinimalTrajectory`
+        List of trajectories describing return motion from last compression
+        motion to placing egress.
     radius : :obj:`float`, optional
         The radius of the initial cylinder.
     height : :obj:`float`, optional
@@ -55,6 +56,9 @@ class FabricationElement(object):
     """  # noqa: E501
 
     def __init__(
+        # fmt: off
+        # Stop black from adding comma after last element to retain py27 compat
+        # See https://github.com/psf/black/issues/1356
         self,
         location,
         id_,
@@ -66,11 +70,12 @@ class FabricationElement(object):
         place_trajectories=None,
         return_travel_trajectories=None,
         return_place_trajectories=None,
-        density=2.0,
+        density=None,
         cycle_time=None,
         placed=False,
         time_placed=None,
         attrs=None
+        # fmt: on
     ):
         if not isinstance(location, cg.Frame):
             raise Exception("Location should be given as a compas.geometry.Frame")
@@ -82,10 +87,10 @@ class FabricationElement(object):
         self.compression_ratio = compression_ratio
         self.egress_frame_distance = egress_frame_distance
 
-        self.travel_trajectories = travel_trajectories or []
-        self.place_trajectories = place_trajectories or []
-        self.return_travel_trajectories = return_travel_trajectories or []
-        self.return_place_trajectories = return_place_trajectories or []
+        self.travel_trajectories = travel_trajectories
+        self.place_trajectories = place_trajectories
+        self.return_travel_trajectories = return_travel_trajectories
+        self.return_place_trajectories = return_place_trajectories
 
         self.density = density
 
@@ -95,9 +100,13 @@ class FabricationElement(object):
 
         self.attrs = attrs or {}
 
+    # Trajectories setup
+    ######################
+
     @property
     def return_travel_trajectories(self):
-        return self.return_travel_trajectories_ or reversed_trajectories(
+        """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed travel trajectories."""  # noqa: E501
+        return self.return_travel_trajectories_ or two_levels_reversed(
             self.travel_trajectories
         )
 
@@ -106,8 +115,25 @@ class FabricationElement(object):
         self.return_travel_trajectories_ = trajectories
 
     @property
+    def place_trajectories(self):
+        """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or frame trajectories derived from location."""  # noqa: E501
+        return self.place_trajectories_ or [
+            MinimalTrajectory(
+                [self.get_egress_frame(), self.get_uncompressed_top_frame()]
+            ),
+            MinimalTrajectory(
+                [self.get_uncompressed_top_frame(), self.get_compressed_top_frame()]
+            ),
+        ]
+
+    @place_trajectories.setter
+    def place_trajectories(self, trajectories):
+        self.place_trajectories_ = trajectories
+
+    @property
     def return_place_trajectories(self):
-        return self.return_place_trajectories_ or reversed_trajectories(
+        """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed place trajectories."""  # noqa: E501
+        return self.return_place_trajectories_ or two_levels_reversed(
             self.place_trajectories
         )
 
@@ -115,28 +141,8 @@ class FabricationElement(object):
     def return_place_trajectories(self, trajectories):
         self.return_place_trajectories_ = trajectories
 
-    def get_location_plane(self):
-        """Get location as Rhino.Geometry.Plane.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Plane`
-        """
-        from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
-
-        return cgframe_to_rgplane(self.location)
-
-    def get_normal(self):
-        """Get normal direction of cylinder.
-
-        Actually the reverse of the location frame's normal as it's used as a
-        robot target frame and thus pointing "down".
-
-        Returns
-        -------
-        :class:`compas.geometry.Vector`
-        """
-        return self.location.normal * -1
+    # Derived frames
+    ################
 
     def get_uncompressed_top_frame(self):
         """Top of uncompressed cylinder.
@@ -173,6 +179,9 @@ class FabricationElement(object):
         T = cg.Translation(vector)
 
         return self.get_uncompressed_top_frame().transformed(T)
+
+    # Derived data points
+    #####################
 
     def get_volume(self):
         r"""Get volume in mm\ :sup:`3`\ .
@@ -231,8 +240,29 @@ class FabricationElement(object):
         """
         return self.height * self.compression_ratio
 
+    # Construct geometrical representations of object using :any:`compas.geometry`.
+    ###############################################################################
+
     def get_pt(self):
+        """Get :class:`compas.geometry.Point` representation of bottom centroid of element.
+
+        Returns
+        -------
+        :class:`compas.geometry.Point`
+        """  # noqa: E501
         return self.location.point
+
+    def get_normal(self):
+        """Get normal direction of cylinder.
+
+        Actually the reverse of the location frame's normal as it's used as a
+        robot target frame and thus pointing "down".
+
+        Returns
+        -------
+        :class:`compas.geometry.Vector`
+        """
+        return self.location.normal * -1
 
     def get_circle(self):
         """Get :class:`compas.geometry.Circle` representing fabrication element.
@@ -241,19 +271,8 @@ class FabricationElement(object):
         -------
         :class:`compas.geometry.Circle`
         """
-        plane = cg.Plane(self.get_pt, self.get_normal)
+        plane = cg.Plane(self.get_pt(), self.get_normal())
         return cg.Circle(plane, self.radius)
-
-    def get_rgcircle(self):
-        """Get :class:`Rhino.Geometry.Circle` representing element's footprint.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Circle`
-        """
-        from Rhino.Geometry import Circle
-
-        return Circle(self.get_location_plane(), self.get_compressed_radius())
 
     def get_cylinder(self):
         """Get :class:`compas.geometry.Cylinder` representing fabrication element.
@@ -264,26 +283,6 @@ class FabricationElement(object):
         """
         circle = self.get_circle()
         return cg.Cylinder(circle, self.height)
-
-    def get_rgcylinder(self):
-        """Get :class:`Rhino.Geometry.Cylinder` representation of element.
-
-        Returns
-        -------
-        :class:`Rhino.Geometry.Cylinder`
-        """
-        from Rhino.Geometry import Cylinder
-
-        return Cylinder(self.get_rgcircle(), self.get_compressed_height())
-
-    def copy(self):
-        """Get a copy of instance.
-
-        Returns
-        -------
-        :class:`FabricationElement`
-        """
-        return deepcopy(self)
 
     def get_cgmesh(self, u_res=18):
         """Generate mesh representation of bullet with custom resolution.
@@ -301,6 +300,42 @@ class FabricationElement(object):
         cylinder = self.get_cylinder()
         return compas.datastructures.Mesh.from_shape(cylinder, u=u_res)
 
+    # Construct geometrical representations of object using :any:`Rhino.Geometry`.
+    ##############################################################################
+
+    def get_location_rgplane(self):
+        """Get location as Rhino.Geometry.Plane.
+
+        Returns
+        -------
+        :class:`Rhino.Geometry.Plane`
+        """
+        from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
+
+        return cgframe_to_rgplane(self.location)
+
+    def get_rgcircle(self):
+        """Get :class:`Rhino.Geometry.Circle` representing element's footprint.
+
+        Returns
+        -------
+        :class:`Rhino.Geometry.Circle`
+        """
+        from Rhino.Geometry import Circle
+
+        return Circle(self.get_location_plane(), self.get_compressed_radius())
+
+    def get_rgcylinder(self):
+        """Get :class:`Rhino.Geometry.Cylinder` representation of element.
+
+        Returns
+        -------
+        :class:`Rhino.Geometry.Cylinder`
+        """
+        from Rhino.Geometry import Cylinder
+
+        return Cylinder(self.get_rgcircle(), self.get_compressed_height())
+
     def get_rgmesh(self, u_res=18):
         """Generate mesh representation of bullet with custom resolution.
 
@@ -317,8 +352,18 @@ class FabricationElement(object):
         mesh = self.get_cgmesh(u_res=u_res)
         return compas_ghpython.artists.MeshArtist(mesh).draw_mesh()
 
+    def copy(self):
+        """Get a copy of instance.
+
+        Returns
+        -------
+        :class:`FabricationElement`
+        """
+        return deepcopy(self)
+
     def to_data(self):
         """Get :obj:`dict` representation of :class:`FabricationElement`."""
+        # TODO: Refactor this to independent to_data function.
         data = {}
 
         for key, value in self.__dict__.items():
@@ -343,12 +388,6 @@ class FabricationElement(object):
         :class:`FabricationElement`
         """
 
-        def trajectory_from_data(traj_data):
-            try:
-                return JointTrajectory.from_data(traj_data)
-            except AttributeError:
-                return [cg.Frame.from_data(frame_data) for frame_data in traj_data]
-
         kwargs = {}
 
         location = cg.Frame.from_data(data.pop("location"))
@@ -358,7 +397,7 @@ class FabricationElement(object):
         # See https://github.com/psf/black/issues/1356
         trajectory_attributes = (
             "travel_trajectories",
-            "place_trajectories",
+            "place_trajectories_",
             "return_travel_trajectories_",
             "return_place_trajectories_"
         )
@@ -371,7 +410,7 @@ class FabricationElement(object):
                 keyword = re.sub(r"_$", "", key)  # Strip underscore from end of key
                 trajectories = []
                 for traj_data in trajectories_data:
-                    trajectories.append(trajectory_from_data(traj_data))
+                    trajectories.append(MinimalTrajectory.from_data(traj_data))
 
                 kwargs[keyword] = trajectories
 
