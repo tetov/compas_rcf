@@ -30,18 +30,18 @@ class PickStation(object):
         Tr = Translation([0, 0, offset])
         return self.pick_frames[0].transformed(Tr)
 
-    def get_next_frame(self, place_element):
-        """Get next frame to pick cylinder at.
+    def get_next_pick_elem(self, place_element):
+        """Get next pick element.
 
         Parameters
         ----------
         place_element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
-            cylinder to place
+            Element to place.
 
         Returns
         -------
-        :class:`compas.geometry.Frame`
-        """  # noqa: E501
+        :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
+        """
         idx = self.counter % self.n_pick_frames
         self.counter += 1
 

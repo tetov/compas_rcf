@@ -9,8 +9,8 @@ import time
 import compas_rrc
 from compas.geometry import Translation
 from compas_rrc import Motion
-from compas_rrc import MoveToFrame
 from compas_rrc import MoveToJoints
+from compas_rrc import MoveToRobtarget
 
 from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 from rapid_clay_formations_fab.docker import restart_container
@@ -20,6 +20,25 @@ log = logging.getLogger(__name__)
 
 
 class AbbRcfClient(compas_rrc.AbbClient):
+    """Robot communication client for RCF fabrication process.
+
+    Subclass of :class:`compas_rrc.AbbClient` with process specific methods.
+
+    Parameters
+    ----------
+    ros : :class:`compas_fab.backends.ros.RosClient`
+        ROS client for communcation with ABB controller.
+    rob_conf : :class:`confuse.AttrDict`
+        Configuration namespace created from configuration file and command line
+        arguments.
+
+    Class attributes
+    ----------------
+    EXTERNAL_AXES_DUMMY : :class:`compas_rrc.ExternalAxes`
+        Dummy object used for :class:`compas_rrc.MoveToRobtarget` and
+        :class:`MoveToJoints` objects.
+    """
+
     # Define external axes, will not be used but required in move cmds
     EXTERNAL_AXES_DUMMY = compas_rrc.ExternalAxes()
 
@@ -148,9 +167,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
             Representation of fabrication element to pick up.
         """
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
-        log.debug("Tool {} set.".format(self.pick_place_tool.name))
+        log.debug("Tool {self.pick_place_tool.name} set.")
         self.send(compas_rrc.SetWorkObject(self.wobjs.pick))
-        log.debug("Work object {} set.".format(self.wobjs.pick))
+        log.debug(f"Work object {self.wobjs.pick} set.")
 
         # start watch
         self.send(compas_rrc.StartWatch())
@@ -160,11 +179,19 @@ class AbbRcfClient(compas_rrc.AbbClient):
         T = Translation(vector)
         egress_frame = element.get_uncompressed_top_frame().transformed(T)
 
-        self.send(MoveToFrame(egress_frame, self.speed.travel, self.zone.travel))
+        self.send(
+            MoveToRobtarget(
+                egress_frame,
+                self.EXTERNAL_AXES_DUMMY,
+                self.speed.travel,
+                self.zone.travel,
+            )
+        )
 
         self.send(
-            MoveToFrame(
+            MoveToRobtarget(
                 element.get_uncompressed_top_frame(),
+                self.EXTERNAL_AXES_DUMMY,
                 self.speed.pick_place,
                 self.zone.pick,
             )
@@ -175,8 +202,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.send(compas_rrc.WaitTime(self.pick_place_tool.needles_pause))
 
         self.send(
-            MoveToFrame(
+            MoveToRobtarget(
                 egress_frame,
+                self.EXTERNAL_AXES_DUMMY,
                 self.speed.pick_place,
                 self.zone.pick,
                 motion_type=Motion.LINEAR,
@@ -188,7 +216,13 @@ class AbbRcfClient(compas_rrc.AbbClient):
         return self.send(compas_rrc.ReadWatch())
 
     def execute_trajectory(
-        self, trajectory, speed, zone, blocking=False, stop_at_last=False
+        self,
+        trajectory,
+        speed,
+        zone,
+        blocking=False,
+        stop_at_last=False,
+        motion_type=Motion.JOINT,
     ):
         """Execute a :class:`~compas_fab.JointTrajectory`.
 
@@ -208,14 +242,20 @@ class AbbRcfClient(compas_rrc.AbbClient):
             If last trajectory point should be sent as a non fly-by point, i.e.
             should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
         """
+        kwargs = {}
         if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
-            trajectory = trajectory.to_robot_joints()
-            instruction = compas_rrc.MoveToJoints
-        elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
-            instruction = compas_rrc.MoveToFrame
+            trajectory_pts = trajectory.to_robot_joints()
+            instruction = MoveToJoints
 
-        for pt in trajectory[:-1]:  # skip last
-            self.send(instruction(pt, self.EXTERNAL_AXES_DUMMY, speed, zone))
+        elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
+            trajectory_pts = trajectory.points
+            instruction = MoveToRobtarget
+            kwargs["motion_type"] = motion_type
+        else:
+            raise RuntimeError("Trajectory not recognized: {}".format(trajectory))
+
+        for pt in trajectory_pts[:-1]:  # skip last
+            self.send(instruction(pt, self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs))
 
         if blocking:
             send_method_last_pt = self.send_and_wait
@@ -227,7 +267,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         # send last
         send_method_last_pt(
-            instruction(trajectory[-1], self.EXTERNAL_AXES_DUMMY, speed, zone)
+            instruction(
+                trajectory_pts[-1], self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs
+            )
         )
 
     def place_element(self, element):
@@ -250,9 +292,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         log.debug(f"Location frame: {element.location}")
 
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
-        log.debug("Tool {} set.".format(self.pick_place_tool.name))
+        log.debug(f"Tool {self.pick_place_tool.name} set.")
         self.send(compas_rrc.SetWorkObject(self.wobjs.place))
-        log.debug("Work object {} set.".format(self.wobjs.place))
+        log.debug(f"Work object {self.wobjs.place} set.")
 
         # start watch
         self.send(compas_rrc.StartWatch())
@@ -267,9 +309,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # Execute trajectories in place motion until the last
         for trajectory in element.place_trajectories[:-1]:
             self.execute_trajectory(
-                trajectory,
-                self.speed.pick_place,
-                self.zone.travel,
+                trajectory, self.speed.travel, self.zone.travel, stop_at_last=True
             )
 
         # Before executing last place trajectory, retract the needles.
@@ -283,6 +323,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
             self.speed.pick_place,
             self.zone.place,
             stop_at_last=True,
+            motion_type=Motion.LINEAR,
         )
 
         self.execute_trajectory(

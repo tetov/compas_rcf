@@ -121,9 +121,7 @@ class FabricationElement(object):
             MinimalTrajectory(
                 [self.get_egress_frame(), self.get_uncompressed_top_frame()]
             ),
-            MinimalTrajectory(
-                [self.get_uncompressed_top_frame(), self.get_compressed_top_frame()]
-            ),
+            MinimalTrajectory([self.get_compressed_top_frame()]),
         ]
 
     @place_trajectories.setter
