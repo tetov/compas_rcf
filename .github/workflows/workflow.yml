@@ -55,6 +55,7 @@ jobs:
           invoke docs
 
       -
+        name: Upload docs for other jobs
         uses: actions/upload-artifact@v2
         with:
           name: docs-dir
@@ -63,10 +64,12 @@ jobs:
           retention-days: 1
 
       -
-        name: Build
+        name: Build package
         run: |
           python setup.py clean --all sdist bdist_wheel
+
       -
+        name: Upload package artifacts for other jobs
         uses: actions/upload-artifact@v2
         with:
           name: dist-files
@@ -83,11 +86,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Download docs directory from build job
         uses: actions/download-artifact@v2
         with:
           name: docs-dir
           path: docs
+
       -
+        name: Publish docs on branch gh-pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
           target_branch: gh-pages
@@ -96,19 +102,36 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  publish_pypi:
-    name: Publish package
+  publish_pkg:
+    name: Publish package on pypi and GitHub
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     steps:
       -
+        name: Checkout code  # This is needed for creating release on GitHub
+        uses: actions/checkout@v2
+
+      -
+        name: Download dist directory from build job
         uses: actions/download-artifact@v2
         with:
           name: dist-files
           path: dist
+
       -
+        name: Upload and release package on PyPi
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
           password: ${{ secrets.pypi_password }}
+
+      -
+        name: Create GitHub release and upload assets
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
