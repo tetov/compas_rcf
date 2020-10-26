@@ -280,7 +280,7 @@ class FabricationElement(object):
         :class:`compas.geometry.Cylinder`
         """
         circle = self.get_circle()
-        return cg.Cylinder(circle, self.height)
+        return cg.Cylinder(circle, self.get_compressed_height())
 
     def get_cgmesh(self, u_res=18):
         """Generate mesh representation of bullet with custom resolution.
