@@ -50,6 +50,9 @@ def csv_reports(args):
 
         headers_attrs = OrderedDict(
             (
+                # fmt: off
+                # Stop black from adding comma after last element to retain py27 compat
+                # See https://github.com/psf/black/issues/1356
                 ("id", "id_"),
                 ("radius (mm)", "radius"),
                 ("height (mm)", "height"),
@@ -57,7 +60,8 @@ def csv_reports(args):
                 ("density (kg/l)", "density"),
                 ("cycle time (s)", "cycle_time"),
                 ("time placed (from epoch)", "placed"),
-                ("location frame", "location"),
+                ("location frame", "location")
+                # fmt: on
             )
         )
 

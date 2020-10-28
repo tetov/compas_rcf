@@ -1,6 +1,7 @@
 """A minimal trajectory class to mix frame sequences and joint trajectories.
 
-Module name in reference to :mod:`class_fab.robots`"""
+Module name in reference to :mod:`class_fab.robots`.
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
