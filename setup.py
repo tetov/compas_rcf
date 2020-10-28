@@ -85,6 +85,7 @@ setuptools.setup(
     extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README
     obsoletes=["compas_rcf"],
+    # TODO: Add tool commands from fab_data
     entry_points={
         "console_scripts": ["rcf_run = rapid_clay_formations_fab.run_entrypoint:main"]
     },
