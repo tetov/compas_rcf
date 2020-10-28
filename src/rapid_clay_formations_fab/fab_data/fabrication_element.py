@@ -9,7 +9,6 @@ from copy import deepcopy
 
 import compas.datastructures
 import compas.geometry as cg
-import compas_ghpython.artists
 
 from rapid_clay_formations_fab.robots import MinimalTrajectory
 from rapid_clay_formations_fab.robots import two_levels_reversed
@@ -296,7 +295,7 @@ class FabricationElement(object):
         :class:`compas.geometry.datastructures.Mesh`
         """
         cylinder = self.get_cylinder()
-        return compas.datastructures.Mesh.from_shape(cylinder, u=u_res)
+        return compas.datastructures.Mesh.from_shape(cylinder, u=int(u_res))
 
     # Construct geometrical representations of object using :any:`Rhino.Geometry`.
     ##############################################################################
@@ -321,7 +320,7 @@ class FabricationElement(object):
         """
         from Rhino.Geometry import Circle
 
-        return Circle(self.get_location_plane(), self.get_compressed_radius())
+        return Circle(self.get_location_rgplane(), self.get_compressed_radius())
 
     def get_rgcylinder(self):
         """Get :class:`Rhino.Geometry.Cylinder` representation of element.
@@ -347,8 +346,10 @@ class FabricationElement(object):
         -------
         :class:`Rhino.Geometry.Mesh`
         """
-        mesh = self.get_cgmesh(u_res=u_res)
-        return compas_ghpython.artists.MeshArtist(mesh).draw_mesh()
+        from Rhino.Geometry import Mesh
+
+        v_res = u_res - 2
+        return Mesh.CreateFromCylinder(self.get_rgcylinder(), v_res, u_res)
 
     def copy(self):
         """Get a copy of instance.
