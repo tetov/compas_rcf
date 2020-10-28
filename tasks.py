@@ -128,8 +128,13 @@ def check(ctx):
         ctx.run("isort --check-only --diff --recursive src tests setup.py")
 
 
-@task(help={"checks": "True to run all checks before testing, otherwise False."})
-def test(ctx, checks=False, doctest=False):
+@task(
+    help={
+        "checks": "True to run all checks before testing, otherwise False.",
+        "verbose": "Run pytest with -vv level verbosity.",
+    }
+)
+def test(ctx, checks=False, doctest=False, verbose=True):
     """Run all tests."""
     if checks:
         check(ctx)
@@ -138,6 +143,8 @@ def test(ctx, checks=False, doctest=False):
         cmd = ["pytest"]
         if doctest:
             cmd.append("--doctest-modules")
+        if verbose:
+            cmd.append("-vv")
 
         ctx.run(" ".join(cmd))
 
