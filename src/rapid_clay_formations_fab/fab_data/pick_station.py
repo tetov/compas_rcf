@@ -1,20 +1,26 @@
+"""PickStation object to describe pick locations for fabrication process."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
+from itertools import cycle
 
 from compas.geometry import Frame
-from compas.geometry import Transformation
 from compas.geometry import Translation
 
-log = logging.getLogger(__name__)
+from rapid_clay_formations_fab.fab_data import FabricationElement
 
 
 class PickStation(object):
     """Picking station setup."""
 
-    def __init__(self, pick_frames):
+    def __init__(
+        self,
+        pick_frames,
+        elem_height=150,
+        elem_egress_distance=150,
+        station_egress_distance=400,
+    ):
         """Init function for PickSetup.
 
         Parameters
@@ -23,43 +29,62 @@ class PickStation(object):
             List of picking frames
         """
         self.pick_frames = pick_frames
-        self.counter = 0
-        self.n_pick_frames = len(pick_frames)
+        self.elem_height = elem_height
+        self.elem_egress_distance = elem_egress_distance
+        self.station_egress_distance = station_egress_distance
 
-    def get_egress_frame(self, offset=400):
-        Tr = Translation([0, 0, offset])
-        return self.pick_frames[0].transformed(Tr)
+        # Infinite generator
+        self.frame_gen = (frame for frame in cycle(self.pick_frames))
 
-    def get_next_pick_elem(self, place_element):
+    @property
+    def station_egress_frame(self):
+        """:class:`compas.geometry.Frame` : Egress frame for pick plate."""
+        tr = Translation([0, 0, self.station_egress_distance])
+        return self.pick_frames[0].transformed(tr)
+
+    @property
+    def data(self):
+        """:obj:`dict` : The data dictionary that represents the pick station."""
+        return {
+            # fmt: off
+            "pick_frames": [f.to_data() for f in self.pick_frames],
+            "elem_height": self.elem_height,
+            "elem_egress_distance": self.elem_egress_distance,
+            "station_egress_distance": self.station_egress_distance
+            # fmt: on
+        }
+
+    @data.setter
+    def data(self, data):
+        self.pick_frames = [Frame.from_data(f) for f in data["pick_frames"]]
+        self.elem_height = data["elem_height"]
+        self.elem_egress_distance = data["elem_egress_distance"]
+        self.station_egress_distance = data["station_egress_distance"]
+
+    def get_next_pick_elem(self):
         """Get next pick element.
-
-        Parameters
-        ----------
-        place_element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
-            Element to place.
 
         Returns
         -------
         :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
         """
-        idx = self.counter % self.n_pick_frames
-        self.counter += 1
+        frame = next(self.frame_gen)
+        return FabricationElement(
+            # fmt: off
+            frame,
+            "pick_elem",
+            height=self.elem_height,
+            egress_frame_distance=self.elem_egress_distance
+            # fmt: on
+        )
 
-        log.debug("Counter at: {}, Frame index at {}".format(self.counter, idx))
-
-        pick_location = self.pick_frames[idx]
-
-        T = Transformation.from_frame_to_frame(place_element.location, pick_location)
-
-        # Copy place_cylinder to get same height properties
-        pick_cylinder = place_element.copy()
-        pick_cylinder.location.transform(T)
-
-        return pick_cylinder
+    def to_data(self):
+        """Get :obj:`dict` representation of :class:`PickStation`."""
+        return self.data
 
     @classmethod
     def from_data(cls, data):
-        """TODO: Docstring for function.
+        """Construct an instance from its data representation.
 
         Parameters
         ----------
@@ -69,6 +94,7 @@ class PickStation(object):
         -------
         :class:`PickStation`
         """
-        frames = [Frame.from_data(frame_data) for frame_data in data]
+        obj = cls([])
+        obj.data = data
 
-        return cls(frames)
+        return obj

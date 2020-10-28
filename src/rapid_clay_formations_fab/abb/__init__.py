@@ -44,4 +44,4 @@ from .standalone_move_to_frame import *  # noqa: F401,F403
 
 if not IPY:
     from .abb_rcf_client import *  # noqa: F401,F403
-    from .fab_run import *  # noqa: F401,F403
+    from .fab_run import fab_run  # noqa: F401

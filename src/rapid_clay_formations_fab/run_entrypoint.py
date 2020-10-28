@@ -69,8 +69,6 @@ def main():
     # Import options from argparse
     fab_conf.set_args(args, dots=True)
 
-    fab_conf["pick_conf"] = run_data["pick_conf_path"]
-
     # Validate conf
     run_conf = fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 

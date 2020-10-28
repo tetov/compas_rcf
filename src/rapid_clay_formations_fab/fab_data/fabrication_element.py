@@ -362,7 +362,6 @@ class FabricationElement(object):
 
     def to_data(self):
         """Get :obj:`dict` representation of :class:`FabricationElement`."""
-        # TODO: Refactor this to independent to_data function.
         data = {}
 
         for key, value in self.__dict__.items():

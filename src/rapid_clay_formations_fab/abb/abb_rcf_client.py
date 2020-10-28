@@ -7,7 +7,6 @@ import logging
 import time
 
 import compas_rrc
-from compas.geometry import Translation
 from compas_rrc import Motion
 from compas_rrc import MoveToJoints
 from compas_rrc import MoveToRobtarget
@@ -42,7 +41,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
     # Define external axes, will not be used but required in move cmds
     EXTERNAL_AXES_DUMMY = compas_rrc.ExternalAxes()
 
-    def __init__(self, ros, rob_conf):
+    def __init__(self, ros, rob_conf, pick_station):
         super().__init__(ros)
 
         self.pick_place_tool = rob_conf.tools.get("pick_place")
@@ -57,6 +56,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.zone = rob_conf.robot_movement.zone
 
         self.docker_cfg = rob_conf.docker
+
+        # Setup pick station
+        self.pick_station = pick_station
 
     def confirm_start(self):
         """Stop program and prompt user to press play on pendant to resume."""
@@ -158,7 +160,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         self.send(compas_rrc.PrintText("Finished"))
 
-    def pick_element(self, element):
+    def pick_element(self):
         """Send movement and IO instructions to pick up fabrication element.
 
         Parameter
@@ -166,22 +168,27 @@ class AbbRcfClient(compas_rrc.AbbClient):
         element : :class:`~rapid_clay_formations_fab.fab_data.FabricationElement`
             Representation of fabrication element to pick up.
         """
+        self.send(compas_rrc.StartWatch())
+
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
         log.debug("Tool {self.pick_place_tool.name} set.")
         self.send(compas_rrc.SetWorkObject(self.wobjs.pick))
         log.debug(f"Work object {self.wobjs.pick} set.")
 
-        # start watch
-        self.send(compas_rrc.StartWatch())
+        self.send(
+            MoveToRobtarget(
+                self.pick_station.station_egress_frame,
+                self.EXTERNAL_AXES_DUMMY,
+                self.speed.travel,
+                self.zone.travel,
+            )
+        )
 
-        # TODO: Use separate obj for pick elems?
-        vector = element.get_normal() * self.pick_place_tool.elem_pick_egress_dist
-        T = Translation(vector)
-        egress_frame = element.get_uncompressed_top_frame().transformed(T)
+        element = self.pick_station.get_next_pick_elem()
 
         self.send(
             MoveToRobtarget(
-                egress_frame,
+                element.get_egress_frame(),
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
@@ -203,11 +210,20 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         self.send(
             MoveToRobtarget(
-                egress_frame,
+                element.get_egress_frame(),
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.pick_place,
                 self.zone.pick,
                 motion_type=Motion.LINEAR,
+            )
+        )
+
+        self.send(
+            MoveToRobtarget(
+                self.pick_station.station_egress_frame,
+                self.EXTERNAL_AXES_DUMMY,
+                self.speed.travel,
+                self.zone.travel,
             )
         )
 

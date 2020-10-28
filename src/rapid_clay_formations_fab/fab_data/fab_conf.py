@@ -42,7 +42,6 @@ class ZoneDataTemplate(confuse.Template):
 
 ABB_RCF_CONF_TEMPLATE = {
     "log_dir": confuse.Filename(),
-    "pick_conf": confuse.Path(),
     "run_data_path": confuse.Template(),  # Already type checked by argparse
     "publish_tf_xform": bool,
     "edit_sequence": confuse.TypeTemplate(bool, default=False),

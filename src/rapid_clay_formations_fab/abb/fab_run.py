@@ -40,10 +40,7 @@ def fab_run(run_conf, run_data):
 
     log.info(f"{len(fab_elements)} fabrication elements.")
 
-    # Setup pick station
-    with run_conf.pick_conf.open(mode="r") as fp:
-        pick_station = PickStation.from_data(json.load(fp))
-    log.info(f"Pick station setup read from {run_conf.pick_conf}")
+    pick_station = PickStation.from_data(run_data["pick_station"])
 
     progress_file, done_file = _setup_file_paths(run_conf.run_data_path)
 
@@ -54,16 +51,16 @@ def fab_run(run_conf, run_data):
     # Create Ros Client
     with RosClient(port=9090) as ros:
 
-        # Create AbbRcf client (subclass of AbbClient)
-        rob_client = AbbRcfClient(ros, run_conf.robot_client)
+        # Create AbbRcfClient (subclass of AbbClient)
+        rob_client = AbbRcfClient(ros, run_conf.robot_client, pick_station)
 
         rob_client.check_reconnect()
 
-        # Set speed, accel, tool, wobj and move to start pos
-        rob_client.pre_procedure()
-
         # Confirm start on flexpendant
         rob_client.confirm_start()
+
+        # Set speed, accel, tool, wobj and move to start pos
+        rob_client.pre_procedure()
 
         # Initialize this before first run, it gets set after placement
         cycle_time_msg = None
@@ -85,10 +82,8 @@ def fab_run(run_conf, run_data):
             # TP write limited to 40 char / line
             rob_client.send(PrintText(pendant_msg[:40]))
 
-            pick_element = pick_station.get_next_pick_elem(elem)
-
             # Send instructions and store feedback obj
-            pick_future = rob_client.pick_element(pick_element)
+            pick_future = rob_client.pick_element()
             place_future = rob_client.place_element(elem)
 
             # set placed to temporary value to mark it as "placed"
