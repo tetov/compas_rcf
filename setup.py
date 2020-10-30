@@ -26,7 +26,6 @@ requirements = [
     "questionary ~= 1.5.1",
     "confuse ~= 1.3.0",
     "docker ~= 4.2.2",
-    "couchdb == 1.2",
 ]
 
 extras_require = {

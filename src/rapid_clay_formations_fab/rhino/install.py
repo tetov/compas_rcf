@@ -11,12 +11,14 @@ from __future__ import division
 from __future__ import print_function
 
 import pkgutil
+from typing import List
 
 from compas_rhino import install
 
 STD_PKGS = ("compas_fab", "roslibpy", "rapid_clay_formations_fab", "compas_rrc")
 
-OPTIONAL_PKGS = ["couchdb"]
+# OPTIONAL_PKGS = ["couchdb"]
+OPTIONAL_PKGS: List[str] = []
 
 INSTALLED_PKGS = [mod.name for mod in list(pkgutil.iter_modules())]
 
