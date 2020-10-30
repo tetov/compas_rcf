@@ -36,7 +36,7 @@ jobs:
           python -m pip install cython --install-option="--no-cython-compile"
           python -m pip install wheel  # https://stackoverflow.com/questions/34819221
           # Install first since, compas_rrc pulls compas_fab==0.12
-          python -m pip install compas_fab ~=0.11
+          python -m pip install compas_fab==0.11.0
           mkdir ~/.ssh && ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts
           pip install git+https://"$RRC_USERNAME":"$RRC_PASSWORD"@bitbucket.org/ethrfl/compas_rrc.git@"$COMPAS_RRC_VER"#egg=compas_rrc
 
