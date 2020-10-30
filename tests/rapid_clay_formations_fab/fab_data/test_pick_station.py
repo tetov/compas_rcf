@@ -5,6 +5,7 @@ from __future__ import print_function
 import pytest
 from compas.geometry import Frame
 
+from rapid_clay_formations_fab.fab_data import FabricationElement
 from rapid_clay_formations_fab.fab_data import PickStation
 
 
@@ -20,7 +21,7 @@ def frame_list():
 
 
 @pytest.fixture
-def station(frame_list):
+def station1(frame_list):
     return PickStation(
         frame_list,
         elem_height=200,
@@ -30,7 +31,7 @@ def station(frame_list):
 
 
 @pytest.fixture
-def station_data(frame_list):
+def station2_data():
     return {
         "pick_frames": [
             {"point": [0, 1, 0], "xaxis": [1, 0, 0], "yaxis": [0, 1, 0]},
@@ -42,24 +43,50 @@ def station_data(frame_list):
     }
 
 
-def test_generator(station, frame_list):
+@pytest.fixture
+def station2(station2_data):
+    return PickStation.from_data(station2_data)
+
+
+@pytest.fixture
+def pick_elements(station1, frame_list):
+    kwargs = {
+        "height": station1.elem_height,
+        "egress_frame_distance": station1.elem_egress_distance,
+    }
+    elements = []
+    for frame in frame_list:
+        elem = FabricationElement(frame, "pick_elem", **kwargs)
+        elements.append(elem)
+    return elements
+
+
+def test_frame_iter(station2_data):
+    station = PickStation.from_data(station2_data)
+    frame_list = station.pick_frames
     for n in range(12):
-        frame = next(station.frame_gen)
+        frame = station._get_next_pick_frame()
         assert frame == frame_list[n % len(frame_list)]
 
 
-def test_station_egress_frame(station):
-    assert station.station_egress_frame == Frame(
-        [0, 0, station.station_egress_distance], [1, 0, 0], [0, 1, 0]
+def test_pick_element_generator(station1, pick_elements):
+    assert station1.get_next_pick_elem().location == pick_elements[0].location
+    for _ in range(len(pick_elements) - 1):
+        station1.get_next_pick_elem()
+    assert station1.get_next_pick_elem().location == pick_elements[0].location
+    assert station1.get_next_pick_elem().location == pick_elements[1].location
+
+
+def test_station_egress_frame(station1):
+    assert station1.station_egress_frame == Frame(
+        [0, 0, station1.station_egress_distance], [1, 0, 0], [0, 1, 0]
     )
 
 
-def test_from_data(station_data):
-    station = PickStation.from_data(station_data)
-    assert station.elem_height == station_data["elem_height"]
+def test_from_data(station2, station2_data):
+    assert station2.elem_height == station2_data["elem_height"]
 
 
-def test_to_from_data(station_data):
-    station = PickStation.from_data(station_data)
-    print(station.to_data())
-    assert station_data == station.to_data()
+def test_to_from_data(station2_data):
+    station = PickStation.from_data(station2_data)
+    assert station2_data == station.to_data()
