@@ -50,12 +50,10 @@ class PickStation(object):
     def data(self):
         """:obj:`dict` : The data dictionary that represents the pick station."""
         return {
-            # fmt: off
             "pick_frames": [f.to_data() for f in self.pick_frames],
             "elem_height": self.elem_height,
             "elem_egress_distance": self.elem_egress_distance,
-            "station_egress_distance": self.station_egress_distance
-            # fmt: on
+            "station_egress_distance": self.station_egress_distance,
         }
 
     @data.setter
@@ -80,12 +78,10 @@ class PickStation(object):
         """
         frame = self._get_next_pick_frame()
         return FabricationElement(
-            # fmt: off
             frame,
             "pick_elem",
             height=self.elem_height,
-            egress_frame_distance=self.elem_egress_distance
-            # fmt: on
+            egress_frame_distance=self.elem_egress_distance,
         )
 
     def to_data(self):

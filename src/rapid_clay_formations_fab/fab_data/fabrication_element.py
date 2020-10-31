@@ -55,9 +55,6 @@ class FabricationElement(object):
     """  # noqa: E501
 
     def __init__(
-        # fmt: off
-        # Stop black from adding comma after last element to retain py27 compat
-        # See https://github.com/psf/black/issues/1356
         self,
         location,
         id_,
@@ -73,8 +70,7 @@ class FabricationElement(object):
         cycle_time=None,
         placed=False,
         time_placed=None,
-        attrs=None
-        # fmt: on
+        attrs=None,
     ):
         if not isinstance(location, cg.Frame):
             raise Exception("Location should be given as a compas.geometry.Frame")
@@ -390,16 +386,12 @@ class FabricationElement(object):
 
         location = cg.Frame.from_data(data.pop("location"))
 
-        # fmt: off
-        # Stop black from adding comma after last element to retain py27 compat
-        # See https://github.com/psf/black/issues/1356
         trajectory_attributes = (
             "travel_trajectories",
             "place_trajectories_",
             "return_travel_trajectories_",
-            "return_place_trajectories_"
+            "return_place_trajectories_",
         )
-        # fmt: on
 
         for key in trajectory_attributes:
             trajectories_data = data.pop(key, None)

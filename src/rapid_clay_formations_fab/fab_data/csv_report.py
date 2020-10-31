@@ -10,11 +10,9 @@ from rapid_clay_formations_fab.fab_data.tools import csv_reports
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Format CSV reports from JSON files")
     parser.add_argument(
-        # fmt: off
         "json_files",
         action="append",
-        help="JSON files or directory containing JSON files to convert"
-        # fmt: on
+        help="JSON files or directory containing JSON files to convert",
     )
     parser.add_argument(
         "--clobber", action="store_true", help="Overwrite existing files"
