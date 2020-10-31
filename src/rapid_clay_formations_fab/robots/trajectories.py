@@ -21,6 +21,8 @@ except ImportError:
 class _ListLike(MutableSequence):
     """Class to use as parent for listlike classes."""
 
+    __slots__ = ()
+
     def __getitem__(self, index):
         return self.list_[index]
 
@@ -49,6 +51,8 @@ class MinimalTrajectories(_ListLike):
     trajectories : :obj:`list` of :class:`MinimalTrajectory`
         Trajectory points.
     """
+
+    __slots__ = "list_"
 
     def __init__(self, trajectories):
         self.trajectories = list(trajectories)
@@ -127,6 +131,8 @@ class MinimalTrajectory(_ListLike):
     points : :obj:`list`
         Trajectory points.
     """
+
+    __slots__ = "list_"
 
     JOINT_TRAJECTORY = 0
     FRAME_TRAJECTORY = 1
