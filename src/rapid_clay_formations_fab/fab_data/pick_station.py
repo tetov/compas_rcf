@@ -40,10 +40,18 @@ class PickStation(object):
 
         self._pick_counter = 0
 
+    def __repr__(self):
+        return "PickStation({}, {}, {}, {})".format(
+            self.pick_frames,
+            self.elem_height,
+            self.elem_egress_distance,
+            self.station_egress_distance,
+        )
+
     @property
     def station_egress_frame(self):
         """:class:`compas.geometry.Frame` : Egress frame for pick plate."""
-        tr = Translation([0, 0, self.station_egress_distance])
+        tr = Translation(self.pick_frames[0].normal * -self.station_egress_distance)
         return self.pick_frames[0].transformed(tr)
 
     @property
@@ -64,7 +72,6 @@ class PickStation(object):
         self.station_egress_distance = data["station_egress_distance"]
 
     def _get_next_pick_frame(self):
-        print(self._pick_counter)
         frame = self.pick_frames[self._pick_counter % len(self.pick_frames)]
         self._pick_counter += 1
         return frame

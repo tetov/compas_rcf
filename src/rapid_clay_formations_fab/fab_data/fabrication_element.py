@@ -56,6 +56,15 @@ class FabricationElement(object):
         self.egress_frame_distance = egress_frame_distance
         self.attrs = attrs or {}
 
+    def __repr__(self):
+        return "FabricationElement({}, {}, {}, {}. {})".format(
+            self.location,
+            self.id_,
+            self.radius,
+            self.height,
+            self.egress_frame_distance,
+        )
+
     @property
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`FabricationElement`."""  # noqa: E501
@@ -126,7 +135,7 @@ class FabricationElement(object):
         vector = self.get_normal() * self.egress_frame_distance
         T = cg.Translation(vector)
 
-        return self.top_frame().transformed(T)
+        return self.get_top_frame().transformed(T)
 
     # Derived data points
     #####################
@@ -309,7 +318,7 @@ class FabricationElement(object):
 
 
 class PlaceElement(FabricationElement):
-    r"""Describes a fabrication element to be placed in the RCF process.
+    """Describes a fabrication element to be placed in the RCF process.
 
     The element is assumed to be cylindrical and expected to be compressed
     during fabrication.
@@ -388,35 +397,45 @@ class PlaceElement(FabricationElement):
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`PlaceElement`."""  # noqa: E501
         data = super(PlaceElement, self).data
-        data["compression_ration"] = self.compression_ratio
-        data["travel_trajectories"] = self.travel_trajectories
-        data["place_trajectories"] = self.place_trajectories_
-        data["return_place_trajectories"] = self.return_place_trajectories_
-        data["return_travel_trajectories"] = self.return_place_trajectories_
+        data.update(
+            {
+                "compression_ratio": self.compression_ratio,
+                "travel_trajectories": [
+                    t.to_data() for t in self.travel_trajectories or []
+                ],
+                "return_travel_trajectories": [
+                    t.to_data() for t in self.return_travel_trajectories_ or []
+                ],
+                "place_trajectories": [
+                    t.to_data() for t in self.place_trajectories_ or []
+                ],
+                "return_place_trajectories": [
+                    t.to_data() for t in self.return_place_trajectories_ or []
+                ],
+            }
+        )
 
         return data
 
     @data.setter
     def data(self, data):
-        parent_data = {
-            k: data[k]
-            for k in (
-                "location",
-                "id_",
-                "radius",
-                "height",
-                "egress_frame_distance",
-                "attrs",
-            )
-        }
+        def trajectories_from_data(traj_data_list):
+            if traj_data_list:
+                return [MinimalTrajectory.from_data(d) for d in traj_data_list]
 
-        super(PlaceElement, self).data = parent_data
+        # This is needed to use the setter on parent class
+        # https://stackoverflow.com/a/37663266
+        super(PlaceElement, self.__class__).data.fset(self, data)
 
         self.compression_ratio = data["compression_ratio"]
-        self.travel_trajectories = data["travel_trajectories"]
-        self.return_travel_trajectories = data["return_travel_trajectories"]
-        self.place_trajectories = data["place_trajectories"]
-        self.return_place_trajectories = data["return_place_trajectories"]
+        self.travel_trajectories = trajectories_from_data(data["travel_trajectories"])
+        self.return_travel_trajectories = trajectories_from_data(
+            data["return_travel_trajectories"]
+        )
+        self.place_trajectories = trajectories_from_data(data["place_trajectories"])
+        self.return_place_trajectories = trajectories_from_data(
+            data["return_place_trajectories"]
+        )
 
     # Trajectories setup
     ######################
@@ -546,7 +565,7 @@ class PlaceElement(FabricationElement):
         -------
         :class:`Rhino.Geometry.Cylinder`
         """
-        return rg.Cylinder(self.get_rgcircle(), self.get_compressed_height)
+        return rg.Cylinder(self.get_rgcircle(), self.get_compressed_height())
 
     @classmethod
     def from_data(cls, data):
