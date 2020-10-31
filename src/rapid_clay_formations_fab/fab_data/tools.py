@@ -8,6 +8,7 @@ import json
 from collections import OrderedDict
 
 from rapid_clay_formations_fab.fab_data import FabricationElement
+from rapid_clay_formations_fab.fab_data import PlaceElement
 from rapid_clay_formations_fab.utils import CompasObjEncoder
 
 try:
@@ -101,6 +102,9 @@ def load_fabrication_elements(path_or_dict):
     :obj:`list` of :class:`FabricationElement`
     """
     fab_data = _get_fab_data(path_or_dict)
+
+    if fab_data.get("compression_ratio"):
+        return [PlaceElement.from_data(data) for data in fab_data]
 
     return [FabricationElement.from_data(data) for data in fab_data]
 

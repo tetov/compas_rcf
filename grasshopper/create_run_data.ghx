@@ -2158,7 +2158,7 @@ unload_modules(module)</item>
                     <item name="Name" type_name="gh_string" type_code="10">Scribble</item>
                     <item name="NickName" type_name="gh_string" type_code="10">Scribble</item>
                     <item name="Size" type_name="gh_single" type_code="5">25</item>
-                    <item name="Text" type_name="gh_string" type_code="10">Fabrication element meshes</item>
+                    <item name="Text" type_name="gh_string" type_code="10">PlaceElement meshes</item>
                   </items>
                   <chunks count="1">
                     <chunk name="Attributes">
@@ -2320,7 +2320,7 @@ import ghpythonlib
 import rapid_clay_formations_fab
 from rapid_clay_formations_fab.utils import wrap_list
 from rapid_clay_formations_fab.utils import ensure_frame
-from rapid_clay_formations_fab.fab_data import FabricationElement
+from rapid_clay_formations_fab.fab_data import PlaceElement
 from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
 
 def generate_mesh(cls):
@@ -2347,7 +2347,7 @@ for i, plane in enumerate(planes):
     if len(egress_frame_distance) &gt; 0:
         kwargs['egress_frame_distance'] = wrap_list(egress_frame_distance, i)
 
-    elements.append(FabricationElement(ensure_frame(plane), id[i], **kwargs))
+    elements.append(PlaceElement(ensure_frame(plane), id[i], **kwargs))
 
 location_frames = [elem.location for elem in elements]
 location_planes = [elem.get_location_rgplane() for elem in elements]
@@ -2379,7 +2379,7 @@ if create_meshes:
                     <item name="IsAdvancedMode" type_name="gh_bool" type_code="1">false</item>
                     <item name="MarshalOutGuids" type_name="gh_bool" type_code="1">true</item>
                     <item name="Name" type_name="gh_string" type_code="10">GhPython Script</item>
-                    <item name="NickName" type_name="gh_string" type_code="10">Create FabricationElement objects</item>
+                    <item name="NickName" type_name="gh_string" type_code="10">Create PlaceElement objects</item>
                   </items>
                   <chunks count="2">
                     <chunk name="Attributes">

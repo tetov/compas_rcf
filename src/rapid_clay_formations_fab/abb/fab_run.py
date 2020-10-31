@@ -16,8 +16,8 @@ from rapid_clay_formations_fab.abb import DOCKER_COMPOSE_PATHS
 from rapid_clay_formations_fab.abb import ROBOT_IPS
 from rapid_clay_formations_fab.abb import AbbRcfClient
 from rapid_clay_formations_fab.docker import compose_up
-from rapid_clay_formations_fab.fab_data import FabricationElement
 from rapid_clay_formations_fab.fab_data import PickStation
+from rapid_clay_formations_fab.fab_data import PlaceElement
 from rapid_clay_formations_fab.utils import CompasObjEncoder
 
 # This reduces latency, see:
@@ -35,7 +35,7 @@ def fab_run(run_conf, run_data):
     _compose_up_driver(run_conf.robot_client.controller)
 
     # setup fab data
-    fab_elements = [FabricationElement.from_data(data) for data in run_data["fab_data"]]
+    fab_elements = [PlaceElement.from_data(data) for data in run_data["fab_data"]]
     log.info("Fabrication data read.")
 
     log.info(f"{len(fab_elements)} fabrication elements.")
@@ -45,8 +45,6 @@ def fab_run(run_conf, run_data):
     progress_file, done_file = _setup_file_paths(run_conf.run_data_path)
 
     _edit_fab_data(fab_elements, run_conf)
-
-    # Fabrication loop
 
     # Create Ros Client
     with RosClient(port=9090) as ros:
@@ -65,6 +63,7 @@ def fab_run(run_conf, run_data):
         # Initialize this before first run, it gets set after placement
         cycle_time_msg = None
 
+        # Fabrication loop
         for i, elem in enumerate(fab_elements):
             if elem.placed:  # Don't place elements marked as placed
                 continue

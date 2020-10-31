@@ -79,10 +79,45 @@ class PickStation(object):
         frame = self._get_next_pick_frame()
         return FabricationElement(
             frame,
-            "pick_elem",
             height=self.elem_height,
             egress_frame_distance=self.elem_egress_distance,
         )
+
+    def copy(self):
+        """Create a copy of this :class:`PickStation`.
+
+        Returns
+        -------
+        :class:`PickStation`
+            An instance of :class:`FabricationElement`
+        """
+        cls = type(self)
+        return cls.from_data(self.data)
+
+    def transform(self, transformation):
+        """Transforms a :class:`PickStation`.
+
+        Parameters
+        ----------
+        transformation : :class:`compas.geometry.Transformation`
+        """
+        for frame in self.pick_frames:
+            frame.transform(transformation)
+
+    def transformed(self, transformation):
+        """Get a transformed copy of :class:`PickStation`.
+
+        Parameters
+        ----------
+        transformation : :class:`compas.geometry.Transformation`
+
+        Returns
+        -------
+        :class:`PickStation`
+        """
+        copy = self.copy()
+        copy.transform(transformation)
+        return copy
 
     def to_data(self):
         """Get :obj:`dict` representation of :class:`PickStation`."""

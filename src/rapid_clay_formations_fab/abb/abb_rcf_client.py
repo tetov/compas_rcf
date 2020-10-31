@@ -296,7 +296,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
+        element : :class:`rapid_clay_formations_fab.fab_data.PlaceElement`
             Element to place.
 
         Returns
