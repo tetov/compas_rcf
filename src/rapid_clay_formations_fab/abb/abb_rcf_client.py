@@ -197,7 +197,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         self.send(
             MoveToRobtarget(
-                element.get_uncompressed_top_frame(),
+                element.get_top_frame(),
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.pick_place,
                 self.zone.pick,
@@ -258,6 +258,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
             If last trajectory point should be sent as a non fly-by point, i.e.
             should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
         """
+        log.debug(f"Trajectory: {trajectory}")
         kwargs = {}
         if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
             trajectory_pts = trajectory.to_robot_joints()
@@ -296,7 +297,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        element : :class:`rapid_clay_formations_fab.fab_data.FabricationElement`
+        element : :class:`rapid_clay_formations_fab.fab_data.PlaceElement`
             Element to place.
 
         Returns

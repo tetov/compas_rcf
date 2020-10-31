@@ -40,10 +40,18 @@ class PickStation(object):
 
         self._pick_counter = 0
 
+    def __repr__(self):
+        return "PickStation({}, {}, {}, {})".format(
+            self.pick_frames,
+            self.elem_height,
+            self.elem_egress_distance,
+            self.station_egress_distance,
+        )
+
     @property
     def station_egress_frame(self):
         """:class:`compas.geometry.Frame` : Egress frame for pick plate."""
-        tr = Translation([0, 0, self.station_egress_distance])
+        tr = Translation(self.pick_frames[0].normal * -self.station_egress_distance)
         return self.pick_frames[0].transformed(tr)
 
     @property
@@ -64,7 +72,6 @@ class PickStation(object):
         self.station_egress_distance = data["station_egress_distance"]
 
     def _get_next_pick_frame(self):
-        print(self._pick_counter)
         frame = self.pick_frames[self._pick_counter % len(self.pick_frames)]
         self._pick_counter += 1
         return frame
@@ -79,10 +86,45 @@ class PickStation(object):
         frame = self._get_next_pick_frame()
         return FabricationElement(
             frame,
-            "pick_elem",
             height=self.elem_height,
             egress_frame_distance=self.elem_egress_distance,
         )
+
+    def copy(self):
+        """Create a copy of this :class:`PickStation`.
+
+        Returns
+        -------
+        :class:`PickStation`
+            An instance of :class:`FabricationElement`
+        """
+        cls = type(self)
+        return cls.from_data(self.data)
+
+    def transform(self, transformation):
+        """Transforms a :class:`PickStation`.
+
+        Parameters
+        ----------
+        transformation : :class:`compas.geometry.Transformation`
+        """
+        for frame in self.pick_frames:
+            frame.transform(transformation)
+
+    def transformed(self, transformation):
+        """Get a transformed copy of :class:`PickStation`.
+
+        Parameters
+        ----------
+        transformation : :class:`compas.geometry.Transformation`
+
+        Returns
+        -------
+        :class:`PickStation`
+        """
+        copy = self.copy()
+        copy.transform(transformation)
+        return copy
 
     def to_data(self):
         """Get :obj:`dict` representation of :class:`PickStation`."""

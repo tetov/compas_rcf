@@ -79,7 +79,7 @@ def test_pick_element_generator(station1, pick_elements):
 
 def test_station_egress_frame(station1):
     assert station1.station_egress_frame == Frame(
-        [0, 0, station1.station_egress_distance], [1, 0, 0], [0, 1, 0]
+        [0, 0, -station1.station_egress_distance], [1, 0, 0], [0, 1, 0]
     )
 
 
