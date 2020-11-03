@@ -397,17 +397,23 @@ class PlaceElement(FabricationElement):
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`PlaceElement`."""  # noqa: E501
         data = super(PlaceElement, self).data
-        data.update(
-            {
-                "compression_ratio": self.compression_ratio,
-                "travel_trajectories": self.travel_trajectories.to_data() or None,
-                "return_travel_trajectories": self.return_travel_trajectories.to_data()
-                or None,
-                "place_trajectories": self.place_trajectories.to_data() or None,
-                "return_place_trajectories": self.return_place_trajectories.to_data()
-                or None,
-            }
+        data["compression_ratio"] = self.compression_ratio
+
+        data["travel_trajectories"] = self.travel_trajectories
+
+        # optional trajectories
+        opt_traj_attrs = (
+            "return_travel_trajectories",
+            "place_trajectories",
+            "return_place_trajectories",
         )
+
+        for attr in opt_traj_attrs:
+            # Get value of property attribute (ending with "_")
+            # Returns none if there is no value set explicitly
+            attr_value = getattr(self, attr + "_", None)
+            if attr_value:
+                data[attr] = attr_value.to_data()
 
         return data
 

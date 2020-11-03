@@ -8,7 +8,6 @@ from __future__ import print_function
 
 from compas.geometry import Frame
 from compas_fab.robots import Configuration
-from compas_fab.robots import JointTrajectoryPoint
 from compas_fab.robots import to_degrees
 from compas_rrc import RobotJoints
 
@@ -159,26 +158,21 @@ class MinimalTrajectory(_ListLike):
 
     @data.setter
     def data(self, data):
+        print("Data: {}".format(data))
+        print("Type: {}".format(type(data)))
         if data["points"][0].get("xaxis"):  # check if data is of frame.data
             self.points = [Frame.from_data(pt) for pt in data["points"]]
-        # check if first elem is JointTrajectoryPoint dict
-        elif data["points"][0].get("types"):
+        # check if first elem is Configuration dict
+        elif data["points"][0].get("values"):
             self.points = [Configuration.from_data(pt) for pt in data["points"]]
         else:
-            raise NotImplementedError(
-                "Object type not supported: {}".format(type(data[0]))
-            )
-
-    @property
-    def robot_joints_points(self):
-        """:obj:`list` of :class:`compas_rrc.RobotJoints` : Trajectory as list of ``RobotJoints``."""  # noqa: E501
-        return [RobotJoints(*to_degrees(pt)) for pt in self.points]
+            raise NotImplementedError("Object not recognized.")
 
     @property
     def trajectory_type(self):
         """:obj:`type` : Return the type of elements in the trajectory."""
         self._raise_if_mixed_types()
-        if isinstance(self[0], JointTrajectoryPoint):
+        if isinstance(self[0], Configuration):
             return self.JOINT_TRAJECTORY
         if isinstance(self[0], Frame):
             return self.FRAME_TRAJECTORY
@@ -193,6 +187,10 @@ class MinimalTrajectory(_ListLike):
             raise RuntimeError(
                 "Trajectory contains more than one type of objects: {}".format(types)
             )
+
+    def as_robot_joints_points(self):
+        """:obj:`list` of :class:`compas_rrc.RobotJoints` : Trajectory as list of ``RobotJoints``."""  # noqa: E501
+        return [RobotJoints(*to_degrees(pt.values)) for pt in self.points]
 
     def copy(self):
         """Get an independent copy of object."""

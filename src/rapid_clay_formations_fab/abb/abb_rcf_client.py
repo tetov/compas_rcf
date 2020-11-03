@@ -65,6 +65,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.send(compas_rrc.PrintText("Press play when ready."))
         self.send(compas_rrc.Stop())
 
+        # After user presses play on pendant execution resumes:
+        self.send(compas_rrc.PrintText("Continuing execution."))
+
     def ping(self, timeout=10):
         """Ping ABB robot controller.
 
@@ -260,15 +263,17 @@ class AbbRcfClient(compas_rrc.AbbClient):
         """
         log.debug(f"Trajectory: {trajectory}")
         kwargs = {}
+
         if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
-            trajectory_pts = trajectory.to_robot_joints()
+            trajectory_pts = trajectory.as_robot_joints_points()
             instruction = MoveToJoints
 
         elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
-            trajectory_pts = trajectory.points
+            trajectory_pts = trajectory
             instruction = MoveToRobtarget
             kwargs["motion_type"] = motion_type
         else:
+            print(trajectory.trajectory_type)
             raise RuntimeError("Trajectory not recognized: {}".format(trajectory))
 
         for pt in trajectory_pts[:-1]:  # skip last
