@@ -99,7 +99,7 @@ def fab_run(run_conf, run_data):
 
             elem.cycle_time = cycle_time
             # format float to int to save characters on teach pendant
-            cycle_time_msg = f"Last cycle time: {elem.cycle_time:0.0f}"
+            cycle_time_msg = f"LC {elem.cycle_time:0.0f}, "
             log.info(cycle_time_msg)
 
             elem.time_placed = time.time()
