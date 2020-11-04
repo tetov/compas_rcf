@@ -432,22 +432,16 @@ class PlaceElement(FabricationElement):
         self.placed = data["placed"]
         self.time_placed = data["time_placed"]
 
-        if data.get("travel_trajectories"):
-            self.travel_trajectories = MinimalTrajectories.from_data(
-                data["travel_trajectories"]
-            )
-        if data.get("return_travel_trajectories"):
-            self.return_travel_trajectories = MinimalTrajectories.from_data(
-                data["return_travel_trajectories"]
-            )
-        if data.get("place_trajectories"):
-            self.place_trajectories = MinimalTrajectories.from_data(
-                data["place_trajectories"]
-            )
-        if data.get("return_place_trajectories"):
-            self.return_place_trajectories = MinimalTrajectories.from_data(
-                data["return_place_trajectories"]
-            )
+        traj_attrs = (
+            "travel_trajectories",
+            "return_travel_trajectories",
+            "place_trajectories",
+            "return_place_trajectories",
+        )
+
+        for attr in traj_attrs:
+            if data.get(attr):
+                setattr(self, attr, MinimalTrajectories.from_data(data[attr]))
 
     # Trajectories setup
     ######################
