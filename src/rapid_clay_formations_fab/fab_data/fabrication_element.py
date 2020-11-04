@@ -397,7 +397,11 @@ class PlaceElement(FabricationElement):
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`PlaceElement`."""  # noqa: E501
         data = super(PlaceElement, self).data
+
         data["compression_ratio"] = self.compression_ratio
+        data["cycle_time"] = self.cycle_time
+        data["placed"] = self.placed
+        data["time_placed"] = self.time_placed
 
         data["travel_trajectories"] = self.travel_trajectories
 
@@ -424,6 +428,10 @@ class PlaceElement(FabricationElement):
         super(PlaceElement, self.__class__).data.fset(self, data)
 
         self.compression_ratio = data["compression_ratio"]
+        self.cycle_time = data["cycle_time"]
+        self.placed = data["placed"]
+        self.time_placed = data["time_placed"]
+
         self.travel_trajectories = MinimalTrajectories.from_data(
             data["travel_trajectories"]
         )

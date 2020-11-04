@@ -158,8 +158,6 @@ class MinimalTrajectory(_ListLike):
 
     @data.setter
     def data(self, data):
-        print("Data: {}".format(data))
-        print("Type: {}".format(type(data)))
         if data["points"][0].get("xaxis"):  # check if data is of frame.data
             self.points = [Frame.from_data(pt) for pt in data["points"]]
         # check if first elem is Configuration dict
