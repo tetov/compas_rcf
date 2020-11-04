@@ -72,9 +72,10 @@ ABB_RCF_CONF_TEMPLATE = {
                 "place": ZoneDataTemplate(),
                 "travel": ZoneDataTemplate(),
             },
-            "set_joint_pos": {
+            "joint_positions": {
                 "start": confuse.Sequence([float] * 6),
                 "end": confuse.Sequence([float] * 6),
+                "travel_trajectory": confuse.TypeTemplate(list, default=None),
             },
         },
     },

@@ -432,9 +432,10 @@ class PlaceElement(FabricationElement):
         self.placed = data["placed"]
         self.time_placed = data["time_placed"]
 
-        self.travel_trajectories = MinimalTrajectories.from_data(
-            data["travel_trajectories"]
-        )
+        if data.get("travel_trajectories"):
+            self.travel_trajectories = MinimalTrajectories.from_data(
+                data["travel_trajectories"]
+            )
         if data.get("return_travel_trajectories"):
             self.return_travel_trajectories = MinimalTrajectories.from_data(
                 data["return_travel_trajectories"]
@@ -454,10 +455,12 @@ class PlaceElement(FabricationElement):
     @property
     def return_travel_trajectories(self):
         """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed travel trajectories."""  # noqa: E501
-        return (
-            self.return_travel_trajectories_
-            or self.travel_trajectories.reversed_recursively()
-        )
+        if self.return_place_trajectories_:
+            return self.return_travel_trajectories_
+        if self.travel_trajectories:
+            return self.travel_trajectories.reversed_recursively()
+
+        # else returns None
 
     @return_travel_trajectories.setter
     def return_travel_trajectories(self, trajectories):

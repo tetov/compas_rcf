@@ -41,6 +41,6 @@ robot_client:
             place: Z10
             travel: Z100
 
-        set_joint_pos: # used at start and end of fabrication run
+        joint_positions:
             start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees
             end: [ -127.0, 54.0, 9.0 , 2.0 , 30.0, 7.0 ] # 6 joint values in degrees

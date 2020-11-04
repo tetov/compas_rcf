@@ -6,6 +6,8 @@ from __future__ import print_function
 import logging
 import time
 
+from compas_fab.robots import Configuration
+from compas_fab.robots import to_radians
 import compas_rrc
 from compas_rrc import Motion
 from compas_rrc import MoveToJoints
@@ -14,6 +16,7 @@ from compas_rrc import MoveToRobtarget
 from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 from rapid_clay_formations_fab.docker import restart_container
 from rapid_clay_formations_fab.robots import MinimalTrajectory
+from rapid_clay_formations_fab.robots import MinimalTrajectories
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +53,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         self.global_speed_accel = rob_conf.robot_movement.global_speed_accel
 
-        self.set_joint_pos = rob_conf.robot_movement.set_joint_pos
+        self.joint_positions = rob_conf.robot_movement.joint_positions
 
         self.speed = rob_conf.robot_movement.speed
         self.zone = rob_conf.robot_movement.zone
@@ -60,13 +63,32 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # Setup pick station
         self.pick_station = pick_station
 
+        if hasattr(self.joint_positions, "travel_trajectory"):
+            joint_positions = [
+                to_radians(jp) for jp in self.joint_positions.travel_trajectory
+            ]
+            configurations = [
+                Configuration.from_revolute_values(jps) for jps in joint_positions
+            ]
+            trajectory = MinimalTrajectory(configurations)
+            trajectories = MinimalTrajectories([trajectory])
+
+            self.default_travel_trajectories = trajectories
+            self.default_return_travel_trajectories = (
+                trajectories.reversed_recursively()
+            )
+            log.debug(
+                f"default_travel_trajectories: {self.default_travel_trajectories}"
+            )
+
     def confirm_start(self):
         """Stop program and prompt user to press play on pendant to resume."""
         self.send(compas_rrc.PrintText("Press play when ready."))
         self.send(compas_rrc.Stop())
+        log.info("Press start on pendant when ready")
 
         # After user presses play on pendant execution resumes:
-        self.send(compas_rrc.PrintText("Continuing execution."))
+        self.send(compas_rrc.PrintText("Resuming execution."))
 
     def ping(self, timeout=10):
         """Ping ABB robot controller.
@@ -140,7 +162,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         log.debug("Sending move to safe joint position")
         self.send_and_wait(
             MoveToJoints(
-                self.set_joint_pos.start,
+                self.joint_positions.start,
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
@@ -154,7 +176,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         log.debug("Sending move to safe joint position.")
         self.send(
             MoveToJoints(
-                self.set_joint_pos.end,
+                self.joint_positions.end,
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
@@ -273,7 +295,6 @@ class AbbRcfClient(compas_rrc.AbbClient):
             instruction = MoveToRobtarget
             kwargs["motion_type"] = motion_type
         else:
-            print(trajectory.trajectory_type)
             raise RuntimeError("Trajectory not recognized: {}".format(trajectory))
 
         for pt in trajectory_pts[:-1]:  # skip last
@@ -321,7 +342,10 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # start watch
         self.send(compas_rrc.StartWatch())
 
-        for trajectory in element.travel_trajectories:
+        # Use element specific trajectory, else default.
+        for trajectory in (
+            element.travel_trajectories or self.default_travel_trajectories
+        ):
             self.execute_trajectory(
                 trajectory,
                 self.speed.travel,
@@ -357,7 +381,11 @@ class AbbRcfClient(compas_rrc.AbbClient):
         for trajectory in element.return_place_trajectories[1:]:
             self.execute_trajectory(trajectory, self.speed.travel, self.zone.travel)
 
-        for trajectory in element.return_travel_trajectories:
+        # Use element specific trajectory, else default.
+        for trajectory in (
+            element.return_travel_trajectories
+            or self.default_return_travel_trajectories
+        ):
             self.execute_trajectory(
                 trajectory,
                 self.speed.travel,

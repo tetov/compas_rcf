@@ -6,7 +6,7 @@ from __future__ import print_function
 import json
 import logging
 import re
-import datetime
+from datetime import datetime
 
 import questionary
 from compas_fab.backends.ros import RosClient
@@ -63,8 +63,6 @@ def fab_run(run_conf, run_data):
         # Initialize this before first run, it gets set after placement
         cycle_time_msg = None
 
-        time_now = datetime.now()
-
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
             if elem.placed:  # Don't place elements marked as placed
@@ -78,19 +76,21 @@ def fab_run(run_conf, run_data):
             current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
             log.info(current_elem_desc)
 
-            pendant_msg = time_now.strftime("%H:%M") + " "
+            # Having this as an f-string should mean that the timestamp will
+            # be set when the PrintText command is sent
+            pendant_msg = f"{datetime.now().strftime('%H:%M')} "
             if cycle_time_msg:
-                pendant_msg += cycle_time_msg + " "
+                pendant_msg += cycle_time_msg
             pendant_msg += current_elem_desc
 
             # Wait until element is picked
             cycle_time = pick_future.result()
 
+            # set placed to true right after pick elem
+            elem.placed = True
+
             # TP write limited to 40 char / line
             rob_client.send(PrintText(pendant_msg[:40]))
-
-            # set placed to temporary value to mark it as "placed"
-            elem.placed = True
 
             # Write progress to json while waiting for robot
             run_data["fab_data"] = fab_elements
@@ -107,8 +107,7 @@ def fab_run(run_conf, run_data):
             cycle_time_msg = f"LC {elem.cycle_time:0.0f}, "
             log.info(cycle_time_msg)
 
-            time_now = datetime.now()
-            elem.time_placed = time_now.timestamp()
+            elem.time_placed = datetime.now().timestamp()
             log.debug(f"Time placed was {elem.time_placed}")
 
         # Write progress of last run of loop
