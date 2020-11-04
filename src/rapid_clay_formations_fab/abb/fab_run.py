@@ -6,7 +6,7 @@ from __future__ import print_function
 import json
 import logging
 import re
-import time
+import datetime
 
 import questionary
 from compas_fab.backends.ros import RosClient
@@ -63,27 +63,31 @@ def fab_run(run_conf, run_data):
         # Initialize this before first run, it gets set after placement
         cycle_time_msg = None
 
+        time_now = datetime.now()
+
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
             if elem.placed:  # Don't place elements marked as placed
                 continue
 
+            # Send instructions and store feedback obj
+            pick_future = rob_client.pick_element()
+            place_future = rob_client.place_element(elem)
+
             # Setup log message and flex pendant message
             current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
             log.info(current_elem_desc)
 
-            pendant_msg = ""
-
+            pendant_msg = time_now.strftime("%H:%M") + " "
             if cycle_time_msg:
                 pendant_msg += cycle_time_msg + " "
             pendant_msg += current_elem_desc
 
+            # Wait until element is picked
+            cycle_time = pick_future.result()
+
             # TP write limited to 40 char / line
             rob_client.send(PrintText(pendant_msg[:40]))
-
-            # Send instructions and store feedback obj
-            pick_future = rob_client.pick_element()
-            place_future = rob_client.place_element(elem)
 
             # set placed to temporary value to mark it as "placed"
             elem.placed = True
@@ -95,14 +99,16 @@ def fab_run(run_conf, run_data):
             log.debug(f"Wrote fabrication data to {progress_file.name}")
 
             # This blocks until cycle is finished
-            cycle_time = pick_future.result() + place_future.result()
+            cycle_time += place_future.result()
 
             elem.cycle_time = cycle_time
+
             # format float to int to save characters on teach pendant
             cycle_time_msg = f"LC {elem.cycle_time:0.0f}, "
             log.info(cycle_time_msg)
 
-            elem.time_placed = time.time()
+            time_now = datetime.now()
+            elem.time_placed = time_now.timestamp()
             log.debug(f"Time placed was {elem.time_placed}")
 
         # Write progress of last run of loop
