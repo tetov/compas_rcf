@@ -8,8 +8,8 @@ import math
 import compas.datastructures
 import compas.geometry as cg
 
+from rapid_clay_formations_fab.robots import MinimalTrajectories
 from rapid_clay_formations_fab.robots import MinimalTrajectory
-from rapid_clay_formations_fab.robots import two_levels_reversed
 
 try:
     import Rhino.Geometry as rg
@@ -174,7 +174,7 @@ class FabricationElement(object):
         -------
         :obj:`float`
         """
-        return self.density * self.volume * 1e-6
+        return self.attrs.get("density", 0) * self.volume * 1e-6
 
     # Construct geometrical representations of object using :any:`compas.geometry`.
     ###############################################################################
@@ -397,45 +397,48 @@ class PlaceElement(FabricationElement):
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`PlaceElement`."""  # noqa: E501
         data = super(PlaceElement, self).data
-        data.update(
-            {
-                "compression_ratio": self.compression_ratio,
-                "travel_trajectories": [
-                    t.to_data() for t in self.travel_trajectories or []
-                ],
-                "return_travel_trajectories": [
-                    t.to_data() for t in self.return_travel_trajectories_ or []
-                ],
-                "place_trajectories": [
-                    t.to_data() for t in self.place_trajectories_ or []
-                ],
-                "return_place_trajectories": [
-                    t.to_data() for t in self.return_place_trajectories_ or []
-                ],
-            }
+        data["compression_ratio"] = self.compression_ratio
+
+        data["travel_trajectories"] = self.travel_trajectories
+
+        # optional trajectories
+        opt_traj_attrs = (
+            "return_travel_trajectories",
+            "place_trajectories",
+            "return_place_trajectories",
         )
+
+        for attr in opt_traj_attrs:
+            # Get value of property attribute (ending with "_")
+            # Returns none if there is no value set explicitly
+            attr_value = getattr(self, attr + "_", None)
+            if attr_value:
+                data[attr] = attr_value.to_data()
 
         return data
 
     @data.setter
     def data(self, data):
-        def trajectories_from_data(traj_data_list):
-            if traj_data_list:
-                return [MinimalTrajectory.from_data(d) for d in traj_data_list]
-
         # This is needed to use the setter on parent class
         # https://stackoverflow.com/a/37663266
         super(PlaceElement, self.__class__).data.fset(self, data)
 
         self.compression_ratio = data["compression_ratio"]
-        self.travel_trajectories = trajectories_from_data(data["travel_trajectories"])
-        self.return_travel_trajectories = trajectories_from_data(
-            data["return_travel_trajectories"]
+        self.travel_trajectories = MinimalTrajectories.from_data(
+            data["travel_trajectories"]
         )
-        self.place_trajectories = trajectories_from_data(data["place_trajectories"])
-        self.return_place_trajectories = trajectories_from_data(
-            data["return_place_trajectories"]
-        )
+        if data.get("return_travel_trajectories"):
+            self.return_travel_trajectories = MinimalTrajectories.from_data(
+                data["return_travel_trajectories"]
+            )
+        if data.get("place_trajectories"):
+            self.place_trajectories = MinimalTrajectories.from_data(
+                data["place_trajectories"]
+            )
+        if data.get("return_place_trajectories"):
+            self.return_place_trajectories = MinimalTrajectories.from_data(
+                data["return_place_trajectories"]
+            )
 
     # Trajectories setup
     ######################
@@ -443,8 +446,9 @@ class PlaceElement(FabricationElement):
     @property
     def return_travel_trajectories(self):
         """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed travel trajectories."""  # noqa: E501
-        return self.return_travel_trajectories_ or two_levels_reversed(
-            self.travel_trajectories
+        return (
+            self.return_travel_trajectories_
+            or self.travel_trajectories.reversed_recursively()
         )
 
     @return_travel_trajectories.setter
@@ -454,12 +458,14 @@ class PlaceElement(FabricationElement):
     @property
     def place_trajectories(self):
         """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or frame trajectories derived from location."""  # noqa: E501
-        return self.place_trajectories_ or [
-            MinimalTrajectory(
-                [self.get_egress_frame(), self.get_uncompressed_top_frame()]
-            ),
-            MinimalTrajectory([self.get_compressed_top_frame()]),
-        ]
+        return self.place_trajectories_ or MinimalTrajectories(
+            [
+                MinimalTrajectory(
+                    [self.get_egress_frame(), self.get_uncompressed_top_frame()]
+                ),
+                MinimalTrajectory([self.get_compressed_top_frame()]),
+            ]
+        )
 
     @place_trajectories.setter
     def place_trajectories(self, trajectories):
@@ -468,8 +474,9 @@ class PlaceElement(FabricationElement):
     @property
     def return_place_trajectories(self):
         """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed place trajectories."""  # noqa: E501
-        return self.return_place_trajectories_ or two_levels_reversed(
-            self.place_trajectories
+        return (
+            self.return_place_trajectories_
+            or self.place_trajectories.reversed_recursively()
         )
 
     @return_place_trajectories.setter

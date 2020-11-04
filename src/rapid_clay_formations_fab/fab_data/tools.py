@@ -103,7 +103,7 @@ def load_fabrication_elements(path_or_dict):
     """
     fab_data = _get_fab_data(path_or_dict)
 
-    if fab_data.get("compression_ratio"):
+    if fab_data[0].get("travel_trajectories"):
         return [PlaceElement.from_data(data) for data in fab_data]
 
     return [FabricationElement.from_data(data) for data in fab_data]
