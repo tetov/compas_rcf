@@ -9,6 +9,7 @@ import time
 from compas_fab.robots import Configuration
 from compas_fab.robots import to_radians
 import compas_rrc
+from compas_rrc.client import SequenceCounter
 from compas_rrc import Motion
 from compas_rrc import MoveToJoints
 from compas_rrc import MoveToRobtarget
@@ -132,6 +133,10 @@ class AbbRcfClient(compas_rrc.AbbClient):
             except compas_rrc.TimeoutException:
                 log.info("No response from controller, restarting abb-driver service.")
                 restart_container(DRIVER_CONTAINER_NAME)
+
+                # Reset the S-ID counter to skip warning from rapid program
+                self.counter = SequenceCounter()
+
                 time.sleep(self.docker_cfg.sleep_after_up)
         else:
             raise compas_rrc.TimeoutException("Failed to connect to robot.")
@@ -368,7 +373,6 @@ class AbbRcfClient(compas_rrc.AbbClient):
             element.place_trajectories[-1],
             self.speed.pick_place,
             self.zone.place,
-            stop_at_last=True,
             motion_type=Motion.LINEAR,
         )
 

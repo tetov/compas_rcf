@@ -65,12 +65,8 @@ def fab_run(run_conf, run_data):
 
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
-            if elem.placed:  # Don't place elements marked as placed
+            if elem.placed:  # Don't place elements that are marked as placed
                 continue
-
-            # Send instructions and store feedback obj
-            pick_future = rob_client.pick_element()
-            place_future = rob_client.place_element(elem)
 
             # Setup log message and flex pendant message
             current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
@@ -83,14 +79,15 @@ def fab_run(run_conf, run_data):
                 pendant_msg += cycle_time_msg
             pendant_msg += current_elem_desc
 
-            # Wait until element is picked
-            cycle_time = pick_future.result()
+            # TP write limited to 40 char / line
+            rob_client.send(PrintText(pendant_msg[:40]))
+
+            # Send instructions and store feedback obj
+            pick_future = rob_client.pick_element()
+            place_future = rob_client.place_element(elem)
 
             # set placed to true right after pick elem
             elem.placed = True
-
-            # TP write limited to 40 char / line
-            rob_client.send(PrintText(pendant_msg[:40]))
 
             # Write progress to json while waiting for robot
             run_data["fab_data"] = fab_elements
@@ -99,13 +96,11 @@ def fab_run(run_conf, run_data):
             log.debug(f"Wrote fabrication data to {progress_file.name}")
 
             # This blocks until cycle is finished
-            cycle_time += place_future.result()
-
-            elem.cycle_time = cycle_time
+            elem.cycle_time = pick_future.result() + place_future.result()
 
             # format float to int to save characters on teach pendant
             cycle_time_msg = f"LC {elem.cycle_time:0.0f}, "
-            log.info(cycle_time_msg)
+            log.info(f"Last cycle time was: {elem.cycle_time:0.0f}")
 
             elem.time_placed = datetime.now().timestamp()
             log.debug(f"Time placed was {elem.time_placed}")
