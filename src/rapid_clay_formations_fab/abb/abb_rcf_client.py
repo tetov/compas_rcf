@@ -6,18 +6,17 @@ from __future__ import print_function
 import logging
 import time
 
+import compas_rrc
 from compas_fab.robots import Configuration
 from compas_fab.robots import to_radians
-import compas_rrc
-from compas_rrc.client import SequenceCounter
 from compas_rrc import Motion
 from compas_rrc import MoveToJoints
 from compas_rrc import MoveToRobtarget
 
 from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 from rapid_clay_formations_fab.docker import restart_container
-from rapid_clay_formations_fab.robots import MinimalTrajectory
 from rapid_clay_formations_fab.robots import MinimalTrajectories
+from rapid_clay_formations_fab.robots import MinimalTrajectory
 
 log = logging.getLogger(__name__)
 
@@ -133,9 +132,6 @@ class AbbRcfClient(compas_rrc.AbbClient):
             except compas_rrc.TimeoutException:
                 log.info("No response from controller, restarting abb-driver service.")
                 restart_container(DRIVER_CONTAINER_NAME)
-
-                # Reset the S-ID counter to skip warning from rapid program
-                self.counter = SequenceCounter()
 
                 time.sleep(self.docker_cfg.sleep_after_up)
         else:
@@ -395,6 +391,16 @@ class AbbRcfClient(compas_rrc.AbbClient):
                 self.speed.travel,
                 self.zone.travel,
             )
+
+        # Return to station egress
+        self.send(
+            MoveToRobtarget(
+                self.pick_station.station_egress_frame,
+                self.EXTERNAL_AXES_DUMMY,
+                self.speed.travel,
+                self.zone.travel,
+            )
+        )
 
         self.send(compas_rrc.StopWatch())
 
