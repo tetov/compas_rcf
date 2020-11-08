@@ -34,11 +34,15 @@ Tools
    rapid_clay_formations_fab.utils
    rapid_clay_formations_fab.ui
 """
-import os
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-HERE = os.path.dirname(__file__)
-HOME = os.path.abspath(os.path.join(HERE, "../.."))
-DOCKER_COMPOSE_DIR = os.path.join(HERE, "_compose_files")
+from os import path
+
+HERE = path.dirname(__file__)
+HOME = path.abspath(path.join(HERE, "../.."))
+DOCKER_COMPOSE_DIR = path.join(HERE, "_compose_files")
 
 # Global debug flag
 DEBUG = False
@@ -56,7 +60,7 @@ except ImportError:
 
         __version__ = get_version(HOME)
     except ImportError:
-        __version__ = "dev"
+        __version__ = "src"
 
 __author__ = "Anton T Johansson"
 __copyright__ = "MAS DFAB 1920 students and tutors"
