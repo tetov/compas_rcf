@@ -64,7 +64,9 @@ class MinimalTrajectories(_ListLike):
 
     __slots__ = "list_"
 
-    def __init__(self, trajectories):  # type: (List[MinimalTrajectory]) -> None
+    def __init__(
+        self, trajectories
+    ):  # type: (List[MinimalTrajectory]) -> None # skipcq
         super(MinimalTrajectories, self).__init__(trajectories)
 
     def __repr__(self):
@@ -145,7 +147,9 @@ class MinimalTrajectory(_ListLike):
     JOINT_TRAJECTORY = 0
     FRAME_TRAJECTORY = 1
 
-    def __init__(self, points):  # type: (List[Union[Frame, Configuration]]) -> None
+    def __init__(
+        self, points
+    ):  # type: (List[Union[Frame, Configuration]]) -> None # skipcq
         super(MinimalTrajectory, self).__init__(points)
 
     def __repr__(self):
