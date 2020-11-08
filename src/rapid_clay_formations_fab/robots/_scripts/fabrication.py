@@ -81,9 +81,9 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             # instructions and place instructions to (hopefully) make sure the
             # robot always has instructions to execute
 
-            if prev_elem and prev_elem._cycle_time_future:  # Is there a clock to check?
+            if prev_elem and prev_elem.cycle_time_future:  # Is there a clock to check?
                 prev_elem.cycle_time = _wait_and_return_future(
-                    prev_elem._cycle_time_future
+                    prev_elem.cycle_time_future
                 )
                 if not prev_elem.cycle_time:
                     log.info("Exiting script, breaking loop and saving run_data.")
@@ -98,7 +98,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             rob_client.place_element(elem)
             rob_client.send(compas_rrc.StopWatch())
 
-            elem._cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
+            elem.cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
 
             # set placed to mark progress
             elem.placed = True
@@ -109,12 +109,12 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             prev_elem = elem
 
         # Wait on last element
-        if prev_elem and prev_elem._cycle_time_future:
-            prev_elem.cycle_time = _wait_and_return_future(prev_elem._cycle_time_future)
+        if prev_elem and prev_elem.cycle_time_future:
+            prev_elem.cycle_time = _wait_and_return_future(prev_elem.cycle_time_future)
 
         # Write progress of last run of loop
         # First figure out if the file should be labeled done though.
-        _placed_is_true = filter(lambda x: getattr(x, "placed"), fab_elements)
+        _placed_is_true = filter(lambda x: x.placed, fab_elements)
         if len(list(_placed_is_true)) == len(fab_elements):
             _file = done_file
         else:

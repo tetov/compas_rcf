@@ -30,8 +30,8 @@ class _ListLike(MutableSequence):
 
     __slots__ = ()
 
-    def __init__(self):
-        self.list_ = list()  # type: List
+    def __init__(self, list_):
+        self.list_ = list(list_)  # type: List
 
     def __getitem__(self, index):  # type: (Union[int, slice]) -> Any
         return self.list_[index]
@@ -65,7 +65,7 @@ class MinimalTrajectories(_ListLike):
     __slots__ = "list_"
 
     def __init__(self, trajectories):  # type: (List[MinimalTrajectory]) -> None
-        self.list_ = list(trajectories)  # type: List[MinimalTrajectory]
+        super(MinimalTrajectories, self).__init__(trajectories)
 
     def __repr__(self):
         return "MinimalTrajectories({})".format(self.trajectories)
@@ -146,7 +146,7 @@ class MinimalTrajectory(_ListLike):
     FRAME_TRAJECTORY = 1
 
     def __init__(self, points):  # type: (List[Union[Frame, Configuration]]) -> None
-        self.list_ = list(points)
+        super(MinimalTrajectory, self).__init__(points)
 
     def __repr__(self):
         return "MinimalTrajectory({})".format(self.points)

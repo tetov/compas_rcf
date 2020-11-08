@@ -402,7 +402,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
 
         return self.default_return_travel_trajectories
 
-    def _get_place_trajectories(self, element: PlaceElement) -> MinimalTrajectories:
+    @staticmethod
+    def _get_place_trajectories(element: PlaceElement) -> MinimalTrajectories:
         if element.place_trajectories:
             return element.place_trajectories
 

@@ -63,7 +63,9 @@ class FabricationElement(object):
         self.egress_frame_distance = egress_frame_distance
         self.attrs = attrs or {}
 
-        self._cycle_time_future = None  # type: FutureResult
+        # Not included in data functions since this value is only valid during
+        # fabrication run.
+        self.cycle_time_future = None  # type: FutureResult
 
     def __repr__(self):
         return "FabricationElement({}, {}, {}, {}. {})".format(

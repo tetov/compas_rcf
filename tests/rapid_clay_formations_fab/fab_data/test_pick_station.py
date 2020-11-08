@@ -6,7 +6,7 @@ import pytest
 from compas.geometry import Frame
 
 from rapid_clay_formations_fab.fab_data import FabricationElement
-from rapid_clay_formations_fab.fab_data import PickStation
+from rapid_clay_formations_fab.robots import PickStation
 
 
 @pytest.fixture
