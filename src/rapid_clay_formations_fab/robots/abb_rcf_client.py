@@ -59,7 +59,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         self.close()
         self.terminate()
 
-    def confirm_start(self):
+    def confirm_start(self) -> None:
         """Stop program and prompt user to press play on pendant to resume."""
         self.send(compas_rrc.PrintText("Press play when ready."))
         self.send(compas_rrc.Stop())
@@ -68,7 +68,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # After user presses play on pendant execution resumes:
         self.send(compas_rrc.PrintText("Resuming execution."))
 
-    def ping(self, timeout: float = 10):
+    def ping(self, timeout: float = 10) -> None:
         """Ping ABB robot controller.
 
         Parameters
@@ -258,16 +258,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
 
         self.send(compas_rrc.PrintText("Finished"))
 
-    def pick_element(self) -> compas_rrc.FutureResult:
-        """Send movement and IO instructions to pick up fabrication element.
-
-        Parameter
-        ----------
-        element : :class:`~rapid_clay_formations_fab.fab_data.FabricationElement`
-            Representation of fabrication element to pick up.
-        """
-        self.send(compas_rrc.StartWatch())
-
+    def pick_element(self) -> None:
+        """Send movement and IO instructions to pick up fabrication element."""
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
         log.debug("Tool {self.pick_place_tool.name} set.")
         self.send(compas_rrc.SetWorkObject(self.wobjs.pick))
@@ -325,70 +317,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
             )
         )
 
-        self.send(compas_rrc.StopWatch())
-
-        return self.send(compas_rrc.ReadWatch())
-
-    def execute_trajectory(
-        self,
-        trajectory: MinimalTrajectory,
-        speed: float,
-        zone: typing.Union[compas_rrc.Zone, int],
-        blocking: bool = False,
-        stop_at_last: bool = False,
-        motion_type: int = Motion.JOINT,
-    ) -> None:
-        """Execute a :class:`~compas_fab.JointTrajectory`.
-
-        Parameters
-        ----------
-        trajectory : :class:`rapid_clay_formations_fab.robots.JointTrajectory`
-            Trajectory defined by trajectory points, i.e. configurations.
-        speed : :obj:`float`
-            Speed in mm/s.
-        zone : :obj:`dict`
-            Zone defined either in millimeters or using
-            :class:`compas_rrc.ZoneData` names.
-        blocking : :obj:`bool`, optional
-            If execution should be blocked while waiting for the robot to reach
-            last trajectory point. Defaults to ``False``
-        stop_at_last : :obj:`bool`, optional
-            If last trajectory point should be sent as a non fly-by point, i.e.
-            should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
-        """
-        log.debug(f"Trajectory: {trajectory}")
-        kwargs = {}
-
-        if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
-            trajectory_pts = trajectory.as_robot_joints_points()
-            instruction = MoveToJoints
-
-        elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
-            trajectory_pts = trajectory
-            instruction = MoveToRobtarget
-            kwargs["motion_type"] = motion_type
-        else:
-            raise RuntimeError("Trajectory not recognized: {}".format(trajectory))
-
-        for pt in trajectory_pts[:-1]:  # skip last
-            self.send(instruction(pt, self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs))
-
-        if blocking:
-            send_method_last_pt = self.send_and_wait
-        else:
-            send_method_last_pt = self.send
-
-        if stop_at_last:
-            zone = compas_rrc.Zone.FINE
-
-        # send last
-        send_method_last_pt(
-            instruction(
-                trajectory_pts[-1], self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs
-            )
-        )
-
-    def place_element(self, element: PlaceElement) -> compas_rrc.FutureResult:
+    def place_element(self, element: PlaceElement) -> None:
         """Send movement and IO instructions to place a fabrication element.
 
         Uses `fab_conf` set up with command line arguments and configuration
@@ -412,21 +341,16 @@ class AbbRcfFabricationClient(AbbRcfClient):
         self.send(compas_rrc.SetWorkObject(self.wobjs.place))
         log.debug(f"Work object {self.wobjs.place} set.")
 
-        # start watch
-        self.send(compas_rrc.StartWatch())
-
-        # Use element specific trajectory, else default.
-        for trajectory in (
-            element.travel_trajectories or self.default_travel_trajectories
-        ):
+        for trajectory in self._get_travel_trajectories(element):
             self.execute_trajectory(
                 trajectory,
                 self.speed.travel,
                 self.zone.travel,
             )
 
+        place_trajectories = self._get_place_trajectories(element)
         # Execute trajectories in place motion until the last
-        for trajectory in element.place_trajectories[:-1]:
+        for trajectory in place_trajectories[:-1]:
             self.execute_trajectory(
                 trajectory, self.speed.travel, self.zone.travel, stop_at_last=True
             )
@@ -438,45 +362,122 @@ class AbbRcfFabricationClient(AbbRcfClient):
 
         # Last place motion
         self.execute_trajectory(
-            element.place_trajectories[-1],
+            place_trajectories[-1],
             self.speed.pick_place,
             self.zone.place,
             motion_type=Motion.LINEAR,
         )
 
+        return_place_trajectories = self._get_return_place_trajectories(element)
         self.execute_trajectory(
-            element.return_place_trajectories[0],
+            return_place_trajectories[0],
             self.speed.pick_place,
             self.zone.place,
         )
 
-        for trajectory in element.return_place_trajectories[1:]:
+        for trajectory in return_place_trajectories[1:]:
             self.execute_trajectory(trajectory, self.speed.travel, self.zone.travel)
 
-        # Use element specific trajectory, else default.
-        for trajectory in (
-            element.return_travel_trajectories
-            or self.default_return_travel_trajectories
-        ):
+        return_travel_trajectories = self._get_return_travel_trajectories(element)
+        for trajectory in return_travel_trajectories:
             self.execute_trajectory(
                 trajectory,
                 self.speed.travel,
                 self.zone.travel,
             )
 
-        # Return to station egress
-        self.send(
-            MoveToRobtarget(
-                self.pick_station.station_egress_frame,
-                self.EXTERNAL_AXES_DUMMY,
-                self.speed.travel,
-                self.zone.travel,
+    def _get_travel_trajectories(self, element: PlaceElement) -> MinimalTrajectories:
+        if element.travel_trajectories:
+            return element.travel_trajectories
+
+        return self.default_travel_trajectories
+
+    def _get_return_travel_trajectories(
+        self, element: PlaceElement
+    ) -> MinimalTrajectories:
+        if element.return_travel_trajectories:
+            return element.return_travel_trajectories
+        if element.travel_trajectories:
+            return element.travel_trajectories.reversed_recursively()
+
+        return self.default_return_travel_trajectories
+
+    def _get_place_trajectories(self, element: PlaceElement) -> MinimalTrajectories:
+        if element.place_trajectories:
+            return element.place_trajectories
+
+        approach = MinimalTrajectory(
+            [element.get_egress_frame(), element.get_uncompressed_top_frame()]
+        )
+        pressing = MinimalTrajectory([element.get_compressed_top_frame()])
+        return MinimalTrajectories([approach, pressing])
+
+    def _get_return_place_trajectories(
+        self, element: PlaceElement
+    ) -> MinimalTrajectories:
+        if element.return_place_trajectories:
+            return element.return_place_trajectories
+
+        return self._get_place_trajectories(element).reversed_recursively()
+
+    def execute_trajectory(
+        self,
+        trajectory: MinimalTrajectory,
+        speed: float,
+        zone: typing.Union[compas_rrc.Zone, int],
+        blocking: bool = False,
+        stop_at_last: bool = False,
+        motion_type: int = Motion.JOINT,
+    ) -> None:
+        """Execute a :class:`~compas_fab.JointTrajectory`.
+
+        Parameters
+        ----------
+        trajectory
+            Trajectory defined by frames or configurations.
+        speed : :obj:`float`
+            Speed in mm/s.
+        zone : :obj:`dict`
+            Zone defined either in millimeters or using
+            :class:`compas_rrc.ZoneData` names.
+        blocking : :obj:`bool`, optional
+            If execution should be blocked while waiting for the robot to reach
+            last trajectory point. Defaults to ``False``
+        stop_at_last : :obj:`bool`, optional
+            If last trajectory point should be sent as a non fly-by point, i.e.
+            should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
+        """
+        log.debug(f"Trajectory: {trajectory}.")
+        kwargs = {}
+
+        if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
+            trajectory_pts = trajectory.as_robot_joints_points()
+            instruction = MoveToJoints
+
+        elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
+            trajectory_pts = trajectory.points
+            instruction = MoveToRobtarget
+            kwargs["motion_type"] = motion_type
+        else:
+            raise RuntimeError(f"Trajectory not recognized: {trajectory}.")
+
+        for pt in trajectory_pts[:-1]:  # skip last
+            self.send(instruction(pt, self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs))
+
+        if blocking:
+            send_method_last_pt = self.send_and_wait
+        else:
+            send_method_last_pt = self.send
+
+        if stop_at_last:
+            zone = compas_rrc.Zone.FINE
+
+        # send last
+        send_method_last_pt(
+            instruction(
+                trajectory_pts[-1], self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs
             )
         )
-
-        self.send(compas_rrc.StopWatch())
-
-        return self.send(compas_rrc.ReadWatch())
 
     def retract_needles(self) -> None:
         """Send signal to retract needles on pick and place tool."""

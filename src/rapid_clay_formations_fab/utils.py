@@ -16,19 +16,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
-
 import compas
 import compas.geometry as cg
-from compas import raise_if_ironpython
 
 from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
 from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
-
-try:
-    import Rhino.Geometry as rg
-except ImportError:
-    raise_if_ironpython()
 
 
 def wrap_list(list_, idx):
@@ -82,12 +74,14 @@ def ensure_frame(frame_like):
         return cg.Frame(frame_like, [1, 0, 0], [0, 1, 0])
 
     try:  # try to compare to Rhino objects
+        import Rhino.Geometry as rg
+
         if isinstance(frame_like, rg.Plane):
             return rgplane_to_cgframe(frame_like)
         if isinstance(frame_like, rg.Point3d):
             pt = rgpoint_to_cgpoint(frame_like)
             return cg.Frame(pt, [1, 0, 0], [0, 1, 0])
-    except NameError:
+    except ImportError:
         pass
 
     raise TypeError(
@@ -109,18 +103,3 @@ def temp_change_compas_precision(precision):
         return wrapped_func
 
     return decorator
-
-
-class CompasObjEncoder(json.JSONEncoder):
-    """JSON encoder for :any:`compas` objects.
-
-    Implemented from https://docs.python.org/3/library/json.html#json.JSONEncoder
-    """
-
-    def default(self, obj):
-        # If obj has to_data method use that to serialize the object
-        if hasattr(obj, "to_data"):
-            return obj.to_data()
-
-        # else use standard
-        return json.JSONEncoder.default(self, obj)

@@ -6,19 +6,23 @@ from __future__ import print_function
 import json
 import logging
 import re
+import time
 from datetime import datetime
 from pathlib import Path
-from typing import Sequence
+from typing import Any
+from typing import List
+from typing import Optional
 from typing import Tuple
 
+import compas_rrc
 import confuse
 import questionary
+from compas.utilities import DataEncoder
 
-import rapid_clay_formations_fab.robots as rcf_robots
 from rapid_clay_formations_fab.fab_data import PlaceElement
 from rapid_clay_formations_fab.robots import AbbRcfFabricationClient
+from rapid_clay_formations_fab.robots import PrintTextNoErase
 from rapid_clay_formations_fab.robots._scripts import compose_up_driver
-from rapid_clay_formations_fab.utils import CompasObjEncoder
 
 log: logging.Logger = logging.getLogger(__name__)
 
@@ -29,16 +33,17 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
     compose_up_driver(run_conf.robot_client.controller)
 
     # setup fab data
-    fab_elements = [PlaceElement.from_data(data) for data in run_data["fab_data"]]
-    log.info("Fabrication data read.")
+    fab_elements = run_data["fab_data"]
 
     log.info(f"{len(fab_elements)} fabrication elements.")
 
-    pick_station = rcf_robots.PickStation.from_data(run_data["pick_station"])
+    pick_station = run_data["pick_station"]
 
     progress_file, done_file = _setup_file_paths(run_conf.run_data_path)
 
     _edit_fab_data(fab_elements, run_conf)
+
+    prev_elem: Optional[PlaceElement] = None
 
     # Start abb client
     with AbbRcfFabricationClient(run_conf.robot_client, pick_station) as rob_client:
@@ -50,64 +55,97 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         # Set speed, accel, tool, wobj and move to start pos
         rob_client.pre_procedure()
 
-        # Initialize this before first run, it gets set after placement
-        cycle_time_msg = None
-
+        i = 0
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
             if elem.placed:  # Don't place elements that are marked as placed
                 continue
 
             # Setup log message and flex pendant message
-            current_elem_desc = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
-            log.info(current_elem_desc)
+            log_msg = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
+            log.info(log_msg)
 
             # Having this as an f-string should mean that the timestamp will
             # be set when the PrintText command is sent
-            pendant_msg = f"{datetime.now().strftime('%H:%M')} "
-            if cycle_time_msg:
-                pendant_msg += cycle_time_msg
-            pendant_msg += current_elem_desc
+            pendant_msg = f"{datetime.now().strftime('%H:%M')}: {log_msg}"
 
-            # TP write limited to 40 char / line
-            rob_client.send(rcf_robots.PrintTextNoErase(pendant_msg[:40]))
+            rob_client.send(PrintTextNoErase(pendant_msg))
 
-            # Send instructions and store feedback obj
-            pick_future = rob_client.pick_element()
-            place_future = rob_client.place_element(elem)
+            # Start clock and send instructions
+            rob_client.send(compas_rrc.StartWatch())
+            rob_client.pick_element()
 
-            # set placed to true right after pick elem
+            # Save cycle time from last run
+            # The main reason though is to stop the fabrication loop until
+            # confirmation that last loop finished. It is done between pick
+            # instructions and place instructions to (hopefully) make sure the
+            # robot always has instructions to execute
+
+            if prev_elem and prev_elem._cycle_time_future:  # Is there a clock to check?
+                prev_elem.cycle_time = _wait_and_return_future(
+                    prev_elem._cycle_time_future
+                )
+                if not prev_elem.cycle_time:
+                    log.info("Exiting script, breaking loop and saving run_data.")
+                    break
+                cycle_time_msg = f"Last cycle time was: {prev_elem.cycle_time:0.0f}"
+                log.info(cycle_time_msg)
+                rob_client.send(PrintTextNoErase(cycle_time_msg))
+
+                prev_elem.time_placed = datetime.now().timestamp()
+                log.debug(f"Time prev elem was placed: {elem.time_placed}")
+
+            rob_client.place_element(elem)
+            rob_client.send(compas_rrc.StopWatch())
+
+            elem._cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
+
+            # set placed to mark progress
             elem.placed = True
 
             # Write progress to json while waiting for robot
-            run_data["fab_data"] = fab_elements
-            with progress_file.open(mode="w") as fp:
-                json.dump(run_data, fp, cls=CompasObjEncoder)
-            log.debug(f"Wrote fabrication data to {progress_file.name}")
+            _write_run_data(progress_file, run_data, fab_elements)
 
-            # This blocks until cycle is finished
-            elem.cycle_time = pick_future.result() + place_future.result()
+            prev_elem = elem
 
-            # format float to int to save characters on teach pendant
-            cycle_time_msg = f"LC {elem.cycle_time:0.0f}, "
-            log.info(f"Last cycle time was: {elem.cycle_time:0.0f}")
-
-            elem.time_placed = datetime.now().timestamp()
-            log.debug(f"Time placed was {elem.time_placed}")
+        # Wait on last element
+        if prev_elem and prev_elem._cycle_time_future:
+            prev_elem.cycle_time = _wait_and_return_future(prev_elem._cycle_time_future)
 
         # Write progress of last run of loop
-        run_data["fab_data"] = fab_elements
-        with done_file.open(mode="w") as fp:
-            json.dump(run_data, fp, cls=CompasObjEncoder)
-        log.info(f"Wrote final run_data to {done_file}")
+        # First figure out if the file should be labeled done though.
+        _placed_is_true = filter(lambda x: getattr(x, "placed"), fab_elements)
+        if len(list(_placed_is_true)) == len(fab_elements):
+            _file = done_file
+        else:
+            _file = progress_file
+
+        _write_run_data(_file, run_data, fab_elements)
 
         # Send robot to safe end position and close connection
         rob_client.post_procedure()
 
 
-def _edit_fab_data(
-    fab_elems: Sequence[PlaceElement], run_conf: confuse.AttrDict
+def _wait_and_return_future(future: compas_rrc.FutureResult) -> Any:
+    try:
+        while future.done is False:
+            time.sleep(3)
+    except KeyboardInterrupt:
+        return
+
+    return future.result()
+
+
+def _write_run_data(
+    file_: Path, run_data: dict, fab_elements: List[PlaceElement]
 ) -> None:
+    run_data["fab_data"] = fab_elements
+    with file_.open(mode="w") as fp:
+        json.dump(run_data, fp, cls=DataEncoder)
+    log.info(f"Wrote run_data to {file_}.")
+
+
+def _edit_fab_data(fab_elems: List[PlaceElement], run_conf: confuse.AttrDict) -> None:
     """Edit placed marker for fabrication elements.
 
     Parameters

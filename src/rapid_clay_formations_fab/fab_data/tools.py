@@ -7,9 +7,8 @@ import csv
 import json
 from collections import OrderedDict
 
-from rapid_clay_formations_fab.fab_data import FabricationElement
-from rapid_clay_formations_fab.fab_data import PlaceElement
-from rapid_clay_formations_fab.utils import CompasObjEncoder
+from compas.utilities import DataDecoder
+
 
 try:
     from pathlib import Path
@@ -47,7 +46,9 @@ def csv_reports(args):
             print("{} already exists, skipping.".format(csv_file))
             continue
 
-        elements = load_fabrication_elements(json_file)
+        with json_file.open(mode="r") as fp:
+            run_data = json.load(fp, cls=DataDecoder)
+        elements = run_data["fab_data"]
 
         headers_attrs = OrderedDict(
             (
@@ -72,46 +73,7 @@ def csv_reports(args):
                     row.append(getattr(elem, attr, None))
 
 
-def _load_run_data(file_path):
-    with open(str(file_path), mode="r") as fp:
-        run_data = json.load(fp)
-
-    return run_data
-
-
-def _get_fab_data(path_or_dict):
-    if isinstance(path_or_dict, dict):
-        dict_ = path_or_dict
-    else:
-        dict_ = _load_run_data(path_or_dict)
-
-    return dict_["fab_data"]
-
-
-def load_fabrication_elements(path_or_dict):
-    """Load fabrication data from JSON file.
-
-    Parameters
-    ----------
-    path_or_dict : :class:`os.PathLike` or :obj:`dict`
-        Path to JSON representation or dictionary representation of fabrication
-        element.
-
-    Returns
-    -------
-    :obj:`list` of :class:`FabricationElement`
-    """
-    fab_data = _get_fab_data(path_or_dict)
-
-    if fab_data[0].get("travel_trajectories"):
-        return [PlaceElement.from_data(data) for data in fab_data]
-
-    return [FabricationElement.from_data(data) for data in fab_data]
-
-
-def get_average_cycle_time(path_or_dict):
-    elements = load_fabrication_elements(path_or_dict)
-
+def get_average_cycle_time(elements):
     sum_ = 0
     count = 0
     for elem in elements:
@@ -137,8 +99,9 @@ def mark_placed(path, from_=None, to=None):
 
 
 def renumber_fab_elements(path, prefix=None):
-    run_data = _load_run_data(path)
-    fab_elems = load_fabrication_elements(run_data)
+    with open(path, mode="r") as fp:
+        run_data = json.load(fp, cls=DataDecoder)
+    fab_elems = run_data["fab_data"]
 
     for i, fab_elem in enumerate(fab_elems):
         if prefix:
@@ -146,9 +109,8 @@ def renumber_fab_elements(path, prefix=None):
         else:
             fab_elem.id_ = i
 
-    run_data["fab_data"] = fab_elems
     with open(path, mode="w") as fp:
-        json.dump(run_data, fp, cls=CompasObjEncoder)
+        json.dump(run_data, fp, cls=DataDecoder)
 
 
 def update_fabdata_attrs(
@@ -171,8 +133,9 @@ def update_fabdata_attrs(
     overwrite : :obj:`bool`, optional
         Overwrite attributes. Defaults to ``False``.
     """
-    run_data = _load_run_data(path)
-    elements = load_fabrication_elements(run_data)
+    with open(path, mode="r") as fp:
+        run_data = json.load(fp, cls=DataDecoder)
+    elements = run_data["fab_data"]
 
     if not from_:
         from_ = 0
@@ -196,6 +159,5 @@ def update_fabdata_attrs(
         else:
             print("Element with index {} and id {} not updated.".format(i, elem.id_))
 
-    run_data["fab_data"] = elements
     with open(path, mode="w") as fp:
-        json.dump(run_data, fp, cls=CompasObjEncoder)
+        json.dump(run_data, fp, cls=DataDecoder)

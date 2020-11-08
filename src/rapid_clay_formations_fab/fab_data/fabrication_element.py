@@ -8,13 +8,20 @@ import math
 import compas.datastructures
 import compas.geometry as cg
 
-from rapid_clay_formations_fab.robots import MinimalTrajectories
-from rapid_clay_formations_fab.robots import MinimalTrajectory
-
 try:
     import Rhino.Geometry as rg
 
     from rapid_clay_formations_fab.rhino import cgframe_to_rgplane
+except ImportError:
+    pass
+
+try:
+    import typing
+
+    if typing.TYPE_CHECKING:
+        from compas_rrc import FutureResult
+
+        from rapid_clay_formations_fab.robots import MinimalTrajectories
 except ImportError:
     pass
 
@@ -42,19 +49,21 @@ class FabricationElement(object):
 
     def __init__(
         self,
-        location,
-        id_=None,
-        radius=45,
-        height=150,
-        egress_frame_distance=200,
-        attrs=None,
-    ):
+        location,  # type: cg.Frame
+        id_=None,  # type: str
+        radius=45,  # type: float
+        height=150,  # type: float
+        egress_frame_distance=200,  # type: float
+        attrs=None,  # type: dict
+    ):  # type: (...) -> None
         self.location = location
         self.id_ = id_
         self.radius = radius
         self.height = height
         self.egress_frame_distance = egress_frame_distance
         self.attrs = attrs or {}
+
+        self._cycle_time_future = None  # type: FutureResult
 
     def __repr__(self):
         return "FabricationElement({}, {}, {}, {}. {})".format(
@@ -69,7 +78,7 @@ class FabricationElement(object):
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`FabricationElement`."""  # noqa: E501
         return {
-            "location": self.location.to_data(),
+            "location": self.location,
             "id_": self.id_,
             "radius": self.radius,
             "height": self.height,
@@ -79,7 +88,7 @@ class FabricationElement(object):
 
     @data.setter
     def data(self, data):
-        self.location = cg.Frame.from_data(data["location"])
+        self.location = data["location"]
         self.id_ = data["id_"]
         self.radius = data["radius"]
         self.height = data["height"]
@@ -359,21 +368,21 @@ class PlaceElement(FabricationElement):
 
     def __init__(
         self,
-        location,
-        id_,
-        radius=45,
-        height=150,
-        compression_ratio=0.5,
-        egress_frame_distance=200,
-        travel_trajectories=None,
-        place_trajectories=None,
-        return_travel_trajectories=None,
-        return_place_trajectories=None,
-        cycle_time=None,
-        placed=False,
-        time_placed=None,
-        attrs=None,
-    ):
+        location,  # type: cg.Frame
+        id_,  # type: str
+        radius=45,  # type: float
+        height=150,  # type: float
+        compression_ratio=0.5,  # type: float
+        egress_frame_distance=200,  # type: float
+        travel_trajectories=None,  # type: MinimalTrajectories
+        place_trajectories=None,  # type: MinimalTrajectories
+        return_travel_trajectories=None,  # type: MinimalTrajectories
+        return_place_trajectories=None,  # type: MinimalTrajectories
+        cycle_time=None,  # type: float
+        placed=False,  # type: bool
+        time_placed=None,  # type: float
+        attrs=None,  # type: dict
+    ):  # type: (...) -> None
         super(PlaceElement, self).__init__(
             location,
             id_=id_,
@@ -404,20 +413,9 @@ class PlaceElement(FabricationElement):
         data["time_placed"] = self.time_placed
 
         data["travel_trajectories"] = self.travel_trajectories
-
-        # optional trajectories
-        opt_traj_attrs = (
-            "return_travel_trajectories",
-            "place_trajectories",
-            "return_place_trajectories",
-        )
-
-        for attr in opt_traj_attrs:
-            # Get value of property attribute (ending with "_")
-            # Returns none if there is no value set explicitly
-            attr_value = getattr(self, attr + "_", None)
-            if attr_value:
-                data[attr] = attr_value.to_data()
+        data["return_travel_trajectories"] = self.return_travel_trajectories
+        data["place_trajectories"] = self.place_trajectories
+        data["return_place_trajectories"] = self.return_place_trajectories
 
         return data
 
@@ -427,66 +425,15 @@ class PlaceElement(FabricationElement):
         # https://stackoverflow.com/a/37663266
         super(PlaceElement, self.__class__).data.fset(self, data)
 
-        self.compression_ratio = data["compression_ratio"]
-        self.cycle_time = data["cycle_time"]
-        self.placed = data["placed"]
-        self.time_placed = data["time_placed"]
+        self.compression_ratio = data.get("compression_ratio")
+        self.cycle_time = data.get("cycle_time")
+        self.placed = data.get("placed")
+        self.time_placed = data.get("time_placed")
 
-        traj_attrs = (
-            "travel_trajectories",
-            "return_travel_trajectories",
-            "place_trajectories",
-            "return_place_trajectories",
-        )
-
-        for attr in traj_attrs:
-            if data.get(attr):
-                setattr(self, attr, MinimalTrajectories.from_data(data[attr]))
-
-    # Trajectories setup
-    ######################
-
-    @property
-    def return_travel_trajectories(self):
-        """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed travel trajectories."""  # noqa: E501
-        if self.return_place_trajectories_:
-            return self.return_travel_trajectories_
-        if self.travel_trajectories:
-            return self.travel_trajectories.reversed_recursively()
-
-        # else returns None
-
-    @return_travel_trajectories.setter
-    def return_travel_trajectories(self, trajectories):
-        self.return_travel_trajectories_ = trajectories
-
-    @property
-    def place_trajectories(self):
-        """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or frame trajectories derived from location."""  # noqa: E501
-        return self.place_trajectories_ or MinimalTrajectories(
-            [
-                MinimalTrajectory(
-                    [self.get_egress_frame(), self.get_uncompressed_top_frame()]
-                ),
-                MinimalTrajectory([self.get_compressed_top_frame()]),
-            ]
-        )
-
-    @place_trajectories.setter
-    def place_trajectories(self, trajectories):
-        self.place_trajectories_ = trajectories
-
-    @property
-    def return_place_trajectories(self):
-        """:class:`rapid_clay_formations_fab.robots.MinimalTrajectory` : Either specific trajectories or reversed place trajectories."""  # noqa: E501
-        return (
-            self.return_place_trajectories_
-            or self.place_trajectories.reversed_recursively()
-        )
-
-    @return_place_trajectories.setter
-    def return_place_trajectories(self, trajectories):
-        self.return_place_trajectories_ = trajectories
+        self.travel_trajectories = data.get("travel_trajectories")
+        self.return_travel_trajectories = data.get("return_travel_trajectories")
+        self.place_trajectories = data.get("place_trajectories")
+        self.return_place_trajectories = data.get("return_place_trajectories")
 
     # Derived frames
     ################

@@ -12,6 +12,8 @@ import logging
 import pathlib
 from datetime import datetime
 
+from compas.utilities import DataDecoder
+
 import rapid_clay_formations_fab.robots._scripts as scripts
 from rapid_clay_formations_fab import __version__
 from rapid_clay_formations_fab.fab_data import ABB_RCF_CONF_TEMPLATE
@@ -87,7 +89,7 @@ def main() -> None:
 def _fab_entrypoint(args: argparse.Namespace) -> None:
     # Load dictionary from file specified on command line
     with args.run_data_path.open(mode="r") as f:
-        run_data = json.load(f)
+        run_data = json.load(f, cls=DataDecoder)
 
     # Setup logging to file
     log = logging.getLogger(__name__)
