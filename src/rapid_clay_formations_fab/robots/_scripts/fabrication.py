@@ -7,32 +7,26 @@ import json
 import logging
 import re
 from datetime import datetime
+from pathlib import Path
+from typing import Sequence
+from typing import Tuple
 
+import confuse
 import questionary
-from compas_fab.backends.ros import RosClient
-from compas_rrc import PrintText
 
-from rapid_clay_formations_fab.abb import DOCKER_COMPOSE_PATHS
-from rapid_clay_formations_fab.abb import ROBOT_IPS
-from rapid_clay_formations_fab.abb import AbbRcfClient
-from rapid_clay_formations_fab.docker import compose_up
-from rapid_clay_formations_fab.fab_data import PickStation
+import rapid_clay_formations_fab.robots as rcf_robots
 from rapid_clay_formations_fab.fab_data import PlaceElement
+from rapid_clay_formations_fab.robots import AbbRcfFabricationClient
+from rapid_clay_formations_fab.robots._scripts import compose_up_driver
 from rapid_clay_formations_fab.utils import CompasObjEncoder
 
-# This reduces latency, see:
-# https://github.com/gramaziokohler/roslibpy/issues/41#issuecomment-607218439
-from twisted.internet import reactor  # noqa: E402 isort:skip
-
-reactor.timeout = lambda: 0.0001
-
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
 
-def fab_run(run_conf, run_data):
+def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
     """Fabrication runner placing elements according to fab_data and conf."""
 
-    _compose_up_driver(run_conf.robot_client.controller)
+    compose_up_driver(run_conf.robot_client.controller)
 
     # setup fab data
     fab_elements = [PlaceElement.from_data(data) for data in run_data["fab_data"]]
@@ -40,18 +34,14 @@ def fab_run(run_conf, run_data):
 
     log.info(f"{len(fab_elements)} fabrication elements.")
 
-    pick_station = PickStation.from_data(run_data["pick_station"])
+    pick_station = rcf_robots.PickStation.from_data(run_data["pick_station"])
 
     progress_file, done_file = _setup_file_paths(run_conf.run_data_path)
 
     _edit_fab_data(fab_elements, run_conf)
 
-    # Create Ros Client
-    with RosClient(port=9090) as ros:
-
-        # Create AbbRcfClient (subclass of AbbClient)
-        rob_client = AbbRcfClient(ros, run_conf.robot_client, pick_station)
-
+    # Start abb client
+    with AbbRcfFabricationClient(run_conf.robot_client, pick_station) as rob_client:
         rob_client.check_reconnect()
 
         # Confirm start on flexpendant
@@ -80,7 +70,7 @@ def fab_run(run_conf, run_data):
             pendant_msg += current_elem_desc
 
             # TP write limited to 40 char / line
-            rob_client.send(PrintText(pendant_msg[:40]))
+            rob_client.send(rcf_robots.PrintTextNoErase(pendant_msg[:40]))
 
             # Send instructions and store feedback obj
             pick_future = rob_client.pick_element()
@@ -109,27 +99,15 @@ def fab_run(run_conf, run_data):
         run_data["fab_data"] = fab_elements
         with done_file.open(mode="w") as fp:
             json.dump(run_data, fp, cls=CompasObjEncoder)
-        log.info("Wrote final run_data to {}".format(done_file.name))
+        log.info(f"Wrote final run_data to {done_file}")
 
         # Send robot to safe end position and close connection
         rob_client.post_procedure()
 
 
-def _compose_up_driver(target_controller):
-    """Compose up ROS services for compas_rrc ABB controll.
-
-    Parameters
-    ----------
-    target_controller : :obj:`str`
-        Target key, either ``"real"`` or ``"virtual"``, used for dictionary
-        of IPs used to connect to controller.
-    """
-    ip = {"ROBOT_IP": ROBOT_IPS[target_controller]}
-    compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
-    log.debug("Driver services are running.")
-
-
-def _edit_fab_data(fab_elems, run_conf):
+def _edit_fab_data(
+    fab_elems: Sequence[PlaceElement], run_conf: confuse.AttrDict
+) -> None:
     """Edit placed marker for fabrication elements.
 
     Parameters
@@ -138,7 +116,7 @@ def _edit_fab_data(fab_elems, run_conf):
         List of fabrication elements.
     """  # noqa: E501
 
-    def set_placed_list(idx_last_placed):
+    def set_placed_list(idx_last_placed: int) -> None:
         for i, elem in enumerate(fab_elems):
             if i <= idx_last_placed:
                 elem.placed = True
@@ -146,7 +124,7 @@ def _edit_fab_data(fab_elems, run_conf):
                 elem.placed = False
             log.debug(f"Element with index {i} and id {elem.id_} marked {elem.placed}")
 
-    def selection_ui():
+    def selection_ui() -> None:
         not_placed_selection = questionary.checkbox(
             "Select fabrication elements to place:",
             [
@@ -212,7 +190,7 @@ def _edit_fab_data(fab_elems, run_conf):
         selection_ui()
 
 
-def _setup_file_paths(input_file_path):
+def _setup_file_paths(input_file_path: Path) -> Tuple[Path, Path]:
     # setup in_progress JSON
     progress_identifier = "-IN_PROGRESS"
 

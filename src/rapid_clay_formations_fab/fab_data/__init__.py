@@ -41,7 +41,6 @@ from __future__ import print_function
 from compas import IPY
 
 from .fabrication_element import *  # noqa: F401,F403
-from .pick_station import *  # noqa: F401,F403
 
 if not IPY:
     from .fab_conf import *  # noqa: F401,F403

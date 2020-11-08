@@ -5,34 +5,38 @@ from __future__ import print_function
 
 import logging
 import time
+import typing
 
 import compas_rrc
+import confuse
+from compas_fab.backends.ros import RosClient
 from compas_fab.robots import Configuration
 from compas_fab.robots import to_radians
 from compas_rrc import Motion
 from compas_rrc import MoveToJoints
 from compas_rrc import MoveToRobtarget
 
-from rapid_clay_formations_fab.abb import DRIVER_CONTAINER_NAME
 from rapid_clay_formations_fab.docker import restart_container
+from rapid_clay_formations_fab.fab_data import PlaceElement
+from rapid_clay_formations_fab.robots import DRIVER_CONTAINER_NAME
 from rapid_clay_formations_fab.robots import MinimalTrajectories
 from rapid_clay_formations_fab.robots import MinimalTrajectory
+from rapid_clay_formations_fab.robots import PickStation
 
 log = logging.getLogger(__name__)
 
+T = typing.TypeVar("T", bound="AbbRcfClient")
+
 
 class AbbRcfClient(compas_rrc.AbbClient):
-    """Robot communication client for RCF fabrication process.
+    """Robot communication client for RCF.
 
-    Subclass of :class:`compas_rrc.AbbClient` with process specific methods.
+    Subclass of :class:`compas_rrc.AbbClient` with some utility methods added.
 
     Parameters
     ----------
-    ros : :class:`compas_fab.backends.ros.RosClient`
-        ROS client for communcation with ABB controller.
-    rob_conf : :class:`confuse.AttrDict`
-        Configuration namespace created from configuration file and command line
-        arguments.
+    ros_port : :obj:`int`, optional
+        ROS client port for communcation with ABB controller, defaults to 9090.
 
     Class attributes
     ----------------
@@ -44,8 +48,102 @@ class AbbRcfClient(compas_rrc.AbbClient):
     # Define external axes, will not be used but required in move cmds
     EXTERNAL_AXES_DUMMY = compas_rrc.ExternalAxes()
 
-    def __init__(self, ros, rob_conf, pick_station):
-        super().__init__(ros)
+    def __init__(self, ros_port: int = 9090) -> None:
+        super().__init__(RosClient(port=ros_port))
+
+    def __enter__(self: T) -> T:
+        self.ros.__enter__()
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+        self.terminate()
+
+    def confirm_start(self):
+        """Stop program and prompt user to press play on pendant to resume."""
+        self.send(compas_rrc.PrintText("Press play when ready."))
+        self.send(compas_rrc.Stop())
+        log.info("Press start on pendant when ready")
+
+        # After user presses play on pendant execution resumes:
+        self.send(compas_rrc.PrintText("Resuming execution."))
+
+    def ping(self, timeout: float = 10):
+        """Ping ABB robot controller.
+
+        Parameters
+        ----------
+        timeout : :obj:`float`, optional
+            Timeout for reply. Defaults to ``10``.
+
+        Raises
+        ------
+        :exc:`TimeoutError`
+            If no reply is returned before timeout.
+        """
+        self.send_and_wait(
+            compas_rrc.Noop(feedback_level=compas_rrc.FeedbackLevel.DONE),
+            timeout=timeout,
+        )
+
+    def check_reconnect(
+        self,
+        timeout_ping: float = 5,
+        wait_after_up: float = 2,
+        tries: int = 3,
+    ):
+        """Check connection to ABB controller and restart abb-driver if necessary.
+
+        Parameters
+        ----------
+        timeout_ping : :obj:`float`, optional
+            Timeout for ping response.
+        wait_after_up : :obj:`float`, optional
+            Time to wait to ping after `abb-driver` container started.
+
+        Raises
+        ------
+        :exc:`TimeoutError`
+            If no reply is returned before timeout.
+        """
+        for _ in range(tries):
+            try:
+                log.debug("Pinging robot")
+                self.ping(timeout_ping)
+                log.debug("Breaking loop after successful ping.")
+                break
+            except compas_rrc.TimeoutException:
+                log.info("No response from controller, restarting abb-driver service.")
+                restart_container(DRIVER_CONTAINER_NAME)
+
+                time.sleep(wait_after_up)
+        else:
+            raise compas_rrc.TimeoutException("Failed to connect to robot.")
+
+
+class AbbRcfFabricationClient(AbbRcfClient):
+    """Robot communication client for RCF fabrication process.
+
+    Subclass of :class:`AbbRcfClient` with fabrication specific methods.
+
+    Parameters
+    ----------
+    ros : :class:`compas_fab.backends.ros.RosClient`
+        ROS client for communcation with ABB controller.
+    rob_conf : :class:`confuse.AttrDict`
+        Configuration namespace created from configuration file and command line
+        arguments.
+    pick_station : :class:`rapid_clay_formations_fab.fab_data.PickStation`
+        Pick station for fabrication elements.
+    """
+
+    def __init__(
+        self,
+        rob_conf: confuse.AttrDict,
+        pick_station: PickStation,
+        ros_port: int = 9090,
+    ):
+        super().__init__(ros_port=ros_port)
 
         self.pick_place_tool = rob_conf.tools.get("pick_place")
 
@@ -81,63 +179,37 @@ class AbbRcfClient(compas_rrc.AbbClient):
                 f"default_travel_trajectories: {self.default_travel_trajectories}"
             )
 
-    def confirm_start(self):
-        """Stop program and prompt user to press play on pendant to resume."""
-        self.send(compas_rrc.PrintText("Press play when ready."))
-        self.send(compas_rrc.Stop())
-        log.info("Press start on pendant when ready")
-
-        # After user presses play on pendant execution resumes:
-        self.send(compas_rrc.PrintText("Resuming execution."))
-
-    def ping(self, timeout=10):
-        """Ping ABB robot controller.
-
-        Parameters
-        ----------
-        timeout : :obj:`float`, optional
-            Timeout for reply. Defaults to ``10``.
-
-        Raises
-        ------
-        :exc:`TimeoutError`
-            If no reply is returned before timeout.
-        """
-        self.send_and_wait(
-            compas_rrc.Noop(feedback_level=compas_rrc.FeedbackLevel.DONE),
-            timeout=timeout,
-        )
-
-    def check_reconnect(self, timeout_ping=5, wait_after_up=2, tries=3):
+    def check_reconnect(
+        self, timeout_ping: float = None, wait_after_up: float = None, tries: int = 3
+    ) -> None:
         """Check connection to ABB controller and restart abb-driver if necessary.
 
         Parameters
         ----------
-        timeout_ping : :obj:`float`, optional
-            Timeout for ping response.
-        wait_after_up : :obj:`float`, optional
-            Time to wait to ping after `abb-driver` container started.
+        tries : :obj:`int`, optional
+            Connection tries, defaults to 3.
 
         Raises
         ------
         :exc:`TimeoutError`
             If no reply is returned before timeout.
         """
-        for _ in range(tries):
-            try:
-                log.debug("Pinging robot")
-                self.ping(self.docker_cfg.timeout_ping)
-                log.debug("Breaking loop after successful ping.")
-                break
-            except compas_rrc.TimeoutException:
-                log.info("No response from controller, restarting abb-driver service.")
-                restart_container(DRIVER_CONTAINER_NAME)
+        if not timeout_ping:
+            timeout_ping = self.docker_cfg.timeout_ping
+        if not wait_after_up:
+            wait_after_up = self.docker_cfg.sleep_after_up
 
-                time.sleep(self.docker_cfg.sleep_after_up)
-        else:
-            raise compas_rrc.TimeoutException("Failed to connect to robot.")
+        # Fixing mypy warning about incompatible types in super meth call
+        assert timeout_ping is not None
+        assert wait_after_up is not None
 
-    def pre_procedure(self):
+        super().check_reconnect(
+            timeout_ping=timeout_ping,
+            wait_after_up=wait_after_up,
+            tries=tries,
+        )
+
+    def pre_procedure(self) -> None:
         """Pre fabrication setup, speed, acceleration and initial pose."""
         # for safety
         self.retract_needles()
@@ -170,7 +242,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
             )
         )
 
-    def post_procedure(self):
+    def post_procedure(self) -> None:
         """Post fabrication procedure."""
         self.retract_needles()
 
@@ -186,7 +258,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         self.send(compas_rrc.PrintText("Finished"))
 
-    def pick_element(self):
+    def pick_element(self) -> compas_rrc.FutureResult:
         """Send movement and IO instructions to pick up fabrication element.
 
         Parameter
@@ -259,13 +331,13 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
     def execute_trajectory(
         self,
-        trajectory,
-        speed,
-        zone,
-        blocking=False,
-        stop_at_last=False,
-        motion_type=Motion.JOINT,
-    ):
+        trajectory: MinimalTrajectory,
+        speed: float,
+        zone: typing.Union[compas_rrc.Zone, int],
+        blocking: bool = False,
+        stop_at_last: bool = False,
+        motion_type: int = Motion.JOINT,
+    ) -> None:
         """Execute a :class:`~compas_fab.JointTrajectory`.
 
         Parameters
@@ -316,7 +388,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
             )
         )
 
-    def place_element(self, element):
+    def place_element(self, element: PlaceElement) -> compas_rrc.FutureResult:
         """Send movement and IO instructions to place a fabrication element.
 
         Uses `fab_conf` set up with command line arguments and configuration
@@ -406,7 +478,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         return self.send(compas_rrc.ReadWatch())
 
-    def retract_needles(self):
+    def retract_needles(self) -> None:
         """Send signal to retract needles on pick and place tool."""
         pin = self.pick_place_tool.io_pin_needles
         state = self.pick_place_tool.retract_signal
@@ -415,7 +487,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         log.debug(f"IO {pin} set to {state}.")
 
-    def extend_needles(self):
+    def extend_needles(self) -> None:
         """Send signal to extend needles on pick and place tool."""
         pin = self.pick_place_tool.io_pin_needles
         state = self.pick_place_tool.extend_signal

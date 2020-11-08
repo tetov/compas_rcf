@@ -86,6 +86,6 @@ setuptools.setup(
     obsoletes=["compas_rcf"],
     # TODO: Add tool commands from fab_data
     entry_points={
-        "console_scripts": ["rcf_run = rapid_clay_formations_fab.run_entrypoint:main"]
+        "console_scripts": ["rcf = rapid_clay_formations_fab._cmd_entrypoint:main"]
     },
 )

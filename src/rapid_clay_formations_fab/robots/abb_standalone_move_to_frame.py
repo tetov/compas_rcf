@@ -26,7 +26,7 @@ def standalone_move_to_frame(
     speed=200,
     accel=100,
     zone=Zone.FINE,
-    timeout=None
+    timeout=None,
 ):
     """Move robot arm to frame or frames in one single function.
 
