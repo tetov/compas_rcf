@@ -25,15 +25,14 @@ def warn_about_scipy_fortran_ctrl_c() -> None:
 
 
 def compose_up_driver(target_controller: str):
-    """Compose up ROS services for compas_rrc ABB controll.
+    """Compose up ROS application for compas_rrc ABB driver.
 
     Parameters
     ----------
-    target_controller : :obj:`str` or :class:`argparse.Namespace`
+    target_controller
         Target key, either ``"real"`` or ``"virtual"``, used as key for
-        dictionary of controller IPs. Namespace objects from
-        :meth:`rapid_clay_formations_fab.cmd_entrypoint` are also accepted.
+        dictionary of controller IPs.
     """
     ip = {"ROBOT_IP": ROBOT_IPS[target_controller]}
     compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
-    log.debug("Driver services are running.")
+    log.debug("Driver application is running.")

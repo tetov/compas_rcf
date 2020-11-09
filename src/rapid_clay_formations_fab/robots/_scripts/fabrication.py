@@ -192,9 +192,6 @@ def _edit_fab_data(fab_elems: List[PlaceElement], run_conf: confuse.AttrDict) ->
 
     log.info(f"{len(marked_placed_idx)} elements have been marked as placed.")
 
-    if len(marked_placed_idx) == 0 and not run_conf.edit_sequence:
-        return
-
     if len(marked_placed_idx) > 0:
         possible_choices.insert(0, "respect_placed")
 

@@ -3,8 +3,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from collections import Sequence
-
 from compas_fab.backends import RosClient
 from compas_rrc import AbbClient
 from compas_rrc import Motion
@@ -16,6 +14,11 @@ from compas_rrc import SetMaxSpeed
 from compas_rrc import SetTool
 from compas_rrc import SetWorkObject
 from compas_rrc import Zone
+
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
 
 
 def standalone_move_to_frame(

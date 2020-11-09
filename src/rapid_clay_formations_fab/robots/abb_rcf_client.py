@@ -265,15 +265,6 @@ class AbbRcfFabricationClient(AbbRcfClient):
         self.send(compas_rrc.SetWorkObject(self.wobjs.pick))
         log.debug(f"Work object {self.wobjs.pick} set.")
 
-        self.send(
-            MoveToRobtarget(
-                self.pick_station.station_egress_frame,
-                self.EXTERNAL_AXES_DUMMY,
-                self.speed.travel,
-                self.zone.travel,
-            )
-        )
-
         element = self.pick_station.get_next_pick_elem()
 
         self.send(
@@ -281,7 +272,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
                 element.get_egress_frame(),
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
-                self.zone.travel,
+                self.zone.pick,
             )
         )
 
@@ -290,11 +281,10 @@ class AbbRcfFabricationClient(AbbRcfClient):
                 element.get_top_frame(),
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.pick_place,
-                self.zone.pick,
+                compas_rrc.Zone.FINE,
             )
         )
 
-        self.send(compas_rrc.WaitTime(self.pick_place_tool.needles_pause))
         self.extend_needles()
         self.send(compas_rrc.WaitTime(self.pick_place_tool.needles_pause))
 
@@ -312,7 +302,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToRobtarget(
                 self.pick_station.station_egress_frame,
                 self.EXTERNAL_AXES_DUMMY,
-                self.speed.travel,
+                self.speed.pick,
                 self.zone.travel,
             )
         )

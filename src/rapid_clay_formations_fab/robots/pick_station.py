@@ -47,6 +47,7 @@ class PickStation(object):
             self.station_egress_distance,
         )
 
+    # TODO: Should maybe remove this, not used in client anymore
     @property
     def station_egress_frame(self):
         """:class:`compas.geometry.Frame` : Egress frame for pick plate."""

@@ -23,6 +23,7 @@ from rapid_clay_formations_fab.fab_data import fab_conf
 def main() -> None:
     """Entry point, logging setup and argument handling."""
 
+    # TODO: Add install and proxy
     parser = argparse.ArgumentParser()
 
     # Controller setting
@@ -69,13 +70,6 @@ def main() -> None:
         "run_data_path",
         type=pathlib.Path,
         help="File containing fabrication setup.",
-    )
-    parser_fab.add_argument(
-        "--edit-sequence",
-        "-e",
-        action="store_true",
-        dest="edit_sequence",
-        help="Select elements to place or start index.",
     )
 
     args = parser.parse_args()
