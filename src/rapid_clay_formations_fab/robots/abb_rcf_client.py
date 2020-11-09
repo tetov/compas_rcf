@@ -298,15 +298,6 @@ class AbbRcfFabricationClient(AbbRcfClient):
             )
         )
 
-        self.send(
-            MoveToRobtarget(
-                self.pick_station.station_egress_frame,
-                self.EXTERNAL_AXES_DUMMY,
-                self.speed.pick,
-                self.zone.travel,
-            )
-        )
-
     def place_element(self, element: PlaceElement) -> None:
         """Send movement and IO instructions to place a fabrication element.
 
