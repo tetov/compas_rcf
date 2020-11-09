@@ -41,7 +41,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
 
     progress_file, done_file = _setup_file_paths(run_conf.run_data_path)
 
-    _edit_fab_data(fab_elements, run_conf)
+    _edit_fab_data(fab_elements)
 
     prev_elem: Optional[PlaceElement] = None
 
@@ -145,7 +145,7 @@ def _write_run_data(
     log.info(f"Wrote run_data to {file_}.")
 
 
-def _edit_fab_data(fab_elems: List[PlaceElement], run_conf: confuse.AttrDict) -> None:
+def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
     """Edit placed marker for fabrication elements.
 
     Parameters
