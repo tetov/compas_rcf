@@ -19,7 +19,7 @@ from rapid_clay_formations_fab.robots._scripts import compose_up_driver
 log: logging.Logger = logging.getLogger(__name__)
 
 CALIBRATION_JOINT_POSITION = RobotJoints(0, 0, 0, 0, 0, 0)
-TRAVEL_JOINT_POSITION = RobotJoints(0, 87, 65, 0, 0, 0)
+TRAVEL_JOINT_POSITION = RobotJoints(0, -87, 65, 0, 0, 0)
 
 SPEED = 150
 ZONE = Zone.FINE
@@ -60,7 +60,7 @@ def go_to_joint_pos(args: argparse.Namespace) -> None:
 
         client.send(PrintText(f"Moving to {selection.lower()}."))
 
-        client.send_and_wait(
+        client.send(
             MoveToJoints(
                 selection_instructions[selection],
                 client.EXTERNAL_AXES_DUMMY,
