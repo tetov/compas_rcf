@@ -261,7 +261,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
     def pick_element(self) -> None:
         """Send movement and IO instructions to pick up fabrication element."""
         self.send(compas_rrc.SetTool(self.pick_place_tool.name))
-        log.debug("Tool {self.pick_place_tool.name} set.")
+        log.debug(f"Tool {self.pick_place_tool.name} set.")
         self.send(compas_rrc.SetWorkObject(self.wobjs.pick))
         log.debug(f"Work object {self.wobjs.pick} set.")
 
