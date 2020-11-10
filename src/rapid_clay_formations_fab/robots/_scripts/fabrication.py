@@ -13,6 +13,7 @@ from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
+import sys
 
 import compas_rrc
 import confuse
@@ -85,9 +86,13 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
                 prev_elem.cycle_time = _wait_and_return_future(
                     prev_elem.cycle_time_future
                 )
-                if not prev_elem.cycle_time:
+
+                # TODO: Move sysexit to _wait_and_return_future here?
+                if not prev_elem.cycle_time:  # If KeyboardInterrupt was raised
                     log.info("Exiting script, breaking loop and saving run_data.")
-                    break
+                    _write_run_data(progress_file, run_data, fab_elements)
+                    sys.exit(0)
+
                 cycle_time_msg = f"Last cycle time was: {prev_elem.cycle_time:0.0f}"
                 log.info(cycle_time_msg)
                 rob_client.send(PrintTextNoErase(cycle_time_msg))
