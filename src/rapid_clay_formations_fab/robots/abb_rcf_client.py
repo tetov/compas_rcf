@@ -280,7 +280,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToRobtarget(
                 element.get_top_frame(),
                 self.EXTERNAL_AXES_DUMMY,
-                self.speed.pick_place,
+                # TODO: Set up conf for speed pick specificly
+                self.speed.travel,
                 compas_rrc.Zone.FINE,
             )
         )
@@ -292,7 +293,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToRobtarget(
                 element.get_egress_frame(),
                 self.EXTERNAL_AXES_DUMMY,
-                self.speed.pick_place,
+                self.speed.travel,
                 self.zone.pick,
                 motion_type=Motion.LINEAR,
             )
