@@ -420,7 +420,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
         blocking: bool = False,
         stop_at_last: bool = False,
         motion_type: int = Motion.JOINT,
-    ) -> None:
+    ) -> compas_rrc.FutureResult:
         """Execute a :class:`~compas_fab.JointTrajectory`.
 
         Parameters
@@ -440,35 +440,36 @@ class AbbRcfFabricationClient(AbbRcfClient):
             should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.
         """
         log.debug(f"Trajectory: {trajectory}.")
-        kwargs = {}
 
-        if trajectory.trajectory_type == MinimalTrajectory.JOINT_TRAJECTORY:
-            trajectory_pts = trajectory.as_robot_joints_points()
-            instruction = MoveToJoints
+        motion_class, trajectory_pts = trajectory.to_compas_rrc()
 
-        elif trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
-            trajectory_pts = trajectory.points
-            instruction = MoveToRobtarget
-            kwargs["motion_type"] = motion_type
-        else:
-            raise RuntimeError(f"Trajectory not recognized: {trajectory}.")
+        motion_args = [
+            self.EXTERNAL_AXES_DUMMY,
+            speed,
+            zone,
+        ]
+
+        motion_kwargs = {}
+
+        if trajectory.trajectory_type == MinimalTrajectory.FRAME_TRAJECTORY:
+            # ignore motion_type if trajectory is joint trajectory
+            motion_kwargs["motion_type"] = motion_type
 
         for pt in trajectory_pts[:-1]:  # skip last
-            self.send(instruction(pt, self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs))
+            self.send(motion_class(pt, *motion_args, **motion_kwargs))
 
+        # modify last (zone) arg for last trajectory pt
+        motion_args[-1] = compas_rrc.Zone.FINE if stop_at_last else zone
+
+        # send and wait on last if blocking
         if blocking:
-            send_method_last_pt = self.send_and_wait
-        else:
-            send_method_last_pt = self.send
-
-        if stop_at_last:
-            zone = compas_rrc.Zone.FINE
-
-        # send last
-        send_method_last_pt(
-            instruction(
-                trajectory_pts[-1], self.EXTERNAL_AXES_DUMMY, speed, zone, **kwargs
+            return self.send_and_wait(
+                motion_class(trajectory_pts[-1], *motion_args, **motion_kwargs),
+                timeout=60,
             )
+
+        return self.send(
+            motion_class(trajectory_pts[-1], *motion_args, **motion_kwargs)
         )
 
     def retract_needles(self) -> None:

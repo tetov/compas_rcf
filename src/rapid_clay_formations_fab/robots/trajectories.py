@@ -6,11 +6,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import compas_rrc
 from compas.geometry import Frame
 from compas_fab.robots import Configuration
 from compas_fab.robots import JointTrajectory
 from compas_fab.robots import to_degrees
-from compas_rrc import RobotJoints
 
 try:
     from collections.abc import MutableSequence
@@ -19,7 +19,9 @@ except ImportError:
 
 try:
     from typing import Any
+    from typing import Callable
     from typing import List
+    from typing import Tuple
     from typing import Union
 except ImportError:
     pass
@@ -193,10 +195,6 @@ class MinimalTrajectory(_ListLike):
                 "Trajectory contains more than one type of objects: {}".format(types)
             )
 
-    def as_robot_joints_points(self):  # type: () -> List[RobotJoints]
-        """:obj:`list` of :class:`compas_rrc.RobotJoints` : Trajectory as list of ``RobotJoints``."""  # noqa: E501
-        return [RobotJoints(*to_degrees(pt.values)) for pt in self.points]
-
     def copy(self):  # type: () -> MinimalTrajectory
         """Get an independent copy of object."""
         cls = type(self)
@@ -208,6 +206,20 @@ class MinimalTrajectory(_ListLike):
         copy.reverse()
 
         return copy
+
+    def to_compas_rrc(
+        self,
+    ):  # type: () -> Tuple[Callable, List[Union[Frame, compas_rrc.RobotJoints]]]
+        if self.trajectory_type == self.FRAME_TRAJECTORY:
+            rrc_trajectory = self.list_
+            rrc_instruction = compas_rrc.MoveToRobtarget
+        if self.trajectory_type == self.JOINT_TRAJECTORY:
+            rrc_trajectory = [
+                compas_rrc.RobotJoints(*to_degrees(pt.values)) for pt in self.points
+            ]
+            rrc_instruction = compas_rrc.MoveToJoints
+
+        return rrc_instruction, rrc_trajectory
 
     @classmethod
     def from_joint_trajectory(
