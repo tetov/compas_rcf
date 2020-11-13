@@ -3,9 +3,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from compas.geometry import Translation
+import compas.geometry
 
 from rapid_clay_formations_fab import fab_data
+
+try:
+    from typing import List
+except ImportError:
+    pass
 
 
 class PickStation(object):
@@ -13,10 +18,9 @@ class PickStation(object):
 
     def __init__(
         self,
-        pick_frames,
-        elem_height=150,
-        elem_egress_distance=150,
-        station_egress_distance=400,
+        pick_frames,  # type: List[compas.geometry.Frame]
+        elem_height=150,  # type: float
+        elem_egress_distance=150,  # type: float
     ):
         """Representation of pick stations on the IF for the RCF process.
 
@@ -35,48 +39,39 @@ class PickStation(object):
         self.pick_frames = pick_frames
         self.elem_height = elem_height
         self.elem_egress_distance = elem_egress_distance
-        self.station_egress_distance = station_egress_distance
 
         self._pick_counter = 0
 
-    def __repr__(self):
-        return "PickStation({}, {}, {}, {})".format(
-            self.pick_frames,
-            self.elem_height,
-            self.elem_egress_distance,
-            self.station_egress_distance,
+    def __str__(self):  # type: () -> str
+        return (
+            "PickStation({}, Element height: {}, Element egress distance: {})".format(
+                self.pick_frames,
+                self.elem_height,
+                self.elem_egress_distance,
+            )
         )
 
-    # TODO: Should maybe remove this, not used in client anymore
     @property
-    def station_egress_frame(self):
-        """:class:`compas.geometry.Frame` : Egress frame for pick plate."""
-        tr = Translation(self.pick_frames[0].normal * -self.station_egress_distance)
-        return self.pick_frames[0].transformed(tr)
-
-    @property
-    def data(self):
-        """:obj:`dict` : The data dictionary that represents the pick station."""
+    def data(self):  # type: () -> dict
+        """The data dictionary that represents the pick station."""
         return {
             "pick_frames": self.pick_frames,
             "elem_height": self.elem_height,
             "elem_egress_distance": self.elem_egress_distance,
-            "station_egress_distance": self.station_egress_distance,
         }
 
     @data.setter
-    def data(self, data):
+    def data(self, data):  # type: (dict) -> None
         self.pick_frames = data["pick_frames"]
         self.elem_height = data["elem_height"]
         self.elem_egress_distance = data["elem_egress_distance"]
-        self.station_egress_distance = data["station_egress_distance"]
 
-    def _get_next_pick_frame(self):
+    def _get_next_pick_frame(self):  # type: () -> compas.geometry.Frame
         frame = self.pick_frames[self._pick_counter % len(self.pick_frames)]
         self._pick_counter += 1
         return frame
 
-    def get_next_pick_elem(self):
+    def get_next_pick_elem(self):  # type: () -> fab_data.FabricationElement
         """Get next pick element.
 
         Returns
@@ -90,33 +85,31 @@ class PickStation(object):
             egress_frame_distance=self.elem_egress_distance,
         )
 
-    def copy(self):
-        """Create a copy of this :class:`PickStation`.
-
-        Returns
-        -------
-        :class:`PickStation`
-            An instance of :class:`FabricationElement`
-        """
+    def copy(self):  # type: () -> PickStation
+        """Create a copy of this :class:`PickStation`."""
         cls = type(self)
         return cls.from_data(self.data)
 
-    def transform(self, transformation):
-        """Transforms a :class:`PickStation`.
+    def transform(
+        self, transformation
+    ):  # type: (compas.geometry.Transformation) -> None
+        """Transform a :class:`PickStation`.
 
         Parameters
         ----------
-        transformation : :class:`compas.geometry.Transformation`
+        transformation
         """
         for frame in self.pick_frames:
             frame.transform(transformation)
 
-    def transformed(self, transformation):
+    def transformed(
+        self, transformation
+    ):  # type: (compas.geometry.Transformation) -> PickStation
         """Get a transformed copy of :class:`PickStation`.
 
         Parameters
         ----------
-        transformation : :class:`compas.geometry.Transformation`
+        transformation
 
         Returns
         -------
@@ -126,17 +119,17 @@ class PickStation(object):
         copy.transform(transformation)
         return copy
 
-    def to_data(self):
+    def to_data(self):  # type: () -> dict
         """Get :obj:`dict` representation of :class:`PickStation`."""
         return self.data
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data):  # type: (dict) -> PickStation
         """Construct an instance from its data representation.
 
         Parameters
         ----------
-        data : :obj:`dict`
+        data
 
         Returns
         -------

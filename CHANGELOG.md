@@ -7,13 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## Unreleased
 
 ### Added
+* Added `rhino_install` and `proxy` subcommands to command `rcf`.
 
 ### Changed
 
-* Compose files simplified and moved to repo root.
-* `compas_rcf.docker.restart_container` added.
-
 ### Removed
+* Removed kwarg `station_egress distance` and corresponding property
+`station_egress_frame` from `rapid_clay_formations_fab.robots.PickStation`
 
 ## \[0.3.0\] \[2020-03-22\]
 
