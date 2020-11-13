@@ -126,7 +126,8 @@ def _fab_entrypoint(args: argparse.Namespace) -> None:
     # Clean args a bit since whole namespace will be checked by confuse
     unwanted_args = ("quiet", "verbose", "func", "controller")
     for arg in unwanted_args:
-        args.__delattr__(arg) if arg in args else None
+        if arg in args:
+            delattr(args, arg)
 
     # Import options from argparse
     fab_conf.set_args(args)
