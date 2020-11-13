@@ -31,23 +31,23 @@ class _ListLike(MutableSequence):
     __slots__ = ()
 
     def __init__(self, list_):
-        self.list_ = list(list_)  # type: List
+        self._list = list(list_)  # type: List
 
     def __getitem__(self, index):  # type: (Union[int, slice]) -> Any
-        return self.list_[index]
+        return self._list[index]
 
     def __setitem__(self, index, item):  # type: (Union[int, slice], Any) -> None
-        self.list_[index] = item
+        self._list[index] = item
 
     def __delitem__(self, index):  # type: (Union[int, slice]) -> None
-        del self.list_[index]
+        del self._list[index]
 
     def __len__(self):  # type: () -> int
-        return len(self.list_)
+        return len(self._list)
 
     def insert(self, index, item):  # type: (int, Any) -> None
         """Insert element at specified index."""
-        self.list_.insert(index, item)
+        self._list.insert(index, item)
 
 
 class MinimalTrajectories(_ListLike):
@@ -75,11 +75,11 @@ class MinimalTrajectories(_ListLike):
     @property
     def trajectories(self):  # type: () -> List[MinimalTrajectory]
         """:obj:`list` : List of trajectories."""
-        return self.list_
+        return self._list
 
     @trajectories.setter
     def trajectories(self, trajectories):
-        self.list_ = trajectories
+        self._list = trajectories
 
     @property
     def data(self):  # type: () -> dict
