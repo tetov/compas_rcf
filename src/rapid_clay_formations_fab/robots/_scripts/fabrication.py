@@ -48,7 +48,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
 
     # Start abb client
     with AbbRcfFabricationClient(run_conf.robot_client, pick_station) as rob_client:
-        rob_client.check_reconnect()
+        rob_client.ensure_connection()
 
         # Confirm start on flexpendant
         rob_client.confirm_start()

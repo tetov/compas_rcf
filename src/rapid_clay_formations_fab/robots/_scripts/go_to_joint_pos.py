@@ -51,7 +51,7 @@ def go_to_joint_pos(args: argparse.Namespace) -> None:
     log.debug(f"{selection} selected.")
 
     with AbbRcfClient(ros_port=9090) as client:
-        client.check_reconnect()
+        client.ensure_connection()
 
         client.send(SetAcceleration(ACCEL, ACCEL_RAMP))
         client.send(SetMaxSpeed(SPEED_OVERRIDE, SPEED_MAX_TCP))

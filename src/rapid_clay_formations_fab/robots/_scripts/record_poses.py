@@ -53,7 +53,7 @@ def record_poses(args: argparse.Namespace) -> None:
         client.send(compas_rrc.SetTool("t_A057_ClayTool02_Prism"))
         client.send(compas_rrc.SetWorkObject("wobj0"))
 
-        client.check_reconnect()
+        client.ensure_connection()
 
         while True:
             client.send(

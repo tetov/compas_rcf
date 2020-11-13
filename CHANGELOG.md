@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * Added `rhino_install` and `proxy` subcommands to command `rcf`.
 
 ### Changed
+* `rapid_clay_formations_fab.robots.AbbRcfClient.check_reconnect` renamed to
+`ensure_connection`. `ensure_connection` only restarts docker container once,
+after that it tries pinging multiple times.
 
 ### Removed
 * Removed kwarg `station_egress distance` and corresponding property

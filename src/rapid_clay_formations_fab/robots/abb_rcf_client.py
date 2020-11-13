@@ -73,12 +73,12 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
         Parameters
         ----------
-        timeout : :obj:`float`, optional
+        timeout
             Timeout for reply. Defaults to ``10``.
 
         Raises
         ------
-        :exc:`TimeoutError`
+        :exc:`compas_rrc.TimeoutError`
             If no reply is returned before timeout.
         """
         self.send_and_wait(
@@ -86,39 +86,46 @@ class AbbRcfClient(compas_rrc.AbbClient):
             timeout=timeout,
         )
 
-    def check_reconnect(
+    def ensure_connection(
         self,
         timeout_ping: float = 5,
         wait_after_up: float = 2,
-        tries: int = 3,
+        tries: int = 10,
     ):
         """Check connection to ABB controller and restart abb-driver if necessary.
 
         Parameters
         ----------
-        timeout_ping : :obj:`float`, optional
+        timeout_ping
             Timeout for ping response.
-        wait_after_up : :obj:`float`, optional
+        wait_after_up
             Time to wait to ping after `abb-driver` container started.
+        tries
+            How many times to ping before raising error.
 
         Raises
         ------
-        :exc:`TimeoutError`
-            If no reply is returned before timeout.
+        :exc:`compas_rrc.TimeoutException`
+            If no reply is returned to second ping before timeout.
         """
-        for _ in range(tries):
-            try:
-                log.debug("Pinging robot")
-                self.ping(timeout_ping)
-                log.debug("Breaking loop after successful ping.")
-                break
-            except compas_rrc.TimeoutException:
-                log.info("No response from controller, restarting abb-driver service.")
-                restart_container(DRIVER_CONTAINER_NAME)
+        try:
+            log.debug("Pinging robot")
+            self.ping(timeout_ping)
+        except compas_rrc.TimeoutException:
+            log.info("No response from controller, restarting abb-driver service.")
+            restart_container(DRIVER_CONTAINER_NAME)
 
-                time.sleep(wait_after_up)
-        else:
-            raise compas_rrc.TimeoutException("Failed to connect to robot.")
+            time.sleep(wait_after_up)
+
+            for _ in range(tries - 1):
+                try:
+                    self.ping(timeout_ping)
+                except compas_rrc.TimeoutException:
+                    pass
+                else:
+                    return
+
+            raise  # If there's still no response after n tries, raise exception
 
 
 class AbbRcfFabricationClient(AbbRcfClient):
@@ -179,7 +186,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
                 f"default_travel_trajectories: {self.default_travel_trajectories}"
             )
 
-    def check_reconnect(
+    def ensure_connection(
         self, timeout_ping: float = None, wait_after_up: float = None, tries: int = 3
     ) -> None:
         """Check connection to ABB controller and restart abb-driver if necessary.
@@ -200,10 +207,11 @@ class AbbRcfFabricationClient(AbbRcfClient):
             wait_after_up = self.docker_cfg.sleep_after_up
 
         # Fixing mypy warning about incompatible types in super meth call
-        assert timeout_ping is not None
-        assert wait_after_up is not None
+        if typing.TYPE_CHECKING:
+            assert timeout_ping is not None
+            assert wait_after_up is not None
 
-        super().check_reconnect(
+        super().ensure_connection(
             timeout_ping=timeout_ping,
             wait_after_up=wait_after_up,
             tries=tries,
@@ -239,7 +247,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
                 self.EXTERNAL_AXES_DUMMY,
                 self.speed.travel,
                 self.zone.travel,
-            )
+            ),
+            timeout=60,
         )
 
     def post_procedure(self) -> None:
