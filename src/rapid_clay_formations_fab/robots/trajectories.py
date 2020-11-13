@@ -160,11 +160,11 @@ class MinimalTrajectory(_ListLike):
     @property
     def points(self):  # type: () -> List[Union[Frame, Configuration]]
         """:obj:`list` : List of trajectory points."""
-        return self.list_
+        return self._list
 
     @points.setter
     def points(self, points):  # type: (List[Union[Frame, Configuration]]) -> None
-        self.list_ = points
+        self._list = points
 
     @property
     def data(self):  # type: () -> dict
@@ -211,7 +211,7 @@ class MinimalTrajectory(_ListLike):
         self,
     ):  # type: () -> Tuple[Callable, List[Union[Frame, compas_rrc.RobotJoints]]]
         if self.trajectory_type == self.FRAME_TRAJECTORY:
-            rrc_trajectory = self.list_
+            rrc_trajectory = self._list
             rrc_instruction = compas_rrc.MoveToRobtarget
         if self.trajectory_type == self.JOINT_TRAJECTORY:
             rrc_trajectory = [
