@@ -110,7 +110,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         """
         try:
             log.debug("Pinging robot")
-            self.ping(timeout_ping)
+            self.ping(timeout=timeout_ping)
         except compas_rrc.TimeoutException:
             log.info("No response from controller, restarting abb-driver service.")
             restart_container(DRIVER_CONTAINER_NAME)
@@ -187,7 +187,10 @@ class AbbRcfFabricationClient(AbbRcfClient):
             )
 
     def ensure_connection(
-        self, timeout_ping: float = None, wait_after_up: float = None, tries: int = 3
+        self,
+        timeout_ping: typing.Optional[float] = None,
+        wait_after_up: typing.Optional[float] = None,
+        tries: int = 10,
     ) -> None:
         """Check connection to ABB controller and restart abb-driver if necessary.
 
@@ -201,15 +204,10 @@ class AbbRcfFabricationClient(AbbRcfClient):
         :exc:`TimeoutError`
             If no reply is returned before timeout.
         """
-        if not timeout_ping:
+        if timeout_ping is None:
             timeout_ping = self.docker_cfg.timeout_ping
-        if not wait_after_up:
+        if wait_after_up is None:
             wait_after_up = self.docker_cfg.sleep_after_up
-
-        # Fixing mypy warning about incompatible types in super meth call
-        if typing.TYPE_CHECKING:
-            assert timeout_ping is not None
-            assert wait_after_up is not None
 
         super().ensure_connection(
             timeout_ping=timeout_ping,
