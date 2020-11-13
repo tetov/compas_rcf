@@ -22,7 +22,8 @@ OPTIONAL_PKGS: List[str] = []
 
 INSTALLED_PKGS = [mod.name for mod in list(pkgutil.iter_modules())]
 
-if __name__ == "__main__":
+
+def install_pkgs_to_rhino(*args):
     pkgs = set(install.INSTALLABLE_PACKAGES)
 
     for pkg in STD_PKGS:
@@ -34,10 +35,10 @@ if __name__ == "__main__":
         if pkg in INSTALLED_PKGS:
             pkgs.add(pkg)
         else:
-            print(
-                "Skipping {} since it's not installed in current environment.".format(
-                    pkg
-                )
-            )
+            print(f"Skipping {pkg} since it's not installed in current environment.")
 
     install.install(version="6.0", packages=pkgs)
+
+
+if __name__ == "__main__":
+    install_pkgs_to_rhino()

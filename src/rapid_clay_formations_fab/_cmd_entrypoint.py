@@ -12,12 +12,14 @@ import logging
 import pathlib
 from datetime import datetime
 
+from compas.rpc.services.default import start_service as start_rpc_service
 from compas.utilities import DataDecoder
 
 import rapid_clay_formations_fab.robots._scripts as scripts
 from rapid_clay_formations_fab import __version__
 from rapid_clay_formations_fab.fab_data import ABB_RCF_CONF_TEMPLATE
 from rapid_clay_formations_fab.fab_data import fab_conf
+from rapid_clay_formations_fab.rhino.install import install_pkgs_to_rhino
 
 
 def main() -> None:
@@ -65,6 +67,18 @@ def main() -> None:
     )
     parser_goto.set_defaults(func=scripts.go_to_joint_pos)
 
+    parser_rhino_install = subparsers.add_parser(
+        "rhino_install",
+        aliases=["install"],
+        help="Install packages to Rhino python environment.",
+    )
+    parser_rhino_install.set_defaults(func=install_pkgs_to_rhino)
+
+    parser_proxy = subparsers.add_parser(
+        "proxy", aliases=["rpc"], help="Start a compas rpc proxy on port 12457."
+    )
+    parser_proxy.set_defaults(func=_rpc_entrypoint)
+
     # fab specific
     parser_fab.add_argument(
         "run_data_path",
@@ -78,6 +92,10 @@ def main() -> None:
 
     # Run function defined as default for each subparser.
     args.func(args)
+
+
+def _rpc_entrypoint(*args):
+    start_rpc_service(12457)
 
 
 def _fab_entrypoint(args: argparse.Namespace) -> None:
