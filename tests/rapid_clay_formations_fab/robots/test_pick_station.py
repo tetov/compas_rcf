@@ -26,7 +26,6 @@ def station1(frame_list):
         frame_list,
         elem_height=200,
         elem_egress_distance=250,
-        station_egress_distance=300,
     )
 
 
@@ -39,7 +38,6 @@ def station2_data():
         ],
         "elem_height": 150,
         "elem_egress_distance": 200,
-        "station_egress_distance": 250,
     }
 
 
@@ -75,12 +73,6 @@ def test_pick_element_generator(station1, pick_elements):
         station1.get_next_pick_elem()
     assert station1.get_next_pick_elem().location == pick_elements[0].location
     assert station1.get_next_pick_elem().location == pick_elements[1].location
-
-
-def test_station_egress_frame(station1):
-    assert station1.station_egress_frame == Frame(
-        [0, 0, -station1.station_egress_distance], [1, 0, 0], [0, 1, 0]
-    )
 
 
 def test_from_data(station2, station2_data):
