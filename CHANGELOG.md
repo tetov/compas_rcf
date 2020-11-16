@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.5.4\] \[2020-11-16\]
 
 ### Added
 * Added `rhino_install` and `proxy` subcommands to command `rcf`.
@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * `rapid_clay_formations_fab.robots.AbbRcfClient.check_reconnect` renamed to
 `ensure_connection`. `ensure_connection` only restarts docker container once,
 after that it tries pinging multiple times.
+* `fab_conf.robot_client.speed.pick_place` split into two different key-values
+pairs.
 
 ### Removed
 * Removed kwarg `station_egress distance` and corresponding property
