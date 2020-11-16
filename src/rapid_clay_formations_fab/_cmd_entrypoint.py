@@ -86,6 +86,18 @@ def main() -> None:
         help="File containing fabrication setup.",
     )
 
+    parser_test = subparsers.add_parser(
+        "test", aliases=["test"], help="Run integration test."
+    )
+    parser_test.set_defaults(func=_test_entrypoint)
+    # fab specific
+    parser_test.add_argument(
+        "run_data_path",
+        type=pathlib.Path,
+        help="File containing fabrication setup.",
+    )
+
+    # fab specific
     args = parser.parse_args()
 
     _setup_logger(args)
@@ -99,18 +111,49 @@ def _rpc_entrypoint(*args):
 
 
 def _fab_entrypoint(args: argparse.Namespace) -> None:
-    # Load dictionary from file specified on command line
-    with args.run_data_path.open(mode="r") as f:
-        run_data = json.load(f, cls=DataDecoder)
+    log = logging.getLogger(__name__)
 
-    # Setup logging to file
+    run_data = _load_rundata(args.run_data_path(args.run_data_path))
+
+    run_conf = _setup_run_conf(args, run_data)
+
+    _setup_file_logger(run_data["log_dir"])
+
+    log.info(f"rapid_clay_formations_fab version: {__version__}")
+    log.info(f"Using {run_conf.robot_client.controller} controller.")
+    log.debug(f"argparse input: {args}")
+    log.debug(f"config after set_args: {fab_conf}")
+
+    scripts.fabrication(run_conf, run_data)
+
+
+def _test_entrypoint(args):
+
+    run_data = _load_rundata(args.run_data_path)
+    run_conf = _setup_run_conf(args, run_data)
+
+    scripts.test_speeds(run_conf, run_data)
+
+
+def _load_rundata(run_data_path):
+    # Load dictionary from file specified on command line
+    with run_data_path.open(mode="r") as f:
+        run_data = json.load(f, cls=DataDecoder)
+    return run_data
+
+
+def _setup_file_logger(log_dir):
     log = logging.getLogger(__name__)
 
     # 1 logfile per run, named with a timestamp
     timestamp_logfile = datetime.now().strftime("%Y%m%d-%H.%M.%S.log")
-    log_file = pathlib.Path(run_data["log_dir"]) / timestamp_logfile
+    log_file = log_dir / timestamp_logfile
 
     log.addHandler(logging.FileHandler(log_file, mode="a"))
+
+
+def _setup_run_conf(args, run_data):
+    log = logging.getLogger(__name__)
 
     # Read config-default.yml for default values
     fab_conf.read(user=False, defaults=True)
@@ -121,7 +164,6 @@ def _fab_entrypoint(args: argparse.Namespace) -> None:
 
     # Move controller setting to be under robot_client in conf
     fab_conf["robot_client"]["controller"] = args.controller
-    del args.controller
 
     # Clean args a bit since whole namespace will be checked by confuse
     unwanted_args = ("quiet", "verbose", "func", "controller")
@@ -135,12 +177,7 @@ def _fab_entrypoint(args: argparse.Namespace) -> None:
     # Validate conf
     run_conf = fab_conf.get(ABB_RCF_CONF_TEMPLATE)
 
-    log.info(f"rapid_clay_formations_fab version: {__version__}")
-    log.info(f"Using {run_conf.robot_client.controller} controller.")
-    log.debug(f"argparse input: {args}")
-    log.debug(f"config after set_args: {fab_conf}")
-
-    scripts.fabrication(run_conf, run_data)
+    return run_conf
 
 
 def _setup_logger(args: argparse.Namespace) -> None:
