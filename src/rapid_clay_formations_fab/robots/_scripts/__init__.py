@@ -7,6 +7,7 @@ from .common import *  # noqa: F401,F403
 from .fabrication import *  # noqa: F401,F403
 from .go_to_joint_pos import *  # noqa: F401,F403
 from .record_poses import *  # noqa: F401,F403
+from .test_fabrication import *  # noqa: F401,F403
 from .test_speeds import *  # noqa: F401,F403
 
 # This reduces latency, see:

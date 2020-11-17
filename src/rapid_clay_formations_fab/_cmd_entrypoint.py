@@ -128,11 +128,17 @@ def _fab_entrypoint(args: argparse.Namespace) -> None:
 
 
 def _test_entrypoint(args):
+    log = logging.getLogger(__name__)
 
     run_data = _load_rundata(args.run_data_path)
     run_conf = _setup_run_conf(args, run_data)
 
-    scripts.test_speeds(run_conf, run_data)
+    log.info(f"rapid_clay_formations_fab version: {__version__}")
+    log.info(f"Using {run_conf.robot_client.controller} controller.")
+    log.debug(f"argparse input: {args}")
+    log.debug(f"config after set_args: {fab_conf}")
+
+    scripts.test_fabrication(run_conf, run_data)
 
 
 def _load_rundata(run_data_path):
