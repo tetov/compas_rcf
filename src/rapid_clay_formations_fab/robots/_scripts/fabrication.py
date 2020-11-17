@@ -6,6 +6,7 @@ from __future__ import print_function
 import json
 import logging
 import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -13,7 +14,6 @@ from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
-import sys
 
 import compas_rrc
 import confuse
@@ -59,16 +59,13 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         i = 0
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
-            if elem.placed:  # Don't place elements that are marked as placed
-                continue
-
             # Setup log message and flex pendant message
             log_msg = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
-            log.info(log_msg)
+            log.info(f"Sending {log_msg}")
 
             # Having this as an f-string should mean that the timestamp will
             # be set when the PrintText command is sent
-            pendant_msg = f"{datetime.now().strftime('%H:%M')}: {log_msg}"
+            pendant_msg = f"{datetime.now().strftime('%H:%M')}: Executing {log_msg}"
 
             rob_client.send(PrintTextNoErase(pendant_msg))
 

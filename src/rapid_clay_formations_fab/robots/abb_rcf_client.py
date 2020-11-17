@@ -45,6 +45,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         :class:`MoveToJoints` objects.
     """
 
+    TIMEOUT_SHORT = 10
+    TIMEOUT_LONG = 30
+
     # Define external axes, will not be used but required in move cmds
     EXTERNAL_AXES_DUMMY = compas_rrc.ExternalAxes()
 
@@ -68,7 +71,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
         # After user presses play on pendant execution resumes:
         self.send(compas_rrc.PrintText("Resuming execution."))
 
-    def ping(self, timeout: float = 10) -> None:
+    def ping(self, timeout: float = None) -> None:
         """Ping ABB robot controller.
 
         Parameters
@@ -81,6 +84,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         :exc:`compas_rrc.TimeoutError`
             If no reply is returned before timeout.
         """
+        if not timeout:
+            timeout = self.TIMEOUT_SHORT
+
         self.send_and_wait(
             compas_rrc.Noop(feedback_level=compas_rrc.FeedbackLevel.DONE),
             timeout=timeout,
@@ -88,7 +94,7 @@ class AbbRcfClient(compas_rrc.AbbClient):
 
     def ensure_connection(
         self,
-        timeout_ping: float = 5,
+        timeout_ping: float = None,
         wait_after_up: float = 2,
         tries: int = 10,
     ):
@@ -108,6 +114,9 @@ class AbbRcfClient(compas_rrc.AbbClient):
         :exc:`compas_rrc.TimeoutException`
             If no reply is returned to second ping before timeout.
         """
+        if not timeout_ping:
+            timeout_ping = self.TIMEOUT_SHORT
+
         try:
             log.debug("Pinging robot")
             self.ping(timeout=timeout_ping)
