@@ -43,8 +43,6 @@ class ZoneDataTemplate(confuse.Template):
 ABB_RCF_CONF_TEMPLATE = {
     "log_dir": confuse.Filename(),
     "run_data_path": confuse.Template(),  # Already type checked by argparse
-    "publish_tf_xform": bool,
-    "edit_sequence": confuse.TypeTemplate(bool, default=False),
     "robot_client": {
         "controller": str,
         "docker": {"timeout_ping": float, "sleep_after_up": float},
@@ -56,7 +54,6 @@ ABB_RCF_CONF_TEMPLATE = {
                 "extend_signal": int,
                 "retract_signal": int,
                 "needles_pause": float,
-                "elem_pick_egress_dist": float,
             },
         },
         "robot_movement": {
@@ -66,7 +63,11 @@ ABB_RCF_CONF_TEMPLATE = {
                 "accel": float,
                 "accel_ramp": float,
             },
-            "speed": {"pick": float, "place": float, "travel": float},
+            "speed": {
+                "pick": float,
+                "travel": float,
+                "place": float,
+            },
             "zone": {
                 "pick": ZoneDataTemplate(),
                 "place": ZoneDataTemplate(),

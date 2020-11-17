@@ -1,14 +1,12 @@
 # Fabrication run config for abb_rcf_runner
 # YAML format, https://yaml.org/spec/1.2
-# All values are required unless marked optional
-log_dir: G:\Shared drives\2020_MAS\T3\RCF-T3-Thesis\09-robot-control\03_fabrication_logs
-verbose: 1 # 1 means INFO messages, 2 DEBUG messages
+
+log_dir: C:\rcf_robotcontrol\04_logs
 robot_client:
     controller: virtual
     docker:
         timeout_ping: 2
         sleep_after_up: 2
-    publish_tf_xform: false  # publish a TF topic w xform
     wobjs:
         pick: wobj0
         place: wobj0
@@ -21,7 +19,6 @@ robot_client:
             retract_signal: 0 # state (0 or 1)
             needles_pause: 0.5 # Seconds to wait before and after extending or
                                # retracting needles
-            elem_pick_egress_dist: 150 # controls height where descent for pick starts
 
     robot_movement:
         global_speed_accel:
@@ -32,9 +29,9 @@ robot_client:
                         # increases or decreases as a percentage of the normal values
         speed:
             # velocities defined as mm/s
-            pick: 250 # mm/s
-            place: 150 # mm/s
-            travel: 250 # mm/s
+            pick: 200
+            travel: 600
+            place: 120
 
         zone:
             # Either rapid variable name or mm

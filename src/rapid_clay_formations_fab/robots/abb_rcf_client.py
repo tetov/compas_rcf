@@ -243,7 +243,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToJoints(
                 self.joint_positions.start,
                 self.EXTERNAL_AXES_DUMMY,
-                self.speed.travel,
+                150,
                 self.zone.travel,
             ),
             timeout=60,
@@ -258,7 +258,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToJoints(
                 self.joint_positions.end,
                 self.EXTERNAL_AXES_DUMMY,
-                self.speed.travel,
+                150,
                 self.zone.travel,
             )
         )
@@ -278,8 +278,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToRobtarget(
                 element.get_egress_frame(),
                 self.EXTERNAL_AXES_DUMMY,
-                self.speed.pick,
-                self.zone.pick,
+                self.speed.travel,
+                self.zone.travel,
             )
         )
 
@@ -287,7 +287,6 @@ class AbbRcfFabricationClient(AbbRcfClient):
             MoveToRobtarget(
                 element.get_top_frame(),
                 self.EXTERNAL_AXES_DUMMY,
-                # TODO: Set up conf for speed pick specificly
                 self.speed.pick,
                 compas_rrc.Zone.FINE,
             )
