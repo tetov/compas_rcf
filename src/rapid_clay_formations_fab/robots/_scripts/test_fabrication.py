@@ -53,11 +53,12 @@ def test_fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         i = 0
         # Fabrication loop
         while True:
-            elem = fab_elements[i % len(fab_elements)]
-            log.info(f"Placing element {i + 1}/{len(fab_elements)}")
-            rob_client.send(
-                PrintTextNoErase(f"Placing element {i + 1}/{len(fab_elements)}")
-            )
+            place_idx = i % len(fab_elements)
+            elem = fab_elements[place_idx]
+
+            pick_msg = f"Picking from position {i}"
+            log.info(pick_msg)
+            rob_client.send(PrintTextNoErase(pick_msg))
 
             # Start clock and send instructions
             rob_client.send(compas_rrc.StartWatch())
@@ -86,6 +87,10 @@ def test_fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
                 log.debug(f"Time prev elem was placed: {elem.time_placed}")
 
             rob_client.place_element(elem)
+
+            place_msg = f"Placing element {place_idx + 1}/{len(fab_elements)}"
+            log.info(place_msg)
+            rob_client.send(PrintTextNoErase(place_msg))
             rob_client.send(compas_rrc.StopWatch())
 
             elem.cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
@@ -93,10 +98,9 @@ def test_fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             # set placed to mark progress
             elem.placed = True
 
-            # Write progress to json while waiting for robot
-            # _write_run_data(progress_file, run_data, fab_elements)
-
             prev_elem = elem
+
+            i += 1
 
         # Send robot to safe end position and close connection
         rob_client.post_procedure()
