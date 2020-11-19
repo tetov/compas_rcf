@@ -44,7 +44,7 @@ MODULE A042_DataTask_Rob
     !
     CONST num n_A042_PulRatWaiJobRec:=0.01;
     !
-    TASK PERS num n_A042_ReadPtrRecBuf:=3;
+    TASK PERS num n_A042_ReadPtrRecBuf:=6;
     !
     CONST num n_A042_NumOfCha:=4;
     TASK PERS num n_A042_ChaNr:=1;
