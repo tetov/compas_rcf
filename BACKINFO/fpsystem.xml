@@ -32,10 +32,10 @@
       <PROP name="type" value="ABB.Robotics.Tps.Production.TpsViewProductionWnd" />
     </DATA>
     <DATA id="Programmable Key_2">
-      <PROP name="type" value="Input" />
+      <PROP name="type" value="Output" />
       <PROP name="allowInAuto" value="Yes" />
-      <PROP name="pressed" value="" />
-      <PROP name="target" value="doMaFP2" />
+      <PROP name="pressed" value="Toggle" />
+      <PROP name="target" value="doUnitC1Out1" />
     </DATA>
     <DATA id="GoToPosition ROB_1">
       <PROP name="FilterScope" value="All" />
@@ -71,10 +71,10 @@
       <PROP name="target" value="" />
     </DATA>
     <DATA id="Programmable Key_1">
-      <PROP name="type" value="Output" />
+      <PROP name="type" value="Input" />
       <PROP name="allowInAuto" value="Yes" />
-      <PROP name="pressed" value="Toggle" />
-      <PROP name="target" value="doUnitC1Out1" />
+      <PROP name="pressed" value="" />
+      <PROP name="target" value="diSyMotOn" />
     </DATA>
     <DATA id="ViewInManFull">
       <PROP name="text" value="PARAM_TXT_VIEWINMANFULL" />

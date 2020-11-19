@@ -53,7 +53,7 @@ MODULE A057_DataGlobal_Ma
     ! Declaration :     speedlimdata
     !************************************************
     !
-    PERS speedlimdata slim_A057_Master:=[245,16,39,43,43,36,43,0,0,0,0,0,0];
+    PERS speedlimdata slim_A057_Master:=[600,28,16,19,19,31,29,0,0,0,0,0,0];
 
     !************************************************
     ! Declaration :     syncident

@@ -43,7 +43,7 @@ MODULE A042_DataTask_Rec
     TASK PERS bool b_A042_PrintPrio2:=FALSE;
     !
     TASK PERS bool b_A042_BufFullMa{n_A042_NumOfCha}:=[FALSE,FALSE,FALSE,FALSE];
-    TASK PERS bool b_A042_BufFullRob{n_A042_NumOfCha}:=[FALSE,FALSE,FALSE,FALSE];
+    TASK PERS bool b_A042_BufFullRob{n_A042_NumOfCha}:=[TRUE,FALSE,FALSE,FALSE];
     TASK PERS bool b_A042_LogHelper{n_A042_NumOfCha}:=[FALSE,FALSE,FALSE,FALSE];
     !
     TASK PERS bool b_A042_FirstProtocolAfterPPMain:=FALSE;
@@ -59,7 +59,7 @@ MODULE A042_DataTask_Rec
     !
     TASK PERS num n_A042_WritePtrBufMa{n_A042_NumOfCha}:=[0,0,0,0];
     TASK PERS num n_A042_WritePtrBufRob{n_A042_NumOfCha}:=[6,0,0,0];
-    TASK PERS num n_A042_SIDExpected{n_A042_NumOfCha}:=[67,0,0,0];
+    TASK PERS num n_A042_SIDExpected{n_A042_NumOfCha}:=[127,0,0,0];
     TASK PERS num n_A042_SIDIs{n_A042_NumOfCha}:=[70001,0,0,0];
     !
     VAR num n_A042_MsgLenRob{n_A042_NumOfCha};
@@ -104,7 +104,7 @@ MODULE A042_DataTask_Rec
     TASK PERS A042_Protocol pro_A042_ActMsgTemp:=[[0,0,0,0],[0,0,0,"",0,0,"",0,0,0,"",0,"",0,"",0,"",0,"",0,"",0,"",0,"",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
     !
     TASK PERS A042_Protocol pro_A042_ActMsgRec{n_A042_NumOfCha}:=[
-    [[62,2,1.6056E+09,269],[67,0,14,"r_A042_GetRobT",1,0,"",0,0,30,"Press play to record position.",0,"",0,"",0,"",0,"",0,"",0,"",0,"",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    [[120,2,1.60562E+09,654],[127,0,12,"r_A042_MoveJ",0,0,"",0,0,5,"wobj0",0,"",0,"",0,"",0,"",0,"",0,"",0,"",15,1471.95,-37.0797,742.932,-0.00326422,0.0843483,0.99643,-0.00132227,0,0,0,0,0,0,650,100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     [[67,4,1.58281E+09,242],[4,0,15,"r_A042_WaitTime",1,0,"",0,0,24,"E-Level Channel 2 Master",0,"",0,"",0,"",0,"",0,"",0,"",0,"",1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     [[120,4,1.55775E+09,695],[11,0,12,"r_A042_MoveL",1,0,"",0,0,0,"",0,"",0,"",0,"",0,"",0,"",0,"",0,"",15,542.04,-200,237.57,0,0,1,0,28000,-3400,-3138,0,0,0,230,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     [[120,4,1.55775E+09,695],[11,0,12,"r_A042_MoveL",1,0,"",0,0,0,"",0,"",0,"",0,"",0,"",0,"",0,"",0,"",15,542.04,-200,237.57,0,0,1,0,28000,-3400,-3138,0,0,0,230,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]];

@@ -37,12 +37,12 @@ MODULE A042_Base_DataTask_Rob
     !************************************************
     !
     TASK PERS num n_A042_Answer:=0;
-    TASK PERS num n_A042_Act_S_ID:=3;
+    TASK PERS num n_A042_Act_S_ID:=2;
     TASK PERS num n_A042_Time:=0.5;
     TASK PERS num n_A042_Acc:=100;
     TASK PERS num n_A042_Ramp:=100;
     TASK PERS num n_A042_Override:=100;
-    TASK PERS num n_A042_MaxTCP:=500;
+    TASK PERS num n_A042_MaxTCP:=600;
 
     !************************************************
     ! Declaration :     string
@@ -60,13 +60,13 @@ MODULE A042_Base_DataTask_Rob
     TASK PERS string st_A042_ActBtn4:="";
     TASK PERS string st_A042_ActBtn5:="";
     TASK PERS string st_A042_Header:="Update Speed";
-    TASK PERS string st_A042_TPWrite:="Press play to record position.";
+    TASK PERS string st_A042_TPWrite:="Placing element 5/3";
 
     !************************************************
     ! Declaration :     tooldata
     !************************************************
     !
-    TASK PERS tooldata t_A042_Act:=[TRUE,[[111.624,17.6,189.561],[1,0,0,0]],[5,[0,0,100],[1,0,0,0],0,0,0]];
+    TASK PERS tooldata t_A042_Act:=[TRUE,[[0,0,354],[1,0,0,0]],[5,[10,0,55],[1,0,0,0],0,0,0]];
 
     !************************************************
     ! Declaration :     wobjdata
@@ -79,25 +79,25 @@ MODULE A042_Base_DataTask_Rob
     !************************************************
     !
     CONST speeddata v_A042_Default:=[25,500,5000,1000];
-    TASK PERS speeddata v_A042_Act:=[250,500,5000,1000];
+    TASK PERS speeddata v_A042_Act:=[200,500,5000,1000];
 
     !************************************************
     ! Declaration :     zonedata
     !************************************************
     !
-    TASK PERS zonedata z_A042_Act:=[FALSE,200,300,300,30,300,30];
+    TASK PERS zonedata z_A042_Act:=[FALSE,50,75,75,7.5,75,7.5];
 
     !************************************************
     ! Declaration :     jointtarget
     !************************************************
     !  
-    TASK PERS jointtarget jp_A042_Act:=[[-81,-24,55,7,69,0],[0,0,0,9E+09,9E+09,9E+09]];
+    TASK PERS jointtarget jp_A042_Act:=[[-108,-6,30,0,61,-15],[0,0,0,9E+09,9E+09,9E+09]];
 
     !************************************************
     ! Declaration :     robtarget
     !************************************************
     !  
-    TASK PERS robtarget p_A042_Act:=[[-1725.39,1014.04,831.169],[0.029823,0.145469,-0.988778,0.0163728],[1,0,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    TASK PERS robtarget p_A042_Act:=[[-1601.56,-736.832,450.516],[-0.000916494,0.70506,0.70913,0.00485062],[1,0,1,0],[0,0,0,9E+09,9E+09,9E+09]];
 
     !************************************************
     ! Declaration :     signaldo
