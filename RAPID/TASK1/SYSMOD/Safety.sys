@@ -26,7 +26,7 @@ MODULE Safety(SYSMODULE)
     !************************************************
     !
     TASK PERS num nSafeOverride:=100;
-    TASK PERS num nSafeMaxTCP:=600;
+    TASK PERS num nSafeMaxTCP:=800;
 
     !************************************************
     ! Declaration :     jointtarget
@@ -35,10 +35,14 @@ MODULE Safety(SYSMODULE)
     CONST jointtarget jpSoftSyncPos:=[[0,0,0,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     !
     ! Safe Tool Speed
-    CONST jointtarget jpSTSPos1:=[[-27.682,-19.7871,26.0511,27.4704,45.5233,-40.3291],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST jointtarget jpSTSPos2:=[[-27.6822,-17.8653,39.1805,37.472,32.7548,-53.122],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST jointtarget jpSTSPos3:=[[20.5705,-21.4243,41.6938,-29.9356,29.9201,41.3589],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST jointtarget jpSTSPos4:=[[20.5703,-22.2087,20.9548,-19.0687,49.6291,27.4558],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST jointtarget jpSTSPos1:=[[-146,0.776555,33.1042,0,56.1135,-56],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
+    CONST jointtarget jpSTSPos2:=[[-34.7629,-0.575434,34.4585,-0.00645121,56.1191,55.2406],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
+    CONST jointtarget jpSTSPos3:=[[-34.7628,-4.07964,29.9922,-0.00595406,64.0895,55.2397],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
+    CONST jointtarget jpSTSPos4:=[[-146,-2.69706,28.6838,1.713E-38,64.0074,-56],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
+    !
+    ! Safe Zone Safe Tool Speed 
+    CONST jointtarget jpSZone_STSPos1:=[[-146,1.71209,34.326,-2.22351E-36,53.9618,-56],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
+    CONST jointtarget jpSZone_STSPos2:=[[-146,8.49269,38.0243,6.08263E-37,43.483,-56],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
 
     !************************************************
     ! Declaration :     robtarget
@@ -49,8 +53,8 @@ MODULE Safety(SYSMODULE)
     CONST robtarget pSAR7Pos2:=[[-365.42,-1033.56,1018.47],[0.14459,0.824579,0.486577,-0.249812],[-2,-1,0,0],[501,9E+09,9E+09,9E+09,9E+09,9E+09]];
     !
     ! Safe Axis speed reorientation of robot
-    CONST robtarget pSASReorient1:=[[-56.58,-1398.07,627.03],[0.453614,0.543905,0.429203,0.560523],[-2,1,-1,0],[0.000232152,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST robtarget pSASReorient2:=[[-56.57,-1398.06,626.99],[0.0302236,0.779914,0.625155,0.00156839],[-2,-1,0,0],[-0.000896424,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pSASReorient1:=[[-247.01,-1000.99,599.74],[0.295607,-0.642353,-0.642353,0.295606],[-1,-1,0,0],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
+    CONST robtarget pSASReorient2:=[[-247.01,-1000.99,599.74],[0.323289,0.628876,0.628875,0.32329],[-2,0,-1,0],[9E+9,9E+9,9E+9,9E+9,9E+9,9E+9]];
     !
     ! Safe zone test
     CONST robtarget pSZone1:=[[0,0,500],[8.46995E-05,-0.782402,-0.622772,0.00141696],[-2,0,-1,0],[-0.00541073,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -59,20 +63,14 @@ MODULE Safety(SYSMODULE)
     ! Declaration :     tooldata
     !************************************************
     !
-    TASK PERS tooldata tSTS:=[TRUE,[[111.624,17.6,189.561],[1,0,0,0]],[5,[0,0,100],[1,0,0,0],0,0,0]];
+    TASK PERS tooldata tSTS:=[TRUE,[[0,0,354],[1,0,0,0]],[5,[10,0,55],[1,0,0,0],0,0,0]];
 
     !************************************************
     ! Declaration :     speeddata
     !************************************************
     !
-    CONST speeddata vSafeTestDefault:=[100,50,1,1];
-    TASK PERS speeddata vSafeTestAct:=[600,50,1,1];
-
-    !************************************************
-    ! Declaration :     speedlimdata
-    !************************************************
-    !
-    PERS speedlimdata slim_STS:=[300,15,35,40,30,40,45,45,0,0,0,0,0];
+    CONST speeddata vSafeTestDefault:=[200,50,1,1];
+    TASK PERS speeddata vSafeTestAct:=[250,50,1,1];
 
     !************************************************
     ! Function    :     Go to software sync position
@@ -90,19 +88,16 @@ MODULE Safety(SYSMODULE)
     !************************************************
     ! Function    :     Test Safe Tool Speed
     ! Programmer  :     Philippe Fleischmann
-    ! Date        :     2017.08.16
+    ! Date        :     2020.11.17
     ! **************** ETH Züich *******************
     !
     PROC rTestSTS()
         !
         ! Init Tool
-        tSTS:=t_A057_ClayTool02_Prism;
+        tSTS:=t_A057_ClayTool02;
         !
         ! Set default speed
         vSafeTestAct:=vSafeTestDefault;
-        ! 
-        ! Set speed limits
-        r_RFL_SetSpeedLimit slim_STS;
         !
         ! Move to 1th position
         MoveAbsJ jpSTSPos1,v100,fine,tSTS;
@@ -125,8 +120,8 @@ MODULE Safety(SYSMODULE)
             ! Move to 4th position
             MoveAbsJ jpSTSPos4,vSafeTestAct,z50,tSTS;
             !
-            ! Increase TCP speed until 600 mm/s
-            IF vSafeTestAct.v_tcp<600 THEN
+            ! Increase TCP speed until safety controller stops
+            IF vSafeTestAct.v_tcp<700 THEN
                 !
                 ! Increase TCP speed in 50mm/s steps
                 vSafeTestAct.v_tcp:=vSafeTestAct.v_tcp+50;
@@ -136,15 +131,15 @@ MODULE Safety(SYSMODULE)
     ENDPROC
 
     !************************************************
-    ! Function    :     Test Safe Axis Speed with reorientation
+    ! Function    :     Test Safe Axis Speed
     ! Programmer  :     Philippe Fleischmann
-    ! Date        :     2019.10.21
+    ! Date        :     2020.11.17
     ! **************** ETH Züich *******************
     !
-    PROC rTestSASReorient()
+    PROC rTestSAS()
         !
         ! Init Tool
-        tSTS:=t_A057_ClayTool02_Prism;
+        tSTS:=t_A057_ClayTool02;
         !
         ! Initialize speeddate
         vSafeTestAct.v_tcp:=100;
@@ -163,6 +158,52 @@ MODULE Safety(SYSMODULE)
             !
             ! Position 2
             MoveL pSASReorient2,vSafeTestAct,fine,tSTS;
+            !
+            ! Increase TCP speed until safety controller stops
+            IF vSafeTestAct.v_ori<35 THEN
+                !
+                ! Increase TCP speed in 50mm/s steps
+                vSafeTestAct.v_ori:=vSafeTestAct.v_ori+5;
+            ENDIF
+        ENDWHILE
+        RETURN ;
+    ENDPROC
+
+    !************************************************
+    ! Function    :     Test Safe Zone (STS 250mm/s)
+    ! Programmer  :     Philippe Fleischmann
+    ! Date        :     2020.11.17
+    ! **************** ETH Züich *******************
+    !
+    PROC rTestSZone_STS()
+        !
+        ! Init Tool
+        tSTS:=t_A057_ClayTool02;
+        !
+        ! Set default speed
+        vSafeTestAct:=vSafeTestDefault;
+        !
+        ! Move to 1th position
+        MoveAbsJ jpSZone_STSPos1,v100,fine,tSTS;
+        !
+        ! Test Loop
+        WHILE TRUE DO
+            !
+            ! Set Max TCP
+            VelSet nSafeOverride,nSafeMaxTCP;
+            !
+            ! Move to 1th position
+            MoveAbsJ jpSZone_STSPos1,vSafeTestAct,z50,tSTS;
+            !
+            ! Move to 2th position
+            MoveAbsJ jpSZone_STSPos2,vSafeTestAct,z50,tSTS;
+            !
+            ! Increase TCP speed until safety controller stops
+            IF vSafeTestAct.v_tcp<270 THEN
+                !
+                ! Increase TCP speed in 50mm/s steps
+                vSafeTestAct.v_tcp:=vSafeTestAct.v_tcp+10;
+            ENDIF
         ENDWHILE
         RETURN ;
     ENDPROC

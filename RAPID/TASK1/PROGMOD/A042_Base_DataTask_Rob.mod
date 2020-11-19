@@ -37,12 +37,12 @@ MODULE A042_Base_DataTask_Rob
     !************************************************
     !
     TASK PERS num n_A042_Answer:=0;
-    TASK PERS num n_A042_Act_S_ID:=2;
+    TASK PERS num n_A042_Act_S_ID:=1;
     TASK PERS num n_A042_Time:=0.5;
     TASK PERS num n_A042_Acc:=100;
     TASK PERS num n_A042_Ramp:=100;
     TASK PERS num n_A042_Override:=100;
-    TASK PERS num n_A042_MaxTCP:=600;
+    TASK PERS num n_A042_MaxTCP:=300;
 
     !************************************************
     ! Declaration :     string
@@ -60,7 +60,7 @@ MODULE A042_Base_DataTask_Rob
     TASK PERS string st_A042_ActBtn4:="";
     TASK PERS string st_A042_ActBtn5:="";
     TASK PERS string st_A042_Header:="Update Speed";
-    TASK PERS string st_A042_TPWrite:="Placing element 5/3";
+    TASK PERS string st_A042_TPWrite:="Moving to travel position.";
 
     !************************************************
     ! Declaration :     tooldata
@@ -79,25 +79,25 @@ MODULE A042_Base_DataTask_Rob
     !************************************************
     !
     CONST speeddata v_A042_Default:=[25,500,5000,1000];
-    TASK PERS speeddata v_A042_Act:=[200,500,5000,1000];
+    TASK PERS speeddata v_A042_Act:=[150,500,5000,1000];
 
     !************************************************
     ! Declaration :     zonedata
     !************************************************
     !
-    TASK PERS zonedata z_A042_Act:=[FALSE,50,75,75,7.5,75,7.5];
+    TASK PERS zonedata z_A042_Act:=[TRUE,0,0,0,0,0,0];
 
     !************************************************
     ! Declaration :     jointtarget
     !************************************************
     !  
-    TASK PERS jointtarget jp_A042_Act:=[[-108,-6,30,0,61,-15],[0,0,0,9E+09,9E+09,9E+09]];
+    TASK PERS jointtarget jp_A042_Act:=[[0,-87,65,0,0,0],[0,0,0,9E+09,9E+09,9E+09]];
 
     !************************************************
     ! Declaration :     robtarget
     !************************************************
     !  
-    TASK PERS robtarget p_A042_Act:=[[-1601.56,-736.832,450.516],[-0.000916494,0.70506,0.70913,0.00485062],[1,0,1,0],[0,0,0,9E+09,9E+09,9E+09]];
+    TASK PERS robtarget p_A042_Act:=[[646.69,2047.86,482.05],[-0.0319073,0.101218,0.956641,-0.271248],[1,0,1,0],[0,0,0,9E+09,9E+09,9E+09]];
 
     !************************************************
     ! Declaration :     signaldo
