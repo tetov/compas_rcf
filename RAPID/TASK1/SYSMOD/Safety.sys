@@ -1,0 +1,170 @@
+MODULE Safety(SYSMODULE)
+    !***********************************************************************************
+    !
+    ! ETH Zurich / Robotic Fabrication Lab
+    ! HIB C 13 / Stefano-Franscini-Platz 1
+    ! CH-8093 Zurich
+    !
+    !***********************************************************************************
+    !
+    ! PROJECT     :  Safety
+    !
+    ! FUNCTION    :  Job Routines for Safety SafeMove
+    !
+    ! AUTHOR      :  Philippe Fleischmann
+    !
+    ! EMAIL       :  fleischmann@arch.ethz.ch
+    !
+    ! HISTORY     :  2020.10.08
+    !
+    ! Copyright   :  ETH Zürich (CH) 2020
+    !
+    !***********************************************************************************
+
+    !************************************************
+    ! Declaration :     num
+    !************************************************
+    !
+    TASK PERS num nSafeOverride:=100;
+    TASK PERS num nSafeMaxTCP:=600;
+
+    !************************************************
+    ! Declaration :     jointtarget
+    !************************************************
+    !
+    CONST jointtarget jpSoftSyncPos:=[[0,0,0,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    !
+    ! Safe Tool Speed
+    CONST jointtarget jpSTSPos1:=[[-27.682,-19.7871,26.0511,27.4704,45.5233,-40.3291],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST jointtarget jpSTSPos2:=[[-27.6822,-17.8653,39.1805,37.472,32.7548,-53.122],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST jointtarget jpSTSPos3:=[[20.5705,-21.4243,41.6938,-29.9356,29.9201,41.3589],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST jointtarget jpSTSPos4:=[[20.5703,-22.2087,20.9548,-19.0687,49.6291,27.4558],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    !************************************************
+    ! Declaration :     robtarget
+    !************************************************
+    !
+    ! Safe Axis 7 Range
+    CONST robtarget pSAR7Pos1:=[[-365.42,-1033.56,1018.47],[0.14459,0.824579,0.486577,-0.249812],[-2,-1,0,0],[-500,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pSAR7Pos2:=[[-365.42,-1033.56,1018.47],[0.14459,0.824579,0.486577,-0.249812],[-2,-1,0,0],[501,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    !
+    ! Safe Axis speed reorientation of robot
+    CONST robtarget pSASReorient1:=[[-56.58,-1398.07,627.03],[0.453614,0.543905,0.429203,0.560523],[-2,1,-1,0],[0.000232152,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pSASReorient2:=[[-56.57,-1398.06,626.99],[0.0302236,0.779914,0.625155,0.00156839],[-2,-1,0,0],[-0.000896424,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    !
+    ! Safe zone test
+    CONST robtarget pSZone1:=[[0,0,500],[8.46995E-05,-0.782402,-0.622772,0.00141696],[-2,0,-1,0],[-0.00541073,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    !************************************************
+    ! Declaration :     tooldata
+    !************************************************
+    !
+    TASK PERS tooldata tSTS:=[TRUE,[[111.624,17.6,189.561],[1,0,0,0]],[5,[0,0,100],[1,0,0,0],0,0,0]];
+
+    !************************************************
+    ! Declaration :     speeddata
+    !************************************************
+    !
+    CONST speeddata vSafeTestDefault:=[100,50,1,1];
+    TASK PERS speeddata vSafeTestAct:=[600,50,1,1];
+
+    !************************************************
+    ! Declaration :     speedlimdata
+    !************************************************
+    !
+    PERS speedlimdata slim_STS:=[300,15,35,40,30,40,45,45,0,0,0,0,0];
+
+    !************************************************
+    ! Function    :     Go to software sync position
+    ! Programmer  :     Philippe Fleischmann
+    ! Date        :     2017.08.16
+    ! **************** ETH Züich *******************
+    !
+    PROC rGoSoftSyncPos()
+        !
+        ! Move to calibrate position
+        MoveAbsJ jpSoftSyncPos,vSafeTestDefault,fine,tool0;
+        RETURN ;
+    ENDPROC
+
+    !************************************************
+    ! Function    :     Test Safe Tool Speed
+    ! Programmer  :     Philippe Fleischmann
+    ! Date        :     2017.08.16
+    ! **************** ETH Züich *******************
+    !
+    PROC rTestSTS()
+        !
+        ! Init Tool
+        tSTS:=t_A057_ClayTool02_Prism;
+        !
+        ! Set default speed
+        vSafeTestAct:=vSafeTestDefault;
+        ! 
+        ! Set speed limits
+        r_RFL_SetSpeedLimit slim_STS;
+        !
+        ! Move to 1th position
+        MoveAbsJ jpSTSPos1,v100,fine,tSTS;
+        !
+        ! Test Loop
+        WHILE TRUE DO
+            !
+            ! Set Max TCP
+            VelSet nSafeOverride,nSafeMaxTCP;
+            !
+            ! Move to 1th position
+            MoveAbsJ jpSTSPos1,vSafeTestAct,z50,tSTS;
+            !
+            ! Move to 2th position
+            MoveAbsJ jpSTSPos2,vSafeTestAct,z50,tSTS;
+            !
+            ! Move to 3th position
+            MoveAbsJ jpSTSPos3,vSafeTestAct,z50,tSTS;
+            !
+            ! Move to 4th position
+            MoveAbsJ jpSTSPos4,vSafeTestAct,z50,tSTS;
+            !
+            ! Increase TCP speed until 600 mm/s
+            IF vSafeTestAct.v_tcp<600 THEN
+                !
+                ! Increase TCP speed in 50mm/s steps
+                vSafeTestAct.v_tcp:=vSafeTestAct.v_tcp+50;
+            ENDIF
+        ENDWHILE
+        RETURN ;
+    ENDPROC
+
+    !************************************************
+    ! Function    :     Test Safe Axis Speed with reorientation
+    ! Programmer  :     Philippe Fleischmann
+    ! Date        :     2019.10.21
+    ! **************** ETH Züich *******************
+    !
+    PROC rTestSASReorient()
+        !
+        ! Init Tool
+        tSTS:=t_A057_ClayTool02_Prism;
+        !
+        ! Initialize speeddate
+        vSafeTestAct.v_tcp:=100;
+        vSafeTestAct.v_ori:=10;
+        vSafeTestAct.v_leax:=40;
+        vSafeTestAct.v_reax:=1;
+        !
+        ! Move to start position
+        MoveJ pSASReorient1,v50,fine,tSTS;
+        !
+        ! Test loop
+        WHILE TRUE DO
+            !
+            ! Position 1
+            MoveL pSASReorient1,vSafeTestAct,fine,tSTS;
+            !
+            ! Position 2
+            MoveL pSASReorient2,vSafeTestAct,fine,tSTS;
+        ENDWHILE
+        RETURN ;
+    ENDPROC
+
+ENDMODULE
