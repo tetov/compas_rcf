@@ -349,7 +349,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
         # Execute trajectories in place motion until the last
         for trajectory in place_trajectories[:-1]:
             self.execute_trajectory(
-                trajectory, self.speed.travel, self.zone.travel, stop_at_last=True
+                trajectory, self.speed.travel, self.zone.place_egress, stop_at_last=True
             )
 
         # Before executing last place trajectory, retract the needles.

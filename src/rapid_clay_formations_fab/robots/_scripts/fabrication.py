@@ -59,6 +59,9 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         i = 0
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
+            if elem.placed:
+                continue
+
             # Setup log message and flex pendant message
             log_msg = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
             log.info(f"Sending {log_msg}")

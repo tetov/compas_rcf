@@ -29,14 +29,15 @@ robot_client:
                         # increases or decreases as a percentage of the normal values
         speed:
             # velocities defined as mm/s
-            pick: 200
-            travel: 600
-            place: 120
+            pick: 200 # mm/s
+            travel: 600 # mm/s
+            place: 120 # mm/s
 
         zone:
             # Either rapid variable name or mm
             pick: Z10
             place: Z10
+            place_egress: Z20
             travel: Z100
 
         joint_positions:

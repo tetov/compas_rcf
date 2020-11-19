@@ -71,6 +71,7 @@ ABB_RCF_CONF_TEMPLATE = {
             "zone": {
                 "pick": ZoneDataTemplate(),
                 "place": ZoneDataTemplate(),
+                "place_egress": ZoneDataTemplate(),
                 "travel": ZoneDataTemplate(),
             },
             "joint_positions": {
