@@ -60,7 +60,7 @@ MODULE A042_Base_DataTask_Rob
     TASK PERS string st_A042_ActBtn4:="";
     TASK PERS string st_A042_ActBtn5:="";
     TASK PERS string st_A042_Header:="Update Speed";
-    TASK PERS string st_A042_TPWrite:="Welcome to COMPAS_RCC";
+    TASK PERS string st_A042_TPWrite:="18:53 LC 32, 303/626, id 1HH-08-019.";
 
     !************************************************
     ! Declaration :     tooldata
@@ -85,19 +85,19 @@ MODULE A042_Base_DataTask_Rob
     ! Declaration :     zonedata
     !************************************************
     !
-    TASK PERS zonedata z_A042_Act:=[FALSE,100,150,150,15,150,15];
+    TASK PERS zonedata z_A042_Act:=[FALSE,150,225,225,23,225,23];
 
     !************************************************
     ! Declaration :     jointtarget
     !************************************************
     !  
-    TASK PERS jointtarget jp_A042_Act:=[[-142.916,0.148027,35.1568,1.48627,54.7217,-150.792],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    TASK PERS jointtarget jp_A042_Act:=[[-95,-8,63,0,38,-25],[0,0,0,9E+09,9E+09,9E+09]];
 
     !************************************************
     ! Declaration :     robtarget
     !************************************************
     !  
-    TASK PERS robtarget p_A042_Act:=[[-1726.22,-612.289,372.699],[0.00352951,-0.00425038,0.999984,0.00109876],[-1,0,-3,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    TASK PERS robtarget p_A042_Act:=[[1324.24,-911.562,-124.193],[-0.0133653,0.177374,0.981452,-0.0714921],[0,0,1,0],[0,0,0,9E+09,9E+09,9E+09]];
 
     !************************************************
     ! Declaration :     signaldo
