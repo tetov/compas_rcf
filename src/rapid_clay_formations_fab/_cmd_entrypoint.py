@@ -10,8 +10,9 @@ import argparse
 import json
 import logging
 import pathlib
+import sys
 import typing
-from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 import confuse
 from compas.rpc.services.default import start_service as start_rpc_service
@@ -22,6 +23,10 @@ from rapid_clay_formations_fab import __version__
 from rapid_clay_formations_fab.fab_data import ABB_RCF_CONF_TEMPLATE
 from rapid_clay_formations_fab.fab_data import fab_conf
 from rapid_clay_formations_fab.rhino.install import install_pkgs_to_rhino
+
+log = logging.getLogger(name=None)  # no name means we get the root logger
+
+LOG_FORMATTER = logging.Formatter("%(asctime)s:%(levelname)s:%(funcName)s:%(message)s")
 
 
 def main() -> None:
@@ -113,13 +118,16 @@ def _rpc_entrypoint(*args):
 
 
 def _fab_entrypoint(args: argparse.Namespace) -> None:
-    log = logging.getLogger(__name__)
-
     run_data = _load_rundata(args.run_data_path)
 
     run_conf = _setup_run_conf(args, run_data)
 
-    _setup_file_logger(run_data["log_dir"])
+    file_handler = RotatingFileHandler(
+        run_conf.logfile, maxBytes=20 * 1024 ** 2, backupCount=20
+    )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(LOG_FORMATTER)
+    log.addHandler(file_handler)
 
     log.info(f"rapid_clay_formations_fab version: {__version__}")
     log.info(f"Using {run_conf.robot_client.controller} controller.")
@@ -144,22 +152,7 @@ def _load_rundata(run_data_path: pathlib.Path) -> typing.Any:
     return typing.cast(dict, run_data)  # cast does not change or check during runtime
 
 
-def _setup_file_logger(log_dir: typing.Union[pathlib.Path, str]) -> None:
-    log = logging.getLogger(__name__)
-
-    # cast to path obj
-    log_dir = pathlib.Path(log_dir)
-
-    # 1 logfile per run, named with a timestamp
-    timestamp_logfile = datetime.now().strftime("%Y%m%d-%H.%M.%S.log")
-    log_file = log_dir / timestamp_logfile
-
-    log.addHandler(logging.FileHandler(log_file, mode="a"))
-
-
 def _setup_run_conf(args: argparse.Namespace, run_data: dict) -> confuse.AttrDict:
-    log = logging.getLogger(__name__)
-
     # Read config-default.yml for default values
     fab_conf.read(user=False, defaults=True)
 
@@ -188,6 +181,8 @@ def _setup_run_conf(args: argparse.Namespace, run_data: dict) -> confuse.AttrDic
 def _setup_logger(args: argparse.Namespace) -> None:
     """Configure logging from command line arguments."""
 
+    log.setLevel(logging.DEBUG)  # catch all msg
+
     if args.verbose:
         loglevel = logging.DEBUG
     elif args.quiet:
@@ -195,10 +190,10 @@ def _setup_logger(args: argparse.Namespace) -> None:
     else:
         loglevel = logging.INFO
 
-    logging.basicConfig(
-        level=loglevel,
-        format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s",
-    )
+    handler = logging.StreamHandler(stream=sys.stdout)
+    handler.setFormatter(LOG_FORMATTER)
+    handler.setLevel(loglevel)  # only print loglevel and more severe msgs
+    log.addHandler(handler)
 
 
 if __name__ == "__main__":

@@ -5,15 +5,14 @@ from __future__ import print_function
 
 import json
 import logging
-import re
 import sys
 import time
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 from typing import List
 from typing import Optional
-from typing import Tuple
 
 import compas_rrc
 import confuse
@@ -40,7 +39,14 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
 
     pick_station = run_data["pick_station"]
 
-    progress_file, done_file = _setup_file_paths(run_conf.run_data_path)
+    run_data_path = run_conf.run_data_path
+
+    # Uses RotatingFileHandler to do a rollover to keep old versions of run_data_path
+    _handler = RotatingFileHandler(run_data_path, maxBytes=1, backupCount=100)
+    _handler.doRollover()
+    _handler.close()
+    # Finally dump run_data again to not confuse user with an empty file
+    _write_run_data(run_data_path, run_data, fab_elements)
 
     _edit_fab_data(fab_elements)
 
@@ -90,7 +96,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
                 # TODO: Move sysexit to _wait_and_return_future here?
                 if not prev_elem.cycle_time:  # If KeyboardInterrupt was raised
                     log.info("Exiting script, breaking loop and saving run_data.")
-                    _write_run_data(progress_file, run_data, fab_elements)
+                    _write_run_data(run_data_path, run_data, fab_elements)
                     sys.exit(0)
 
                 cycle_time_msg = f"Last cycle time was: {prev_elem.cycle_time:0.0f}"
@@ -109,7 +115,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             elem.placed = True
 
             # Write progress to json while waiting for robot
-            _write_run_data(progress_file, run_data, fab_elements)
+            _write_run_data(run_data_path, run_data, fab_elements)
 
             prev_elem = elem
 
@@ -121,9 +127,9 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         # First figure out if the file should be labeled done though.
         _placed_is_true = filter(lambda x: x.placed, fab_elements)
         if len(list(_placed_is_true)) == len(fab_elements):
-            _file = done_file
+            _file = run_data_path.with_name(run_data_path.name + ".99done")
         else:
-            _file = progress_file
+            _file = run_data_path
 
         _write_run_data(_file, run_data, fab_elements)
 
@@ -147,7 +153,7 @@ def _write_run_data(
     run_data["fab_data"] = fab_elements
     with file_.open(mode="w") as fp:
         json.dump(run_data, fp, cls=DataEncoder)
-    log.info(f"Wrote run_data to {file_}.")
+    log.debug(f"Wrote run_data to {file_}.")
 
 
 def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
@@ -228,42 +234,3 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
         set_placed_list(int(idx) - 1)
     else:
         selection_ui()
-
-
-def _setup_file_paths(input_file_path: Path) -> Tuple[Path, Path]:
-    # setup in_progress JSON
-    progress_identifier = "-IN_PROGRESS"
-
-    progress_identifier_regex = re.compile(progress_identifier + r"\d{0,2}")
-
-    if progress_identifier in input_file_path.stem:
-        progress_file = input_file_path
-        i = 1
-        # Add number and increment it if needed.
-        while progress_file.exists():
-            # strip suffix
-            stem = progress_file.stem
-
-            # Match IN_PROGRESS with or without digits after and add/replace digits
-            new_name = re.sub(
-                progress_identifier_regex, progress_identifier + f"{i:02}", stem
-            )
-
-            new_name += progress_file.suffix
-
-            progress_file = progress_file.with_name(new_name)
-
-            i += 1
-    else:
-        progress_file = input_file_path.with_name(
-            input_file_path.stem + progress_identifier + input_file_path.suffix
-        )
-
-    log.info(f"Progress will be saved to {progress_file}.")
-
-    done_file_name = re.sub(progress_identifier_regex, "-DONE", progress_file.name)
-    done_file = progress_file.with_name(done_file_name)
-
-    log.info(f"When run is finished data will be saved to {done_file}.")
-
-    return progress_file, done_file

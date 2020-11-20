@@ -41,7 +41,7 @@ class ZoneDataTemplate(confuse.Template):
 
 
 ABB_RCF_CONF_TEMPLATE = {
-    "log_dir": confuse.Filename(),
+    "logfile": confuse.Filename(),
     "run_data_path": confuse.Template(),  # Already type checked by argparse
     "robot_client": {
         "controller": str,

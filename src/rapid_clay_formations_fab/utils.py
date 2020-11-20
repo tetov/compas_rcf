@@ -9,7 +9,7 @@ rapid_clay_formations_fab.utils
     :toctree: generated/
 
     ensure_frame
-    get_offset_frame
+    temp_change_compas_precision
     wrap_list
 """
 from __future__ import absolute_import
@@ -22,8 +22,13 @@ import compas.geometry as cg
 from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
 from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
 
+try:
+    from typing import Any
+except ImportError:
+    pass
 
-def wrap_list(list_, idx):
+
+def wrap_list(list_, idx):  # type: (list, int) -> Any
     """Return value at index, wrapping if necessary.
 
     Parameters
@@ -41,7 +46,7 @@ def wrap_list(list_, idx):
     return list_[idx % len(list_)]
 
 
-def ensure_frame(frame_like):
+def ensure_frame(frame_like):  # type: (Any) -> cg.Frame
     """Convert geometry objects to :class:`compas.geometry.Frame`.
 
     Parameters
@@ -90,6 +95,8 @@ def ensure_frame(frame_like):
 
 
 def temp_change_compas_precision(precision):
+    """Decorate function to run with specified compas.PRECISION."""
+
     def decorator(func):
         def wrapped_func(*args, **kwargs):
             prev_precision = compas.PRECISION
