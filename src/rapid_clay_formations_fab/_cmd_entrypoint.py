@@ -32,7 +32,6 @@ LOG_FORMATTER = logging.Formatter("%(asctime)s:%(levelname)s:%(funcName)s:%(mess
 def main() -> None:
     """Entry point, logging setup and argument handling."""
 
-    # TODO: Add install and proxy
     parser = argparse.ArgumentParser()
 
     # Controller setting
