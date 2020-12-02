@@ -314,7 +314,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
             )
         )
 
-    def place_element(self, element: PlaceElement) -> None:
+    def place_element(self, element: PlaceElement) -> compas_rrc.FutureResult:
         """Send movement and IO instructions to place a fabrication element.
 
         Uses `fab_conf` set up with command line arguments and configuration
@@ -358,7 +358,7 @@ class AbbRcfFabricationClient(AbbRcfClient):
         self.send(compas_rrc.WaitTime(self.pick_place_tool.needles_pause))
 
         # Last place motion
-        self.execute_trajectory(
+        place_future = self.execute_trajectory(
             place_trajectories[-1],
             self.speed.place,
             self.zone.place,
@@ -382,6 +382,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
                 self.speed.travel,
                 self.zone.travel,
             )
+
+        return place_future
 
     def _get_travel_trajectories(self, element: PlaceElement) -> MinimalTrajectories:
         if element.travel_trajectories:

@@ -85,7 +85,7 @@ class FabricationElement(object):
         }
 
     @data.setter
-    def data(self, data):
+    def data(self, data):  # type: (dict) -> None
         self.location = data["location"]
         self.id_ = data["id_"]
         self.radius = data["radius"]
@@ -93,7 +93,7 @@ class FabricationElement(object):
         self.egress_frame_distance = data["egress_frame_distance"]
         self.attrs = data["attrs"]
 
-    def transform(self, transformation):
+    def transform(self, transformation):  # type: (cg.Transformation) -> None
         """Get a transformed copy of :class:`FabricationElement`.
 
         Parameters
