@@ -400,11 +400,9 @@ class PlaceElement(FabricationElement):
         self.placed = placed
         self.time_placed = time_placed
 
-        self.skip = False
-
-        # Not included in data functions since this value is only valid during
-        # fabrication run.
-        self.cycle_time_future = None  # type: FutureResult
+        # Not included in data functions since these value are run specific
+        self._skip = False
+        self._cycle_time_future = None  # type: FutureResult
 
     @property
     def data(self):
@@ -421,8 +419,6 @@ class PlaceElement(FabricationElement):
         data["cycle_time"] = self.cycle_time
         data["placed"] = self.placed
         data["time_placed"] = self.time_placed
-
-        data["skip"] = self.skip
 
         return data
 
@@ -442,8 +438,6 @@ class PlaceElement(FabricationElement):
         self.cycle_time = data.get("cycle_time")
         self.placed = data.get("placed")
         self.time_placed = data.get("time_placed")
-
-        self.skip = data.get("skip")
 
     # Derived frames
     ################

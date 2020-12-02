@@ -65,7 +65,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         i = 0
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
-            if elem.skip:
+            if elem._skip:
                 continue
 
             # Setup log message and flex pendant message
@@ -88,9 +88,9 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             # instructions and place instructions to (hopefully) make sure the
             # robot always has instructions to execute
 
-            if prev_elem and prev_elem.cycle_time_future:  # Is there a clock to check?
+            if prev_elem and prev_elem._cycle_time_future:  # Is there a clock to check?
                 prev_elem.cycle_time = _wait_and_return_future(
-                    prev_elem.cycle_time_future
+                    prev_elem._cycle_time_future
                 )
 
                 # TODO: Move sysexit to _wait_and_return_future here?
@@ -109,7 +109,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             rob_client.place_element(elem)
             rob_client.send(compas_rrc.StopWatch())
 
-            elem.cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
+            elem._cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
 
             # set placed to mark progress
             elem.placed = True
@@ -120,8 +120,8 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
             prev_elem = elem
 
         # Wait on last element
-        if prev_elem and prev_elem.cycle_time_future:
-            prev_elem.cycle_time = _wait_and_return_future(prev_elem.cycle_time_future)
+        if prev_elem and prev_elem._cycle_time_future:
+            prev_elem.cycle_time = _wait_and_return_future(prev_elem._cycle_time_future)
 
         # Write progress of last run of loop
         # First figure out if the file should be labeled done though.
@@ -167,8 +167,8 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
 
     def ignore_placed() -> None:
         for i, elem in enumerate(fab_elems):
-            elem.skip = False
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
+            elem._skip = False
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem._skip}")
 
     def set_start_idx() -> None:
         idx = questionary.text(
@@ -184,9 +184,9 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
 
     def _set_skip_before_idx(idx: int) -> None:
         for i, elem in enumerate(fab_elems):
-            elem.skip = i < idx
+            elem._skip = i < idx
 
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem._skip}")
 
     def selection_ui() -> None:
         selection = questionary.checkbox(
@@ -199,8 +199,8 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
         selection_idx = [int(elem.split()[0]) for elem in selection]
 
         for i, elem in enumerate(fab_elems):
-            elem.skip = i not in selection_idx
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
+            elem._skip = i not in selection_idx
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem._skip}")
 
     func_desc = {
         ignore_placed: "Place all.",
