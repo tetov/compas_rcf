@@ -25,7 +25,7 @@ def warn_about_scipy_fortran_ctrl_c() -> None:
         )
 
 
-def compose_up_driver(target_controller: str):
+def compose_up_driver(target_controller: str, **kwargs):
     """Compose up ROS application for compas_rrc ABB driver.
 
     Parameters
@@ -35,5 +35,7 @@ def compose_up_driver(target_controller: str):
         dictionary of controller IPs.
     """
     ip = {"ROBOT_IP": ROBOT_IPS[target_controller]}
-    compose_up(DOCKER_COMPOSE_PATHS["driver"], check_output=True, env_vars=ip)
+    compose_up(
+        DOCKER_COMPOSE_PATHS["driver"], check=True, additional_env_vars=ip, **kwargs
+    )
     log.debug("Driver application is running.")
