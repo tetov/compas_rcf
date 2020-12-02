@@ -65,7 +65,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         i = 0
         # Fabrication loop
         for i, elem in enumerate(fab_elements):
-            if elem.placed:
+            if elem.skip:
                 continue
 
             # Setup log message and flex pendant message
@@ -165,46 +165,58 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
         List of fabrication elements.
     """  # noqa: E501
 
-    def set_placed_list(idx_last_placed: int) -> None:
+    def ignore_placed() -> None:
         for i, elem in enumerate(fab_elems):
-            if i <= idx_last_placed:
-                elem.placed = True
-            else:
-                elem.placed = False
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.placed}")
+            elem.skip = False
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
+
+    def set_start_idx() -> None:
+        idx = questionary.text(
+            "From which index would you like to start?",
+            validate=lambda val: val.isdigit() and 0 <= int(val) < len(fab_elems),
+        ).ask()
+        _set_skip_before_idx(int(idx))
+
+    def respect_placed() -> None:
+        # Take the last element marked as placed
+        idx = [i for i, elem in enumerate(fab_elems) if elem.placed]
+        _set_skip_before_idx(idx[-1] + 1)
+
+    def _set_skip_before_idx(idx: int) -> None:
+        for i, elem in enumerate(fab_elems):
+            elem.skip = i < idx
+
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
     def selection_ui() -> None:
-        not_placed_selection = questionary.checkbox(
+        selection = questionary.checkbox(
             "Select fabrication elements to place:",
             [
                 f"{i:03} (id {elem.id_}), marked placed: {bool(elem.placed)}"
                 for i, elem in enumerate(fab_elems)
             ],
         ).ask()
-        mark_not_placed_idx = [int(elem.split()[0]) for elem in not_placed_selection]
+        selection_idx = [int(elem.split()[0]) for elem in selection]
 
         for i, elem in enumerate(fab_elems):
-            if i in mark_not_placed_idx:
-                elem.placed = False
-            else:
-                elem.placed = True
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.placed}")
+            elem.skip = i not in selection_idx
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
-    choice_desc = {
-        "ignore_placed": "Place all.",
-        "selection_ui": "Select which elements to place manually",
-        "respect_placed": "Start after the last element marked as placed.",
-        "set_start_idx": "Select start index.",
+    func_desc = {
+        ignore_placed: "Place all.",
+        selection_ui: "Select which elements to place manually",
+        respect_placed: "Start after the last element marked as placed.",
+        set_start_idx: "Select start index.",
     }
 
-    possible_choices = ["ignore_placed", "selection_ui", "set_start_idx"]
+    possible_funcs = [ignore_placed, selection_ui, set_start_idx]
 
     marked_placed_idx = [i for i in range(len(fab_elems)) if fab_elems[i].placed]
 
     log.info(f"{len(marked_placed_idx)} elements have been marked as placed.")
 
     if len(marked_placed_idx) > 0:
-        possible_choices.insert(0, "respect_placed")
+        possible_funcs.insert(0, respect_placed)
 
         last_marked_placed_idx = marked_placed_idx[-1]
         last_marked_placed = fab_elems[last_marked_placed_idx]
@@ -214,23 +226,15 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
             + f"{last_marked_placed_idx:03}/{len(fab_elems):03} "
             + f"with id {last_marked_placed.id_}."
         )
+    else:
+        log.info("No elements have been marked as placed.")
 
     selected_desc = questionary.select(
         "Please select how to proceed.",
-        [choice_desc[choice] for choice in possible_choices],
+        [func_desc[func] for func in possible_funcs],
     ).ask()
 
     log.debug(f"{selected_desc} was choosen.")
 
-    if selected_desc == choice_desc["ignore_placed"]:
-        set_placed_list(-1)
-    elif selected_desc == choice_desc["respect_placed"]:
-        set_placed_list(last_marked_placed_idx)
-    elif selected_desc == choice_desc["set_start_idx"]:
-        idx = questionary.text(
-            "From which index would you like to start?",
-            validate=lambda val: val.isdigit() and 0 <= int(val) < len(fab_elems),
-        ).ask()
-        set_placed_list(int(idx) - 1)
-    else:
-        selection_ui()
+    desc_func = {v: k for k, v in func_desc.items()}  # inverted dict
+    desc_func[selected_desc]()  # type: ignore

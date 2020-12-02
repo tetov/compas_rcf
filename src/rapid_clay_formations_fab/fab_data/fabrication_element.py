@@ -63,10 +63,6 @@ class FabricationElement(object):
         self.egress_frame_distance = egress_frame_distance
         self.attrs = attrs or {}
 
-        # Not included in data functions since this value is only valid during
-        # fabrication run.
-        self.cycle_time_future = None  # type: FutureResult
-
     def __repr__(self):
         return "FabricationElement({}, {}, {}, {}. {})".format(
             self.location,
@@ -404,20 +400,29 @@ class PlaceElement(FabricationElement):
         self.placed = placed
         self.time_placed = time_placed
 
+        self.skip = False
+
+        # Not included in data functions since this value is only valid during
+        # fabrication run.
+        self.cycle_time_future = None  # type: FutureResult
+
     @property
     def data(self):
         """:obj:`dict` : The data dictionary that represents the :class:`PlaceElement`."""  # noqa: E501
         data = super(PlaceElement, self).data
 
         data["compression_ratio"] = self.compression_ratio
-        data["cycle_time"] = self.cycle_time
-        data["placed"] = self.placed
-        data["time_placed"] = self.time_placed
 
         data["travel_trajectories"] = self.travel_trajectories
         data["return_travel_trajectories"] = self.return_travel_trajectories
         data["place_trajectories"] = self.place_trajectories
         data["return_place_trajectories"] = self.return_place_trajectories
+
+        data["cycle_time"] = self.cycle_time
+        data["placed"] = self.placed
+        data["time_placed"] = self.time_placed
+
+        data["skip"] = self.skip
 
         return data
 
@@ -428,14 +433,17 @@ class PlaceElement(FabricationElement):
         super(PlaceElement, self.__class__).data.fset(self, data)
 
         self.compression_ratio = data.get("compression_ratio")
-        self.cycle_time = data.get("cycle_time")
-        self.placed = data.get("placed")
-        self.time_placed = data.get("time_placed")
 
         self.travel_trajectories = data.get("travel_trajectories")
         self.return_travel_trajectories = data.get("return_travel_trajectories")
         self.place_trajectories = data.get("place_trajectories")
         self.return_place_trajectories = data.get("return_place_trajectories")
+
+        self.cycle_time = data.get("cycle_time")
+        self.placed = data.get("placed")
+        self.time_placed = data.get("time_placed")
+
+        self.skip = data.get("skip")
 
     # Derived frames
     ################
