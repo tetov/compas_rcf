@@ -6,14 +6,12 @@ from __future__ import print_function
 import json
 import logging
 import re
-import sys
+import threading
 import time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
-from typing import Any
+from queue import Queue
 from typing import List
-from typing import Optional
 
 import compas_rrc
 import confuse
@@ -31,133 +29,111 @@ log: logging.Logger = logging.getLogger(__name__)
 def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
     """Fabrication runner placing elements according to fab_data and conf."""
 
-    compose_up_driver(run_conf.robot_client.controller)
+    try:
+        run_data_path = run_conf.run_data_path
+        # this regex strips rotation numbers of file path, i.e test.log.01 --> test.log
+        _clean_file_name = re.sub(run_data_path.name, r"\.\d+", "")
+        run_data_path = run_data_path.with_name(_clean_file_name)
 
-    # setup fab data
-    fab_elements = run_data["fab_data"]
+        dump_worker = DumpThread(run_data_path, run_data)
+        dump_worker.start()
 
-    log.info(f"{len(fab_elements)} fabrication elements.")
+        place_future_queue: Queue = Queue(maxsize=2)
+        WaitOnCycleTimeThread(place_future_queue).start()
 
-    pick_station = run_data["pick_station"]
+        watch_future_queue: Queue = Queue()
+        WaitOnFutureThread(watch_future_queue).start()
 
-    run_data_path = run_conf.run_data_path
-    # this regex strips rotation numbers of file path, i.e test.log.01 --> test.log
-    _clean_file_name = re.sub(run_data_path.name, r"\.\d+", "")
-    run_data_path = run_data_path.with_name(_clean_file_name)
+        compose_worker = threading.Thread(
+            target=compose_up_driver, args=[run_conf.robot_client.controller]
+        )
+        compose_worker.start()
 
-    # Uses RotatingFileHandler to do a rollover to keep old versions of run_data_path
-    _handler = RotatingFileHandler(run_data_path, maxBytes=1, backupCount=100)
-    _handler.doRollover()
-    _handler.close()
-    # Finally dump run_data again to not confuse user with an empty file
-    _write_run_data(run_data_path, run_data, fab_elements)
+        # setup fab data
+        fab_elements = run_data["fab_data"]
 
-    _edit_fab_data(fab_elements)
+        log.info(f"{len(fab_elements)} fabrication elements.")
 
-    prev_elem: Optional[PlaceElement] = None
+        pick_station = run_data["pick_station"]
 
-    # Start abb client
-    with AbbRcfFabricationClient(run_conf.robot_client, pick_station) as rob_client:
-        rob_client.ensure_connection()
+        # Uses RotatingFileHandler to do a rollover to keep old versions of
+        # run_data
+        _handler = RotatingFileHandler(run_data_path, maxBytes=1, backupCount=100)
+        _handler.doRollover()
+        _handler.close()
+        # Finally dump run_data again to not confuse user with an empty file
+        dump_worker.dump_flag.set()
 
-        # Confirm start on flexpendant
-        rob_client.confirm_start()
+        _edit_fab_data(fab_elements)
 
-        # Set speed, accel, tool, wobj and move to start pos
-        rob_client.pre_procedure()
+        compose_worker.join()
 
-        i = 0
-        # Fabrication loop
-        for i, elem in enumerate(fab_elements):
-            if elem._skip:
-                continue
+        # Start abb client
+        with AbbRcfFabricationClient(run_conf.robot_client, pick_station) as rob_client:
+            rob_client.ensure_connection()
 
-            # Setup log message and flex pendant message
-            log_msg = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
-            log.info(f"Sending {log_msg}")
+            # Confirm start on flexpendant
+            rob_client.confirm_start()
 
-            # Having this as an f-string should mean that the timestamp will
-            # be set when the PrintText command is sent
-            pendant_msg = f"{datetime.now().strftime('%H:%M')}: Executing {log_msg}"
+            # Set speed, accel, tool, wobj and move to start pos
+            rob_client.pre_procedure()
 
-            rob_client.send(PrintTextNoErase(pendant_msg))
+            # Fabrication loop
+            for i, elem in enumerate(fab_elements):
+                if elem._skip:
+                    continue
 
-            # Start clock and send instructions
-            rob_client.send(compas_rrc.StartWatch())
-            rob_client.pick_element()
+                # Setup log message and flex pendant message
+                log_msg = f"{i}/{len(fab_elements) - 1}, id {elem.id_}."
+                log.info(f"Sending {log_msg}")
 
-            # Save cycle time from last run
-            # The main reason though is to stop the fabrication loop until
-            # confirmation that last loop finished. It is done between pick
-            # instructions and place instructions to (hopefully) make sure the
-            # robot always has instructions to execute
+                pendant_msg = f"{datetime.now().strftime('%H:%M')}: Executing {log_msg}"
+                rob_client.send(PrintTextNoErase(pendant_msg))
 
-            if prev_elem and prev_elem._cycle_time_future:  # Is there a clock to check?
-                prev_elem.cycle_time = _wait_and_return_future(
-                    prev_elem._cycle_time_future
-                )
+                # Start clock and send instructions
+                rob_client.send(compas_rrc.StartWatch())
+                rob_client.pick_element()
 
-                # TODO: Move sysexit to _wait_and_return_future here?
-                if not prev_elem.cycle_time:  # If KeyboardInterrupt was raised
-                    log.info("Exiting script, breaking loop and saving run_data.")
-                    _write_run_data(run_data_path, run_data, fab_elements)
-                    sys.exit(0)
+                prev_elem: PlaceElement = fab_elements[i - 1]
+                if prev_elem.cycle_time:
+                    cycle_time_msg = f"Last cycle time was: {prev_elem.cycle_time:0.0f}"
+                    log.info(cycle_time_msg)
+                    rob_client.send(PrintTextNoErase(cycle_time_msg))
 
-                cycle_time_msg = f"Last cycle time was: {prev_elem.cycle_time:0.0f}"
-                log.info(cycle_time_msg)
-                rob_client.send(PrintTextNoErase(cycle_time_msg))
+                place_future = rob_client.place_element(elem)
 
-                prev_elem.time_placed = datetime.now().timestamp()
-                log.debug(f"Time prev elem was placed: {elem.time_placed}")
+                # set placed to mark progress
+                elem.placed = True
 
-            rob_client.place_element(elem)
-            rob_client.send(compas_rrc.StopWatch())
+                # log time sent
+                elem.time_sent = datetime.now().timestamp()
 
-            elem._cycle_time_future = rob_client.send(compas_rrc.ReadWatch())
+                # Put place future in queue, this will block if queue is full
+                place_future_queue.put(place_future)
 
-            # set placed to mark progress
-            elem.placed = True
-
-            # Write progress to json while waiting for robot
-            _write_run_data(run_data_path, run_data, fab_elements)
-
-            prev_elem = elem
+                elem._cycle_time_future = rob_client.send(compas_rrc.StopWatch())
+                watch_future_queue.put(elem)
 
         # Wait on last element
-        if prev_elem and prev_elem._cycle_time_future:
-            prev_elem.cycle_time = _wait_and_return_future(prev_elem._cycle_time_future)
-
-        # Write progress of last run of loop
-        # First figure out if the file should be labeled done though.
-        _placed_is_true = filter(lambda x: x.placed, fab_elements)
-        if len(list(_placed_is_true)) == len(fab_elements):
-            _file = run_data_path.with_name(run_data_path.name + ".99done")
-        else:
-            _file = run_data_path
-
-        _write_run_data(_file, run_data, fab_elements)
+        while not place_future_queue.empty() and not watch_future_queue.empty():
+            time.sleep(2)
 
         # Send robot to safe end position and close connection
         rob_client.post_procedure()
 
-
-def _wait_and_return_future(future: compas_rrc.FutureResult) -> Any:
-    try:
-        while future.done is False:
-            time.sleep(3)
     except KeyboardInterrupt:
-        return
+        log.warn("Stopping fabrication loop and writing progress to file.")
+        compose_worker.join()
+        # go to the finally block on ctrl - c
 
-    return future.result()
+    else:  # handle finished run
+        dump_worker.file_ = run_data_path.with_name(run_data_path.name + ".99done")
 
+    finally:
+        # Shutdown dump worker (includes a dump as well)
+        dump_worker.shutdown_flag.set()
 
-def _write_run_data(
-    file_: Path, run_data: dict, fab_elements: List[PlaceElement]
-) -> None:
-    run_data["fab_data"] = fab_elements
-    with file_.open(mode="w") as fp:
-        json.dump(run_data, fp, cls=DataEncoder)
-    log.debug(f"Wrote run_data to {file_}.")
+        dump_worker.join()
 
 
 def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
@@ -165,9 +141,9 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
 
     Parameters
     ----------
-    fab_elems : list of :class:`rapid_clay_formations_fab.fabrication.clay_objs.ClayBullet`
+    fab_elems
         List of fabrication elements.
-    """  # noqa: E501
+    """
 
     def ignore_placed() -> None:
         for i, elem in enumerate(fab_elems):
@@ -242,3 +218,57 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
 
     desc_func = {v: k for k, v in func_desc.items()}  # inverted dict
     desc_func[selected_desc]()  # type: ignore
+
+
+class WaitOnFutureThread(threading.Thread):
+    def __init__(self, queue, callback=None):
+        super().__init__(daemon=True)
+        self.queue = queue
+        self.callback = callback
+
+    def run(self):
+        while True:
+            future = self.queue.get()  # blocks until something is put in queue
+            self.process_item(future)
+
+            self.queue.task_done()
+
+    def process_item(self, item, *args):
+        item.result()  # blocks until robot has given feedback
+        if self.callback:
+            self.callback()
+
+
+class WaitOnCycleTimeThread(WaitOnFutureThread):
+    def __init__(self, queue):
+        super().__init__(queue)
+
+    def process_item(item):
+        item.cycle_time = item._cycle_time_future.result()
+
+
+class DumpThread(threading.Thread):
+    def __init__(self, file_, data, encoder=DataEncoder):
+        super().__init__()
+        self.file_ = file_
+        self.data = data
+        self.encoder = encoder
+
+        self.dump_flag = threading.Event()
+        self.shutdown_flag = threading.Event()
+
+    def run(self):
+        while True:
+            if self.dump_flag:
+                self.dump()
+                self.dump_flag.clear()
+            elif self.shutdown_flag:
+                self.dump()
+                break
+            else:
+                time.sleep(2)
+
+    def dump(self):
+        with self.file_.open(mode="w") as fp:
+            json.dump(self.data, fp, cls=self.encoder)
+        log.debug(f"Wrote run_data to {self.file_}.")
