@@ -39,9 +39,10 @@ extras_require = {
         "pydocstyle",
         "pytest >= 3.2",
         "recommonmark >=0.6",
-        "sphinx_compas_theme >= 0.4",
-        "sphinx >=1.6",
         "setuptools_scm[toml] >= 4.1.2",
+        "sphinx_compas_theme == 0.11.4",
+        "sphinx >=1.6",
+        "sphinx-autoapi",
     ]
 }
 

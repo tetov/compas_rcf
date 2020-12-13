@@ -35,43 +35,34 @@ language = None
 
 extensions = [
     "recommonmark",
+    "autoapi.extension",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
+    # "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "matplotlib.sphinxext.plot_directive",
 ]
 
-# autodoc options
-autodoc_default_options = {
-    "member-order": "bysource",
-    "special-members": "__init__",
-    "exclude-members": "__weakref__",
-    "undoc-members": True,
-    "show-inheritance": True,
-}
+autoapi_dirs = ["../src"]
 
-autodoc_mock_imports = ["Rhino"]
-autodoc_member_order = "alphabetical"
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "imported-members",
+]
 
-autoclass_content = "class"
-
-
-# autosummary options
-
-autosummary_generate = True
+autodoc_typehints = "description"
 
 # napoleon options
 
-napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True
+napoleon_include_special_with_doc = False
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
 napoleon_use_admonition_for_references = False
@@ -85,8 +76,8 @@ napoleon_use_rtype = False
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", "https://docs.python.org/3/objects.inv"),
     "compas": (
-        "https://compas-dev.github.io/main",
-        "https://compas-dev.github.io/main/objects.inv",
+        "https://compas.dev/compas/latest/",
+        "https://compas.dev/compas/latest/objects.inv",
     ),
     "compas_fab": (
         "https://gramaziokohler.github.io/compas_fab/latest/",
