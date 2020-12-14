@@ -2,7 +2,7 @@
 requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
 
 [tool.setuptools_scm]
-write_to = "src/_version.py"
+write_to = "src/rapid_clay_formations_fab/_version.py"
 
 [tool.autopep8]
 max-line-length = 88

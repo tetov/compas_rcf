@@ -7,16 +7,22 @@ from __future__ import print_function
 # If your documentation needs a minimal Sphinx version, state it here.
 import sphinx_compas_theme
 
-#
-# needs_sphinx = "1.0"
-from rapid_clay_formations_fab import __version__
+# from setuptools_scm docs
+from pkg_resources import get_distribution
+from pkg_resources import DistributionNotFound
+
+try:
+    version = get_distribution("rapid_clay_formations_fab").version
+except DistributionNotFound:
+    from setuptools_scm import get_version
+
+    version = get_version(root="..", relative_to=__file__)
 
 # -- General configuration ------------------------------------------------
 
 project = "Rapid Clay Formations Fabrication"
 copyright = "MAS DFAB 1920 students and tutors"
 author = "Anton T Johansson"
-version = release = __version__
 
 master_doc = "index"
 
@@ -36,6 +42,7 @@ language = None
 extensions = [
     "recommonmark",
     "sphinx.ext.autodoc",
+    "sphinx_autodoc_typehints",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
@@ -43,7 +50,6 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "matplotlib.sphinxext.plot_directive",
 ]
 
 # autodoc options
@@ -85,8 +91,8 @@ napoleon_use_rtype = False
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", "https://docs.python.org/3/objects.inv"),
     "compas": (
-        "https://compas-dev.github.io/main",
-        "https://compas-dev.github.io/main/objects.inv",
+        "https://compas.dev/compas/latest",
+        "https://compas.dev/compas/latest/objects.inv",
     ),
     "compas_fab": (
         "https://gramaziokohler.github.io/compas_fab/latest/",
@@ -106,7 +112,7 @@ html_theme_path = sphinx_compas_theme.get_html_theme_path()
 html_theme_options = {
     "package_name": "rapid_clay_formations_fab",
     "package_title": project,
-    "package_version": release,
+    "package_version": version,
     "package_repo": "https://github.com/gramaziokohler/rapid_clay_formations_fab",
 }
 

@@ -39,9 +39,10 @@ extras_require = {
         "pydocstyle",
         "pytest >= 3.2",
         "recommonmark >=0.6",
+        "setuptools_scm[toml] >= 4.1.2",
         "sphinx_compas_theme >= 0.11.4",
         "sphinx >=3.3.1",
-        "setuptools_scm[toml] >= 4.1.2",
+        "sphinx-autodoc-typehints[type_comments] >= 1.11",
     ]
 }
 
@@ -80,6 +81,8 @@ setuptools.setup(
     package_dir={"": "src"},
     include_package_data=True,
     zip_safe=False,
+    use_scm_version={"fallback_version": "dev"},
+    setup_requires=["setuptools_scm"],
     install_requires=requirements,
     extras_require=extras_require,
     python_requires=">=3.7",  # usage in IronPython is supported, see note in README

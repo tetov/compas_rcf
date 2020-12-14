@@ -137,7 +137,7 @@ src/compas_rcf/_compose_files/**/volume/*
 
 # generated docs
 docs/__build/
-docs/reference/generated/
+docs/reference/
 
 
 # Artifact from setuptools_scm for releases
