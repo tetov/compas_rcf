@@ -39,10 +39,9 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
     log.info(f"{len(fab_elements)} fabrication elements.")
 
     pick_station = run_data["pick_station"]
-
     run_data_path = run_conf.run_data_path
     # this regex strips rotation numbers of file path, i.e test.log.01 --> test.log
-    _clean_file_name = re.sub(run_data_path.name, r"\.\d+", "")
+    _clean_file_name = re.sub(r"\.\d+$", "", run_data_path.name)
     run_data_path = run_data_path.with_name(_clean_file_name)
 
     # Uses RotatingFileHandler to do a rollover to keep old versions of run_data_path
