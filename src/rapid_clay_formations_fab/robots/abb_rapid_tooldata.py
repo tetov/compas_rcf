@@ -6,8 +6,6 @@ import math
 
 from compas.geometry import Frame
 
-from rapid_clay_formations_fab.utils import ensure_frame
-
 
 class RapidToolData(object):
     """Create Rapid ToolData.
@@ -112,9 +110,11 @@ class RapidToolData(object):
         -------
         :class:`RapidToolData`
         """
+        from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
+
         tcp_coord = [tcp_plane.Origin.X, tcp_plane.Origin.Y, tcp_plane.Origin.Z]
 
-        tcp_frame = ensure_frame(tcp_plane)
+        tcp_frame = rgplane_to_cgframe(tcp_plane)
         tcp_quaternion = tcp_frame.quaternion.wxyz
 
         if cog_pt:

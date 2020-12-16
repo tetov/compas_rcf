@@ -128,7 +128,7 @@ class FabricationElement(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.height
-        T = cg.Translation(vector)
+        T = cg.Translation.from_vector(vector)
 
         return self.location.transformed(T)
 
@@ -140,7 +140,7 @@ class FabricationElement(object):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.egress_frame_distance
-        T = cg.Translation(vector)
+        T = cg.Translation.from_vector(vector)
 
         return self.get_top_frame().transformed(T)
 
@@ -461,7 +461,7 @@ class PlaceElement(FabricationElement):
         :class:`compas.geometry.Frame`
         """
         vector = self.get_normal() * self.get_compressed_height()
-        T = cg.Translation(vector)
+        T = cg.Translation.from_vector(vector)
 
         return self.location.transformed(T)
 
