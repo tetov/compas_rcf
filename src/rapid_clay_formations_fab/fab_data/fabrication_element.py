@@ -400,9 +400,9 @@ class PlaceElement(FabricationElement):
         self.placed = placed
         self.time_placed = time_placed
 
-        # Not included in data functions since these value are run specific
-        self._skip = False
-        self._cycle_time_future = None  # type: FutureResult
+        # Not included in data setter and getter since these values are run specific
+        self.skip = False
+        self.cycle_time_future = None  # type: FutureResult
 
     @property
     def data(self):

@@ -4,9 +4,9 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
-import glob
 import os
 import sys
+from pathlib import Path
 from shutil import rmtree
 
 from invoke import task
@@ -18,7 +18,10 @@ try:
 except NameError:
     pass
 
-BASE_FOLDER = os.path.dirname(__file__)
+BASE_FOLDER = Path(__file__).parent
+
+OUT_DIR = BASE_FOLDER / "dist"
+DOCS_OUT_DIR = OUT_DIR / "docs"
 
 
 class Log(object):
@@ -76,20 +79,19 @@ def clean(ctx, clean_docs=True, clean_bytecode=True, clean_builds=True):
         folders = []
 
         if clean_docs:
-            folders.append("docs/api/generated")
+            folders.append(BASE_FOLDER / "docs/reference")
 
-        folders.append("dist/")
+        folders.append(OUT_DIR)
 
         if clean_bytecode:
             for t in ("src", "tests"):
-                folders.extend(glob.glob("{}/**/__pycache__".format(t), recursive=True))
+                folders += BASE_FOLDER.joinpath(t).glob("**/__pycache__")
 
         if clean_builds:
-            folders.append("build/")
-            folders.append("src/rapid_clay_formations_fab.egg-info/")
+            folders.append(BASE_FOLDER / "src/rapid_clay_formations_fab.egg-info/")
 
         for folder in folders:
-            rmtree(os.path.join(BASE_FOLDER, folder), ignore_errors=True)
+            rmtree(folder, ignore_errors=True)
 
 
 @task(
@@ -108,10 +110,14 @@ def docs(ctx, doctest=False, rebuild=True, check_links=False):
         if doctest:
             ctx.run("sphinx-build -b doctest docs build/docs")
 
-        ctx.run("sphinx-build -b html docs build/docs")
+        ctx.run(
+            "sphinx-apidoc --separate --module-first --no-toc --force --no-headings"
+            + "-o docs/reference src/rapid_clay_formations_fab"
+        )
+        ctx.run(f"sphinx-build -b html docs {DOCS_OUT_DIR}")
 
         if check_links:
-            ctx.run("sphinx-build -b linkcheck docs build/docs")
+            ctx.run(f"sphinx-build -b linkcheck docs {DOCS_OUT_DIR}")
 
 
 @task()

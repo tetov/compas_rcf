@@ -32,7 +32,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
     try:
         run_data_path = run_conf.run_data_path
         # this regex strips rotation numbers of file path, i.e test.log.01 --> test.log
-        _clean_file_name = re.sub(run_data_path.name, r"\.\d+", "")
+        _clean_file_name = re.sub(r"\.\d+", "", run_data_path.name)
         run_data_path = run_data_path.with_name(_clean_file_name)
 
         dump_worker = DumpThread(run_data_path, run_data)
@@ -147,8 +147,8 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
 
     def ignore_placed() -> None:
         for i, elem in enumerate(fab_elems):
-            elem._skip = False
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem._skip}")
+            elem.skip = False
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
     def set_start_idx() -> None:
         idx = questionary.text(
@@ -164,9 +164,9 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
 
     def _set_skip_before_idx(idx: int) -> None:
         for i, elem in enumerate(fab_elems):
-            elem._skip = i < idx
+            elem.skip = i < idx
 
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem._skip}")
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
     def selection_ui() -> None:
         selection = questionary.checkbox(
@@ -179,8 +179,8 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
         selection_idx = [int(elem.split()[0]) for elem in selection]
 
         for i, elem in enumerate(fab_elems):
-            elem._skip = i not in selection_idx
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem._skip}")
+            elem.skip = i not in selection_idx
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
     func_desc = {
         ignore_placed: "Place all.",
