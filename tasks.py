@@ -111,13 +111,13 @@ def docs(ctx, doctest=False, rebuild=True, check_links=False):
             ctx.run("sphinx-build -b doctest docs build/docs")
 
         ctx.run(
-            "sphinx-apidoc --separate --module-first --tocfile index -d 1 "
-            + "--force -o docs/reference src/rapid_clay_formations_fab"
+            "sphinx-apidoc --separate --module-first --no-toc --force --no-headings"
+            + "-o docs/reference src/rapid_clay_formations_fab"
         )
-        ctx.run("sphinx-build -b html docs dist/docs")
+        ctx.run(f"sphinx-build -b html docs {DOCS_OUT_DIR}")
 
         if check_links:
-            ctx.run("sphinx-build -b linkcheck docs dist/docs")
+            ctx.run(f"sphinx-build -b linkcheck docs {DOCS_OUT_DIR}")
 
 
 @task()

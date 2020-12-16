@@ -31,7 +31,7 @@ Documentation
    usage
    known_issues
    contributing
-   reference/index
+   reference
    changelog
    authors
    license
