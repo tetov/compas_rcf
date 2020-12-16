@@ -111,7 +111,7 @@ def docs(ctx, doctest=False, rebuild=True, check_links=False):
             ctx.run("sphinx-build -b doctest docs build/docs")
 
         ctx.run(
-            "sphinx-apidoc --separate --module-first --no-toc --force --no-headings"
+            "sphinx-apidoc --separate --module-first --no-toc --force --no-headings "
             + "-o docs/reference src/rapid_clay_formations_fab"
         )
         ctx.run(f"sphinx-build -b html docs {DOCS_OUT_DIR}")
