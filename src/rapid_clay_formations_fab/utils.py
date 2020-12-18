@@ -10,9 +10,6 @@ from __future__ import print_function
 
 import compas.geometry as cg
 
-from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
-from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
-
 try:
     from typing import Any
 except ImportError:
@@ -71,6 +68,8 @@ def ensure_frame(frame_like):  # type: (Any) -> cg.Frame
 
     try:  # try to compare to Rhino objects
         import Rhino.Geometry as rg
+        from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
+        from rapid_clay_formations_fab.rhino import rgpoint_to_cgpoint
 
         if isinstance(frame_like, rg.Plane):
             return rgplane_to_cgframe(frame_like)
