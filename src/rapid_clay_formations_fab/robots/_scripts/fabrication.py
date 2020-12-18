@@ -11,7 +11,6 @@ import time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from queue import Queue
-from typing import List
 
 import compas_rrc
 import confuse
@@ -64,7 +63,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         # Finally dump run_data again to not confuse user with an empty file
         dump_worker.dump_flag.set()
 
-        _edit_fab_data(fab_elements)
+        _edit_sequence(fab_elements)
 
         compose_worker.join()
 
@@ -136,7 +135,7 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
         dump_worker.join()
 
 
-def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
+def _edit_sequence(run_data: RunData) -> None:
     """Edit placed marker for fabrication elements.
 
     Parameters
@@ -144,6 +143,13 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
     fab_elems
         List of fabrication elements.
     """
+    fab_elems = run_data.fab_data
+
+    def _set_skip_before_idx(idx: int) -> None:
+        for i, elem in enumerate(fab_elems):
+            elem.skip = i < idx
+
+            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
     def ignore_placed() -> None:
         for i, elem in enumerate(fab_elems):
@@ -161,12 +167,6 @@ def _edit_fab_data(fab_elems: List[PlaceElement]) -> None:
         # Take the last element marked as placed
         idx = [i for i, elem in enumerate(fab_elems) if elem.placed]
         _set_skip_before_idx(idx[-1] + 1)
-
-    def _set_skip_before_idx(idx: int) -> None:
-        for i, elem in enumerate(fab_elems):
-            elem.skip = i < idx
-
-            log.debug(f"Element with index {i} and id {elem.id_} marked {elem.skip}")
 
     def selection_ui() -> None:
         selection = questionary.checkbox(
