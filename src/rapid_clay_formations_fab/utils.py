@@ -2,21 +2,12 @@
 ********************************************************************************
 rapid_clay_formations_fab.utils
 ********************************************************************************
-
 .. currentmodule:: rapid_clay_formations_fab.utils
-
-.. autosummary::
-    :toctree: generated/
-
-    ensure_frame
-    temp_change_compas_precision
-    wrap_list
 """
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import compas
 import compas.geometry as cg
 
 from rapid_clay_formations_fab.rhino import rgplane_to_cgframe
@@ -92,21 +83,3 @@ def ensure_frame(frame_like):  # type: (Any) -> cg.Frame
     raise TypeError(
         "Can't convert {} to compas.geometry.Frame".format(type(frame_like))
     )
-
-
-def temp_change_compas_precision(precision):
-    """Decorate function to run with specified compas.PRECISION."""
-
-    def decorator(func):
-        def wrapped_func(*args, **kwargs):
-            prev_precision = compas.PRECISION
-            compas.PRECISION = precision
-
-            result = func(*args, **kwargs)
-
-            compas.PRECISION = prev_precision
-            return result
-
-        return wrapped_func
-
-    return decorator

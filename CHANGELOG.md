@@ -4,11 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## \[0.7.0\] \[2020-12-18\]
+
+### Added
+* Dependency `compas_mobile_robot_reloc` added as it is the broken out `localization`
+module.
 
 ### Changed
+* Bumped `compas_fab` to `v0.15.0`.
 * Added attribute `skip` to `rapid_clay_formations_fab.fab_data.PlaceElement` to
 replace use of attribute `placed`. `skip` is meant to be set for current run only.
+
+### Removed
+* `rapid_clay_formations_fab.localization` removed from package since it is now
+* Removed `rapid_clay_formations_fab.utils.temp_change_compas_precision`.
 
 ## \[0.5.4\] \[2020-11-16\]
 
