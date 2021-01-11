@@ -20,8 +20,8 @@ def warn_about_scipy_fortran_ctrl_c() -> None:
     env_var_name = "FOR_DISABLE_CONSOLE_CTRL_HANDLER"
     if not os.environ.get(env_var_name):
         log.warning(
-            "If CTRL-C is not working properly, you might need to set "
-            + f'environment variable {env_var_name} = "1" before running the script.'
+            "If CTRL-C is not working properly, you might need to set environment variable %s = 1 before running the script.",  # noqa: E501
+            env_var_name,
         )
 
 
