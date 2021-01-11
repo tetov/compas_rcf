@@ -20,6 +20,8 @@ robot_client:
             needles_pause: 0.5 # Seconds to wait before and after extending or
                                # retracting needles
 
+    wait_at_place_egress: 0
+
     robot_movement:
         global_speed_accel:
             speed_override: 100 # %
@@ -44,4 +46,3 @@ robot_client:
             start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees
             end: [ -127.0, 54.0, 9.0 , 2.0 , 30.0, 7.0 ] # 6 joint values in degrees
         skip_all_pick_movements: false
-        wait_at_place_egress: 0
