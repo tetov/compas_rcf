@@ -21,12 +21,13 @@ def _read(*names, **kwargs):
 long_description = _read("README.md")
 
 requirements = [
-    "compas_fab == 0.15.0",
-    "compas_mobile_robot_reloc >=1.0.1, <1.1.0",
-    "compas_rrc == 1.0.0",
     "questionary ~= 1.5.1",
     "confuse ~= 1.3.0",
     "docker ~= 4.2.2",
+    "compas_mobile_robot_reloc >=1.0.2, <1.1.0",
+    # compas_fab and compas_rrc last since they might fail on building pybullet
+    "compas_fab == 0.15.0",
+    "compas_rrc == 1.0.0",
 ]
 
 extras_require = {
