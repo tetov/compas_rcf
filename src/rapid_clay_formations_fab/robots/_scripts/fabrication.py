@@ -83,7 +83,12 @@ def fabrication(run_conf: confuse.AttrDict, run_data: dict) -> None:
 
             # Start clock and send instructions
             rob_client.send(compas_rrc.StartWatch())
-            rob_client.pick_element()
+
+            if (
+                not elem.skip_pick_movement
+                and not run_conf.robot_client.skip_all_pick_movements
+            ):
+                rob_client.pick_element()
 
             # Save cycle time from last run
             # The main reason though is to stop the fabrication loop until

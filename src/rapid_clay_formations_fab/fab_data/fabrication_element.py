@@ -379,6 +379,8 @@ class PlaceElement(FabricationElement):
         cycle_time=None,  # type: float
         placed=False,  # type: bool
         time_placed=None,  # type: float
+        skip=False,  # type: bool
+        skip_pick_movement=False,  # type: bool
         attrs=None,  # type: dict
     ):  # type: (...) -> None
         super(PlaceElement, self).__init__(
@@ -400,8 +402,10 @@ class PlaceElement(FabricationElement):
         self.placed = placed
         self.time_placed = time_placed
 
+        self.skip = skip
+        self.skip_pick_movement = skip_pick_movement
+
         # Not included in data setter and getter since these values are run specific
-        self.skip = False
         self.cycle_time_future = None  # type: FutureResult
 
     @property
@@ -419,6 +423,9 @@ class PlaceElement(FabricationElement):
         data["cycle_time"] = self.cycle_time
         data["placed"] = self.placed
         data["time_placed"] = self.time_placed
+
+        data["skip"] = self.skip
+        data["skip_pick_movement"] = self.skip_pick_movement
 
         return data
 
@@ -438,6 +445,9 @@ class PlaceElement(FabricationElement):
         self.cycle_time = data.get("cycle_time")
         self.placed = data.get("placed")
         self.time_placed = data.get("time_placed")
+
+        self.skip = data.get("skip")
+        self.skip_pick_movement = data.get("skip_pick_movement")
 
     # Derived frames
     ################

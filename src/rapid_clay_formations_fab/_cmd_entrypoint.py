@@ -58,21 +58,38 @@ def main() -> None:
 
     # Subparsers / scripts
     subparsers = parser.add_subparsers(title="Scripts")
+
+    # fab
     parser_fab = subparsers.add_parser(
         "fabrication", aliases=["fab"], help="Fabrication script."
     )
     parser_fab.set_defaults(func=_fab_entrypoint)
 
+    parser_fab.add_argument(
+        "run_data_path",
+        type=pathlib.Path,
+        help="File containing fabrication setup.",
+    )
+
+    parser_fab.add_argument(
+        "--skip_all_pick_movements",
+        action="store_true",
+        help="Skip all motions included in picking procedure.",
+    )
+
+    # rec
     parser_rec = subparsers.add_parser(
         "record_poses", aliases=["rec", "record"], help="Record poses for localization."
     )
     parser_rec.set_defaults(func=scripts.record_poses)
 
+    # goto
     parser_goto = subparsers.add_parser(
         "go_to_joint_pos", aliases=["goto"], help="Go to joint pose."
     )
     parser_goto.set_defaults(func=scripts.go_to_joint_pos)
 
+    # install
     parser_rhino_install = subparsers.add_parser(
         "rhino_install",
         aliases=["install"],
@@ -80,30 +97,24 @@ def main() -> None:
     )
     parser_rhino_install.set_defaults(func=install_pkgs_to_rhino)
 
+    # proxy
     parser_proxy = subparsers.add_parser(
         "proxy", aliases=["rpc"], help="Start a compas rpc proxy on port 12457."
     )
     parser_proxy.set_defaults(func=_rpc_entrypoint)
 
-    # fab specific
-    parser_fab.add_argument(
-        "run_data_path",
-        type=pathlib.Path,
-        help="File containing fabrication setup.",
-    )
-
+    # test
     parser_test = subparsers.add_parser(
         "test", aliases=["test"], help="Run integration test."
     )
     parser_test.set_defaults(func=_test_entrypoint)
-    # fab specific
+
     parser_test.add_argument(
         "run_data_path",
         type=pathlib.Path,
         help="File containing fabrication setup.",
     )
 
-    # fab specific
     args = parser.parse_args()
 
     _setup_logger(args)
@@ -159,11 +170,18 @@ def _setup_run_conf(args: argparse.Namespace, run_data: dict) -> confuse.AttrDic
     fab_conf.set_file(run_data["conf_path"])
     log.info(f"Configuration loaded from {run_data['conf_path']}")
 
-    # Move controller setting to be under robot_client in conf
+    # Move argparse args to correct location
     fab_conf["robot_client"]["controller"] = args.controller
+    fab_conf["robot_client"]["skip_all_pick_movements"] = args.skip_all_pick_movements
 
     # Clean args a bit since whole namespace will be checked by confuse
-    unwanted_args = ("quiet", "verbose", "func", "controller")
+    unwanted_args = (
+        "quiet",
+        "verbose",
+        "func",
+        "controller",
+        "skip_all_pick_movements",
+    )
     for arg in unwanted_args:
         if arg in args:
             delattr(args, arg)

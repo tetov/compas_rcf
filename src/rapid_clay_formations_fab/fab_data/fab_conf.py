@@ -56,6 +56,7 @@ ABB_RCF_CONF_TEMPLATE = {
                 "needles_pause": float,
             },
         },
+        "skip_all_pick_movements": bool,
         "robot_movement": {
             "global_speed_accel": {
                 "speed_override": float,

@@ -43,3 +43,4 @@ robot_client:
         joint_positions:
             start: [ -127.0, 54.0, 9.0, -2.0, 30.0, 7.0 ] # 6 joint values in degrees
             end: [ -127.0, 54.0, 9.0 , 2.0 , 30.0, 7.0 ] # 6 joint values in degrees
+        skip_all_pick_movements: false
