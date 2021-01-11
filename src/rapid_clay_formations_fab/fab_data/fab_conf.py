@@ -57,6 +57,7 @@ ABB_RCF_CONF_TEMPLATE = {
             },
         },
         "skip_all_pick_movements": bool,
+        "wait_at_place_egress": int,
         "robot_movement": {
             "global_speed_accel": {
                 "speed_override": float,

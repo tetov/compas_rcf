@@ -161,6 +161,8 @@ class AbbRcfFabricationClient(AbbRcfClient):
     ):
         super().__init__(ros_port=ros_port)
 
+        self.rob_conf = rob_conf
+
         self.pick_place_tool = rob_conf.tools.get("pick_place")
 
         self.wobjs = rob_conf.wobjs
@@ -347,7 +349,21 @@ class AbbRcfFabricationClient(AbbRcfClient):
 
         place_trajectories = self._get_place_trajectories(element)
         # Execute trajectories in place motion until the last
-        for trajectory in place_trajectories[:-1]:
+
+        # Go to egress frame
+        self.execute_trajectory(
+            place_trajectories[0],
+            self.speed.travel,
+            self.zone.place_egress,
+            # Stop if wait_at_place_egress is larger than 0
+            stop_at_last=self.rob_conf.wait_at_place_egress > 0,
+        )
+
+        # Wait here if wait_at_place_egress is not 0
+        self.send(compas_rrc.WaitTime(self.rob_conf.wait_at_place_egress))
+
+        # Execute all trajectories between first and last
+        for trajectory in place_trajectories[1:-1]:
             self.execute_trajectory(
                 trajectory, self.speed.travel, self.zone.place_egress, stop_at_last=True
             )
@@ -406,11 +422,10 @@ class AbbRcfFabricationClient(AbbRcfClient):
         if element.place_trajectories:
             return element.place_trajectories
 
-        approach = MinimalTrajectory(
-            [element.get_egress_frame(), element.get_uncompressed_top_frame()]
-        )
+        approach = MinimalTrajectory([element.get_egress_frame()])
+        positioning = MinimalTrajectory([element.get_uncompressed_top_frame()])
         pressing = MinimalTrajectory([element.get_compressed_top_frame()])
-        return MinimalTrajectories([approach, pressing])
+        return MinimalTrajectories([approach, positioning, pressing])
 
     def _get_return_place_trajectories(
         self, element: PlaceElement
