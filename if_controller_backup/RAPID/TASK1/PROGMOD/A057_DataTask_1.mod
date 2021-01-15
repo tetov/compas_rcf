@@ -72,5 +72,7 @@ MODULE A057_DataTask_1
     !************************************************
     !
     TASK PERS speeddata v_A057_Speed:=[0,0,0,0];
+    TASK PERS tooldata t_A057_ClayTool_Mushroom:=[TRUE,[[0,0,105],[1,0,0,0]],[5,[10,0,55],[1,0,0,0],0,0,0]];
+    TASK PERS tooldata t_A057_ClayTool_Egyptian:=[TRUE,[[-336.992,37.7122,44.7221],[0,0,1,0]],[5,[10,0,55],[1,0,0,0],0,0,0]];
     
 ENDMODULE
