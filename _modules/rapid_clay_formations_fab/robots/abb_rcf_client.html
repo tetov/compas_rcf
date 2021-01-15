@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>rapid_clay_formations_fab - rapid_clay_formations_fab.robots.abb_rcf_client</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <meta name="author" content="" />
+  <meta name="description" content="" />
+
+  <link rel="shortcut icon" href="../../../_static/images/compas.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/default.min.css">
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/compas.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/compas-reference.css" />
+
+  
+
+  
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  <style>
+    .footer-text,
+    .footer-link,
+    .footer-title {
+      color: rgba(255, 255, 255, 0.25);
+    }
+    .footer-link:hover {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target="#compas-toc">
+  <!-- header -->
+  <header id="header" class="compas-header d-flex align-items-center">
+    <nav class="navbar navbar-expand navbar-dark col flex-column flex-md-row text-center">
+      <!-- brand -->
+      <a class="navbar-brand" href="">
+        <img src="../../../_static/images/compas_icon_white.png" alt="Rapid Clay Formations Fabrication" width="48px" height="48px" />
+      </a>
+      <!-- brand -->
+      <!-- primary -->
+      <ul class="navbar-nav">
+        <li class="nav-item active"><a class="nav-link" href="">Rapid Clay Formations Fabrication</a></li>
+      </ul>
+      <!-- primary -->
+      <ul class="navbar-nav d-none d-md-flex ml-md-auto">
+        <!-- version -->
+        
+        <!-- version -->
+        <!-- social -->
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/gramaziokohler/rapid_clay_formations_fab" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+        </li>
+        <!-- social -->
+      </ul>
+    </nav>
+  </header>
+  <!-- header -->
+  <!-- main -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- main -->
+      <main class="col-12 col-md-9 col-xl-7 px-2 px-md-5 py-5 compas-content" role="main">
+        
+        
+        <h1 class="display-4 p-0 mb-5">Source code for rapid_clay_formations_fab.robots.abb_rcf_client</h1><div class="highlight"><pre><code>
+<span></span><span class="sd">&quot;&quot;&quot;Module for class AbbRcfClient, a client object made for the RCF fab process.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">compas_rrc</span>
+<span class="kn">import</span> <span class="nn">confuse</span>
+<span class="kn">from</span> <span class="nn">compas_fab.backends.ros</span> <span class="kn">import</span> <span class="n">RosClient</span>
+<span class="kn">from</span> <span class="nn">compas_fab.robots</span> <span class="kn">import</span> <span class="n">Configuration</span>
+<span class="kn">from</span> <span class="nn">compas_fab.robots</span> <span class="kn">import</span> <span class="n">to_radians</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">Motion</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">MoveToJoints</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">MoveToRobtarget</span>
+
+<span class="kn">from</span> <span class="nn">rapid_clay_formations_fab.docker</span> <span class="kn">import</span> <span class="n">restart_container</span>
+<span class="kn">from</span> <span class="nn">rapid_clay_formations_fab.fab_data</span> <span class="kn">import</span> <span class="n">PlaceElement</span>
+<span class="kn">from</span> <span class="nn">rapid_clay_formations_fab.robots</span> <span class="kn">import</span> <span class="n">DRIVER_CONTAINER_NAME</span>
+<span class="kn">from</span> <span class="nn">rapid_clay_formations_fab.robots</span> <span class="kn">import</span> <span class="n">MinimalTrajectories</span>
+<span class="kn">from</span> <span class="nn">rapid_clay_formations_fab.robots</span> <span class="kn">import</span> <span class="n">MinimalTrajectory</span>
+<span class="kn">from</span> <span class="nn">rapid_clay_formations_fab.robots</span> <span class="kn">import</span> <span class="n">PickStation</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;AbbRcfClient&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AbbRcfClient"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient">[docs]</a><span class="k">class</span> <span class="nc">AbbRcfClient</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">AbbClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Robot communication client for RCF.</span>
+
+<span class="sd">    Subclass of :class:`compas_rrc.AbbClient` with some utility methods added.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ros_port : :obj:`int`, optional</span>
+<span class="sd">        ROS client port for communcation with ABB controller, defaults to 9090.</span>
+
+<span class="sd">    Class attributes</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    EXTERNAL_AXES_DUMMY : :class:`compas_rrc.ExternalAxes`</span>
+<span class="sd">        Dummy object used for :class:`compas_rrc.MoveToRobtarget` and</span>
+<span class="sd">        :class:`MoveToJoints` objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TIMEOUT_SHORT</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">TIMEOUT_LONG</span> <span class="o">=</span> <span class="mi">30</span>
+
+    <span class="c1"># Define external axes, will not be used but required in move cmds</span>
+    <span class="n">EXTERNAL_AXES_DUMMY</span> <span class="o">=</span> <span class="n">compas_rrc</span><span class="o">.</span><span class="n">ExternalAxes</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AbbRcfClient.__init__"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ros_port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9090</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">RosClient</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">ros_port</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ros</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AbbRcfClient.confirm_start"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.confirm_start">[docs]</a>    <span class="k">def</span> <span class="nf">confirm_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Stop program and prompt user to press play on pendant to resume.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">PrintText</span><span class="p">(</span><span class="s2">&quot;Press play when ready.&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">Stop</span><span class="p">())</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Press start on pendant when ready&quot;</span><span class="p">)</span>
+
+        <span class="c1"># After user presses play on pendant execution resumes:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">PrintText</span><span class="p">(</span><span class="s2">&quot;Resuming execution.&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AbbRcfClient.ping"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.ping">[docs]</a>    <span class="k">def</span> <span class="nf">ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Ping ABB robot controller.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timeout</span>
+<span class="sd">            Timeout for reply. Defaults to ``10``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        :exc:`compas_rrc.TimeoutError`</span>
+<span class="sd">            If no reply is returned before timeout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">timeout</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIMEOUT_SHORT</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_and_wait</span><span class="p">(</span>
+            <span class="n">compas_rrc</span><span class="o">.</span><span class="n">Noop</span><span class="p">(</span><span class="n">feedback_level</span><span class="o">=</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">FeedbackLevel</span><span class="o">.</span><span class="n">DONE</span><span class="p">),</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfClient.ensure_connection"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.ensure_connection">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_connection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">timeout_ping</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wait_after_up</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check connection to ABB controller and restart abb-driver if necessary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timeout_ping</span>
+<span class="sd">            Timeout for ping response.</span>
+<span class="sd">        wait_after_up</span>
+<span class="sd">            Time to wait to ping after `abb-driver` container started.</span>
+<span class="sd">        tries</span>
+<span class="sd">            How many times to ping before raising error.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        :exc:`compas_rrc.TimeoutException`</span>
+<span class="sd">            If no reply is returned to second ping before timeout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">timeout_ping</span><span class="p">:</span>
+            <span class="n">timeout_ping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIMEOUT_SHORT</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Pinging robot&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ping</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ping</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">compas_rrc</span><span class="o">.</span><span class="n">TimeoutException</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No response from controller, restarting abb-driver service.&quot;</span><span class="p">)</span>
+            <span class="n">restart_container</span><span class="p">(</span><span class="n">DRIVER_CONTAINER_NAME</span><span class="p">)</span>
+
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_after_up</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ping</span><span class="p">(</span><span class="n">timeout_ping</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">compas_rrc</span><span class="o">.</span><span class="n">TimeoutException</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span>
+
+            <span class="k">raise</span>  <span class="c1"># If there&#39;s still no response after n tries, raise exception</span></div></div>
+
+
+<div class="viewcode-block" id="AbbRcfFabricationClient"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient">[docs]</a><span class="k">class</span> <span class="nc">AbbRcfFabricationClient</span><span class="p">(</span><span class="n">AbbRcfClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Robot communication client for RCF fabrication process.</span>
+
+<span class="sd">    Subclass of :class:`AbbRcfClient` with fabrication specific methods.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ros : :class:`compas_fab.backends.ros.RosClient`</span>
+<span class="sd">        ROS client for communcation with ABB controller.</span>
+<span class="sd">    rob_conf : :class:`confuse.AttrDict`</span>
+<span class="sd">        Configuration namespace created from configuration file and command line</span>
+<span class="sd">        arguments.</span>
+<span class="sd">    pick_station : :class:`rapid_clay_formations_fab.fab_data.PickStation`</span>
+<span class="sd">        Pick station for fabrication elements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.__init__"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rob_conf</span><span class="p">:</span> <span class="n">confuse</span><span class="o">.</span><span class="n">AttrDict</span><span class="p">,</span>
+        <span class="n">pick_station</span><span class="p">:</span> <span class="n">PickStation</span><span class="p">,</span>
+        <span class="n">ros_port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9090</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ros_port</span><span class="o">=</span><span class="n">ros_port</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rob_conf</span> <span class="o">=</span> <span class="n">rob_conf</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pick_place&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">wobjs</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">wobjs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_speed_accel</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">robot_movement</span><span class="o">.</span><span class="n">global_speed_accel</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_positions</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">robot_movement</span><span class="o">.</span><span class="n">joint_positions</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">robot_movement</span><span class="o">.</span><span class="n">speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zone</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">robot_movement</span><span class="o">.</span><span class="n">zone</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">docker_cfg</span> <span class="o">=</span> <span class="n">rob_conf</span><span class="o">.</span><span class="n">docker</span>
+
+        <span class="c1"># Setup pick station</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pick_station</span> <span class="o">=</span> <span class="n">pick_station</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_positions</span><span class="p">,</span> <span class="s2">&quot;travel_trajectory&quot;</span><span class="p">):</span>
+            <span class="n">joint_positions</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">to_radians</span><span class="p">(</span><span class="n">jp</span><span class="p">)</span> <span class="k">for</span> <span class="n">jp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_positions</span><span class="o">.</span><span class="n">travel_trajectory</span>
+            <span class="p">]</span>
+            <span class="n">configurations</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">Configuration</span><span class="o">.</span><span class="n">from_revolute_values</span><span class="p">(</span><span class="n">jps</span><span class="p">)</span> <span class="k">for</span> <span class="n">jps</span> <span class="ow">in</span> <span class="n">joint_positions</span>
+            <span class="p">]</span>
+            <span class="n">trajectory</span> <span class="o">=</span> <span class="n">MinimalTrajectory</span><span class="p">(</span><span class="n">configurations</span><span class="p">)</span>
+            <span class="n">trajectories</span> <span class="o">=</span> <span class="n">MinimalTrajectories</span><span class="p">([</span><span class="n">trajectory</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_travel_trajectories</span> <span class="o">=</span> <span class="n">trajectories</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_return_travel_trajectories</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">trajectories</span><span class="o">.</span><span class="n">reversed_recursively</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;default_travel_trajectories: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">default_travel_trajectories</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.ensure_connection"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.ensure_connection">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_connection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">timeout_ping</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wait_after_up</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check connection to ABB controller and restart abb-driver if necessary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tries : :obj:`int`, optional</span>
+<span class="sd">            Connection tries, defaults to 3.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        :exc:`TimeoutError`</span>
+<span class="sd">            If no reply is returned before timeout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timeout_ping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timeout_ping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">docker_cfg</span><span class="o">.</span><span class="n">timeout_ping</span>
+        <span class="k">if</span> <span class="n">wait_after_up</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wait_after_up</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">docker_cfg</span><span class="o">.</span><span class="n">sleep_after_up</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">ensure_connection</span><span class="p">(</span>
+            <span class="n">timeout_ping</span><span class="o">=</span><span class="n">timeout_ping</span><span class="p">,</span>
+            <span class="n">wait_after_up</span><span class="o">=</span><span class="n">wait_after_up</span><span class="p">,</span>
+            <span class="n">tries</span><span class="o">=</span><span class="n">tries</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.pre_procedure"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.pre_procedure">[docs]</a>    <span class="k">def</span> <span class="nf">pre_procedure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Pre fabrication setup, speed, acceleration and initial pose.&quot;&quot;&quot;</span>
+        <span class="c1"># for safety</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retract_needles</span><span class="p">()</span>
+
+        <span class="c1"># Set Acceleration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetAcceleration</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">global_speed_accel</span><span class="o">.</span><span class="n">accel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_speed_accel</span><span class="o">.</span><span class="n">accel_ramp</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Acceleration values set.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set Max Speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetMaxSpeed</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">global_speed_accel</span><span class="o">.</span><span class="n">speed_override</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">global_speed_accel</span><span class="o">.</span><span class="n">speed_max_tcp</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Speed set.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initial configuration</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sending move to safe joint position&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_and_wait</span><span class="p">(</span>
+            <span class="n">MoveToJoints</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">joint_positions</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EXTERNAL_AXES_DUMMY</span><span class="p">,</span>
+                <span class="mi">150</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.post_procedure"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.post_procedure">[docs]</a>    <span class="k">def</span> <span class="nf">post_procedure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Post fabrication procedure.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retract_needles</span><span class="p">()</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sending move to safe joint position.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">MoveToJoints</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">joint_positions</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EXTERNAL_AXES_DUMMY</span><span class="p">,</span>
+                <span class="mi">150</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">PrintText</span><span class="p">(</span><span class="s2">&quot;Finished&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.pick_element"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.pick_element">[docs]</a>    <span class="k">def</span> <span class="nf">pick_element</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Send movement and IO instructions to pick up fabrication element.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetTool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tool </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> set.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetWorkObject</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wobjs</span><span class="o">.</span><span class="n">pick</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Work object </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">wobjs</span><span class="o">.</span><span class="n">pick</span><span class="si">}</span><span class="s2"> set.&quot;</span><span class="p">)</span>
+
+        <span class="n">element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_station</span><span class="o">.</span><span class="n">get_next_pick_elem</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">MoveToRobtarget</span><span class="p">(</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">get_egress_frame</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EXTERNAL_AXES_DUMMY</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">MoveToRobtarget</span><span class="p">(</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">get_top_frame</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EXTERNAL_AXES_DUMMY</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">pick</span><span class="p">,</span>
+                <span class="n">compas_rrc</span><span class="o">.</span><span class="n">Zone</span><span class="o">.</span><span class="n">FINE</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extend_needles</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">WaitTime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">needles_pause</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">MoveToRobtarget</span><span class="p">(</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">get_egress_frame</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EXTERNAL_AXES_DUMMY</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">pick</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">pick</span><span class="p">,</span>
+                <span class="n">motion_type</span><span class="o">=</span><span class="n">Motion</span><span class="o">.</span><span class="n">LINEAR</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.place_element"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.place_element">[docs]</a>    <span class="k">def</span> <span class="nf">place_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">PlaceElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">compas_rrc</span><span class="o">.</span><span class="n">FutureResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Send movement and IO instructions to place a fabrication element.</span>
+
+<span class="sd">        Uses `fab_conf` set up with command line arguments and configuration</span>
+<span class="sd">        file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        element : :class:`rapid_clay_formations_fab.fab_data.PlaceElement`</span>
+<span class="sd">            Element to place.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`compas_rrc.FutureResult`</span>
+<span class="sd">            Object which blocks while waiting for feedback from robot. Calling result on</span>
+<span class="sd">            this object will return the time the procedure took.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Location frame: </span><span class="si">{</span><span class="n">element</span><span class="o">.</span><span class="n">location</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetTool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tool </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> set.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetWorkObject</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wobjs</span><span class="o">.</span><span class="n">place</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Work object </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">wobjs</span><span class="o">.</span><span class="n">place</span><span class="si">}</span><span class="s2"> set.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_travel_trajectories</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span>
+                <span class="n">trajectory</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">place_trajectories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_place_trajectories</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+
+        <span class="c1"># Go to egress frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span>
+            <span class="n">place_trajectories</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">place_egress</span><span class="p">,</span>
+            <span class="c1"># Stop if wait_at_place_egress is larger than 0</span>
+            <span class="n">stop_at_last</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rob_conf</span><span class="o">.</span><span class="n">wait_at_place_egress</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Wait here if wait_at_place_egress is not 0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">WaitTime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rob_conf</span><span class="o">.</span><span class="n">wait_at_place_egress</span><span class="p">))</span>
+
+        <span class="c1"># Execute all trajectories between first and last</span>
+        <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="n">place_trajectories</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span>
+                <span class="n">trajectory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">place_egress</span><span class="p">,</span> <span class="n">stop_at_last</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Before executing last place trajectory, retract the needles.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retract_needles</span><span class="p">()</span>
+        <span class="c1"># Wait to let needles retract fully.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">WaitTime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">needles_pause</span><span class="p">))</span>
+
+        <span class="c1"># Last place motion</span>
+        <span class="n">place_future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span>
+            <span class="n">place_trajectories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">place</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">place</span><span class="p">,</span>
+            <span class="n">motion_type</span><span class="o">=</span><span class="n">Motion</span><span class="o">.</span><span class="n">LINEAR</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">return_place_trajectories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_return_place_trajectories</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span>
+            <span class="n">return_place_trajectories</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">place</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">place</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="n">return_place_trajectories</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">travel</span><span class="p">)</span>
+
+        <span class="n">return_travel_trajectories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_return_travel_trajectories</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="n">return_travel_trajectories</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_trajectory</span><span class="p">(</span>
+                <span class="n">trajectory</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="o">.</span><span class="n">travel</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">place_future</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_travel_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">PlaceElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinimalTrajectories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">travel_trajectories</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">element</span><span class="o">.</span><span class="n">travel_trajectories</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_travel_trajectories</span>
+
+    <span class="k">def</span> <span class="nf">_get_return_travel_trajectories</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">PlaceElement</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinimalTrajectories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">return_travel_trajectories</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">element</span><span class="o">.</span><span class="n">return_travel_trajectories</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">travel_trajectories</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">element</span><span class="o">.</span><span class="n">travel_trajectories</span><span class="o">.</span><span class="n">reversed_recursively</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_return_travel_trajectories</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_place_trajectories</span><span class="p">(</span><span class="n">element</span><span class="p">:</span> <span class="n">PlaceElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinimalTrajectories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">place_trajectories</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">element</span><span class="o">.</span><span class="n">place_trajectories</span>
+
+        <span class="n">approach</span> <span class="o">=</span> <span class="n">MinimalTrajectory</span><span class="p">([</span><span class="n">element</span><span class="o">.</span><span class="n">get_egress_frame</span><span class="p">()])</span>
+        <span class="n">positioning</span> <span class="o">=</span> <span class="n">MinimalTrajectory</span><span class="p">([</span><span class="n">element</span><span class="o">.</span><span class="n">get_uncompressed_top_frame</span><span class="p">()])</span>
+        <span class="n">pressing</span> <span class="o">=</span> <span class="n">MinimalTrajectory</span><span class="p">([</span><span class="n">element</span><span class="o">.</span><span class="n">get_compressed_top_frame</span><span class="p">()])</span>
+        <span class="k">return</span> <span class="n">MinimalTrajectories</span><span class="p">([</span><span class="n">approach</span><span class="p">,</span> <span class="n">positioning</span><span class="p">,</span> <span class="n">pressing</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_return_place_trajectories</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">PlaceElement</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinimalTrajectories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">return_place_trajectories</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">element</span><span class="o">.</span><span class="n">return_place_trajectories</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_place_trajectories</span><span class="p">(</span><span class="n">element</span><span class="p">)</span><span class="o">.</span><span class="n">reversed_recursively</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.execute_trajectory"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.execute_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">execute_trajectory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">trajectory</span><span class="p">:</span> <span class="n">MinimalTrajectory</span><span class="p">,</span>
+        <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">zone</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">Zone</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">blocking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">stop_at_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">motion_type</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Motion</span><span class="o">.</span><span class="n">JOINT</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">compas_rrc</span><span class="o">.</span><span class="n">FutureResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Execute a :class:`~compas_fab.JointTrajectory`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectory</span>
+<span class="sd">            Trajectory defined by frames or configurations.</span>
+<span class="sd">        speed : :obj:`float`</span>
+<span class="sd">            Speed in mm/s.</span>
+<span class="sd">        zone : :obj:`dict`</span>
+<span class="sd">            Zone defined either in millimeters or using</span>
+<span class="sd">            :class:`compas_rrc.ZoneData` names.</span>
+<span class="sd">        blocking : :obj:`bool`, optional</span>
+<span class="sd">            If execution should be blocked while waiting for the robot to reach</span>
+<span class="sd">            last trajectory point. Defaults to ``False``</span>
+<span class="sd">        stop_at_last : :obj:`bool`, optional</span>
+<span class="sd">            If last trajectory point should be sent as a non fly-by point, i.e.</span>
+<span class="sd">            should the last trajectory points zone be set to `compas_rrc.Zone.FINE`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trajectory: </span><span class="si">{</span><span class="n">trajectory</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">motion_class</span><span class="p">,</span> <span class="n">trajectory_pts</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">to_compas_rrc</span><span class="p">()</span>
+
+        <span class="n">motion_args</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">EXTERNAL_AXES_DUMMY</span><span class="p">,</span>
+            <span class="n">speed</span><span class="p">,</span>
+            <span class="n">zone</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="n">motion_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">trajectory_type</span> <span class="o">==</span> <span class="n">MinimalTrajectory</span><span class="o">.</span><span class="n">FRAME_TRAJECTORY</span><span class="p">:</span>
+            <span class="c1"># ignore motion_type if trajectory is joint trajectory</span>
+            <span class="n">motion_kwargs</span><span class="p">[</span><span class="s2">&quot;motion_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">motion_type</span>
+
+        <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">trajectory_pts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>  <span class="c1"># skip last</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">motion_class</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="o">*</span><span class="n">motion_args</span><span class="p">,</span> <span class="o">**</span><span class="n">motion_kwargs</span><span class="p">))</span>
+
+        <span class="c1"># modify last (zone) arg for last trajectory pt</span>
+        <span class="n">motion_args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">compas_rrc</span><span class="o">.</span><span class="n">Zone</span><span class="o">.</span><span class="n">FINE</span> <span class="k">if</span> <span class="n">stop_at_last</span> <span class="k">else</span> <span class="n">zone</span>
+
+        <span class="c1"># send and wait on last if blocking</span>
+        <span class="k">if</span> <span class="n">blocking</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_and_wait</span><span class="p">(</span>
+                <span class="n">motion_class</span><span class="p">(</span><span class="n">trajectory_pts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">*</span><span class="n">motion_args</span><span class="p">,</span> <span class="o">**</span><span class="n">motion_kwargs</span><span class="p">),</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">motion_class</span><span class="p">(</span><span class="n">trajectory_pts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">*</span><span class="n">motion_args</span><span class="p">,</span> <span class="o">**</span><span class="n">motion_kwargs</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.retract_needles"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.retract_needles">[docs]</a>    <span class="k">def</span> <span class="nf">retract_needles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Send signal to retract needles on pick and place tool.&quot;&quot;&quot;</span>
+        <span class="n">pin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">io_pin_needles</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">retract_signal</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetDigital</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">state</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IO </span><span class="si">{</span><span class="n">pin</span><span class="si">}</span><span class="s2"> set to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbbRcfFabricationClient.extend_needles"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_rcf_client.html#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.extend_needles">[docs]</a>    <span class="k">def</span> <span class="nf">extend_needles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Send signal to extend needles on pick and place tool.&quot;&quot;&quot;</span>
+        <span class="n">pin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">io_pin_needles</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_place_tool</span><span class="o">.</span><span class="n">extend_signal</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">compas_rrc</span><span class="o">.</span><span class="n">SetDigital</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">state</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IO </span><span class="si">{</span><span class="n">pin</span><span class="si">}</span><span class="s2"> set to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div></div>
+</code></pre></div>
+        
+      </main>
+      <!-- content -->
+      <!-- sidebar -->
+      <div class="col-12 col-md-3 compas-sidebar" role="navigation">
+        <form id="search" class="d-flex align-items-center compas-searchbox" action="../../../search.html" method="get">
+          <input class="form-control" type="text" name="q" placeholder="Search docs" />
+          <input type="hidden" name="check_keywords" value="yes" />
+          <input type="hidden" name="area" value="default" />
+          <button class="navbar-toggler d-md-none" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </form>
+        
+        
+          <div id="compas-navigation" class="collapse compas-navigation">
+          <ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="../../../installation.html">Installation</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../usage.html">Usage</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../known_issues.html">Known issues</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../reference.html">API reference</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../authors.html">Authors</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+          </div>
+        
+      </div>
+      <!-- sidebar -->
+      <!-- toc -->
+      <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+        
+        
+      </div>
+      <!-- toc -->
+    </div>
+  </div>
+  <!-- main -->
+  <!-- footer -->
+  <!-- footer -->
+  <div class="below py-5" style="background-color: #222;">
+    <div class="container">
+      <div class="row flex-column">
+      <div class="col-12 col-md-6 mx-md-auto text-center">
+        <h4 class="pb-3 footer-text">COMPAS</h4>
+        <p class="footer-text">
+          A computational framework for collaboration and research
+          in Architecture, Engineering, Fabrication, and Construction.
+        </p>
+        <nav class="nav justify-content-center pb-3">
+          <a class="nav-link mx-2 px-0 footer-link" href="http://github.com/compas-dev" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="https://pypi.org/project/COMPAS/" target="_blank">
+            <span class="fab fa-python fa-1x"></span>
+          </a>
+        </nav>
+      </div>
+      </div>
+      <div class="row">
+      <div class="col text-center">
+        <p class="p-0 m-0 footer-text">Copyright &copy; 2017-2020 compas-dev</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+  URL_ROOT          : '',
+  VERSION           : '',
+  COLLAPSE_INDEX    : false,
+  FILE_SUFFIX       : '.html',
+  HAS_SOURCE        : 'false',
+  SOURCELINK_SUFFIX : '.txt'
+  };
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+
+  <script src="../../../_static/underscore.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/js/searchtools_.js"></script>
+
+  <script>
+  $(document).ready(function() {
+    $(".language-default code").addClass("python");
+    $(".language-python code").addClass("python");
+    $(".language-bash code").addClass("bash");
+    $(".language-cpp code").addClass("cpp");
+    $(".language-json code").addClass("json");
+    $(".language-none code").addClass("plaintext");
+
+    hljs.initHighlighting();
+    anchors.add();
+
+    $('.nav-versions .dropdown-item').filter(function(i, ver) {
+      return window.location.href.startsWith(ver.href);
+    }).addClass("active");
+
+  });
+
+
+  var url = $("#doc_versions").data("url");
+  var docs_site = $("#doc_versions").data("docs");
+
+  if (url) {
+    $.get(url, res=>{
+      var lines = res.match(/[^\r\n]+/g);
+      lines.forEach(version => {
+        $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
+      });
+    })
+  }
+
+  </script>
+  
+  
+</body>
+</html>

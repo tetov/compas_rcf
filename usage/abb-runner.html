@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>rapid_clay_formations_fab - ABB fabrication runner</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <meta name="author" content="" />
+  <meta name="description" content="" />
+
+  <link rel="shortcut icon" href="../_static/images/compas.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/default.min.css">
+  <link rel="stylesheet" type="text/css" href="../_static/css/compas.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/compas-reference.css" />
+
+  
+    <link rel="next" title="Grasshopper files" href="grasshopper-examples.html" />
+  
+
+  
+    <link rel="prev" title="Usage" href="../usage.html" />
+  
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  <style>
+    .footer-text,
+    .footer-link,
+    .footer-title {
+      color: rgba(255, 255, 255, 0.25);
+    }
+    .footer-link:hover {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target="#compas-toc">
+  <!-- header -->
+  <header id="header" class="compas-header d-flex align-items-center">
+    <nav class="navbar navbar-expand navbar-dark col flex-column flex-md-row text-center">
+      <!-- brand -->
+      <a class="navbar-brand" href="">
+        <img src="../_static/images/compas_icon_white.png" alt="Rapid Clay Formations Fabrication" width="48px" height="48px" />
+      </a>
+      <!-- brand -->
+      <!-- primary -->
+      <ul class="navbar-nav">
+        <li class="nav-item active"><a class="nav-link" href="">Rapid Clay Formations Fabrication</a></li>
+      </ul>
+      <!-- primary -->
+      <ul class="navbar-nav d-none d-md-flex ml-md-auto">
+        <!-- version -->
+        
+        <!-- version -->
+        <!-- social -->
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/gramaziokohler/rapid_clay_formations_fab" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+        </li>
+        <!-- social -->
+      </ul>
+    </nav>
+  </header>
+  <!-- header -->
+  <!-- main -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- main -->
+      <main class="col-12 col-md-9 col-xl-7 px-2 px-md-5 py-5 compas-content" role="main">
+        
+        
+        <div class="section" id="abb-fabrication-runner">
+<h1 class="display-4 p-0 mb-5">ABB fabrication runner</h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Outdated.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Requires <code class="docutils literal notranslate"><span class="pre">compas_rrc</span></code>. Follow the installation steps in <a class="reference internal" href="../installation.html"><span class="doc">Installation</span></a>.</p>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements</h2>
+<ul class="simple">
+<li><p>Virtual or real ABB controller with compas_rrc’s rapid set up.</p></li>
+<li><p>Python <code class="docutils literal notranslate"><span class="pre">&gt;=3.7</span></code></p></li>
+<li><p>Docker desktop</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abb-driver</span></code> image from <code class="docutils literal notranslate"><span class="pre">compas_rrc</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="fabrication-data">
+<h2>Fabrication data</h2>
+<p>Fabrication data is created in Grasshopper, see <a class="reference internal" href="grasshopper-examples.html"><span class="doc">Grasshopper files</span></a>.
+The information is stored as a list of <code class="xref py py-obj docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.fab_data.ClayBullet</span></code>
+dumped to a JSON file.</p>
+<p>The JSON file can be edited from Grasshopper after initial creation.</p>
+</div>
+<div class="section" id="fabrication-configuration">
+<h2>Fabrication configuration</h2>
+<p>Fabrication configurations are stored as <code class="docutils literal notranslate"><span class="pre">YAML</span></code> files which allows for easy
+editing.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Default configuration</span></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><code><span></span><span class="c1"># Fabrication run config for abb_rcf_runner</span>
+<span class="c1"># YAML format, https://yaml.org/spec/1.2</span>
+
+<span class="nt">logfile</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">C:\rcf_robotcontrol\04_logs\fab.log</span>
+<span class="nt">robot_client</span><span class="p">:</span>
+    <span class="nt">controller</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">virtual</span>
+    <span class="nt">docker</span><span class="p">:</span>
+        <span class="nt">timeout_ping</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+        <span class="nt">sleep_after_up</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+    <span class="nt">wobjs</span><span class="p">:</span>
+        <span class="nt">pick</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">wobj0</span>
+        <span class="nt">place</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">wobj0</span>
+
+    <span class="nt">tools</span><span class="p">:</span>
+        <span class="nt">pick_place</span><span class="p">:</span>
+            <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">t_A057_ClayTool02</span> <span class="c1"># name of tool</span>
+            <span class="nt">io_pin_needles</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">doUnitC1Out1</span> <span class="c1"># name of DO</span>
+            <span class="nt">extend_signal</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span> <span class="c1"># state (0 or 1)</span>
+            <span class="nt">retract_signal</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span> <span class="c1"># state (0 or 1)</span>
+            <span class="nt">needles_pause</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span> <span class="c1"># Seconds to wait before and after extending or</span>
+                               <span class="c1"># retracting needles</span>
+
+    <span class="nt">wait_at_place_egress</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+
+    <span class="nt">robot_movement</span><span class="p">:</span>
+        <span class="nt">global_speed_accel</span><span class="p">:</span>
+            <span class="nt">speed_override</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span> <span class="c1"># %</span>
+            <span class="nt">speed_max_tcp</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">500</span> <span class="c1"># mm/s</span>
+            <span class="nt">accel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span> <span class="c1"># mm/s^2</span>
+            <span class="nt">accel_ramp</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span> <span class="c1"># %, optional, default 100, the rate at which acceleration</span>
+                        <span class="c1"># increases or decreases as a percentage of the normal values</span>
+        <span class="nt">speed</span><span class="p">:</span>
+            <span class="c1"># velocities defined as mm/s</span>
+            <span class="nt">pick</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">200</span> <span class="c1"># mm/s</span>
+            <span class="nt">travel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">600</span> <span class="c1"># mm/s</span>
+            <span class="nt">place</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">120</span> <span class="c1"># mm/s</span>
+
+        <span class="nt">zone</span><span class="p">:</span>
+            <span class="c1"># Either rapid variable name or mm</span>
+            <span class="nt">pick</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Z10</span>
+            <span class="nt">place</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Z10</span>
+            <span class="nt">place_egress</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Z20</span>
+            <span class="nt">travel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Z100</span>
+
+        <span class="nt">joint_positions</span><span class="p">:</span>
+            <span class="nt">start</span><span class="p">:</span> <span class="p p-Indicator">[</span> <span class="nv">-127.0</span><span class="p p-Indicator">,</span> <span class="nv">54.0</span><span class="p p-Indicator">,</span> <span class="nv">9.0</span><span class="p p-Indicator">,</span> <span class="nv">-2.0</span><span class="p p-Indicator">,</span> <span class="nv">30.0</span><span class="p p-Indicator">,</span> <span class="nv">7.0</span> <span class="p p-Indicator">]</span> <span class="c1"># 6 joint values in degrees</span>
+            <span class="nt">end</span><span class="p">:</span> <span class="p p-Indicator">[</span> <span class="nv">-127.0</span><span class="p p-Indicator">,</span> <span class="nv">54.0</span><span class="p p-Indicator">,</span> <span class="nv">9.0</span> <span class="p p-Indicator">,</span> <span class="nv">2.0</span> <span class="p p-Indicator">,</span> <span class="nv">30.0</span><span class="p p-Indicator">,</span> <span class="nv">7.0</span> <span class="p p-Indicator">]</span> <span class="c1"># 6 joint values in degrees</span>
+        <span class="nt">skip_all_pick_movements</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="fabrication-run">
+<h2>Fabrication run</h2>
+<p>Run the script from a terminal using the command
+:code:<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">rapid_clay_formations_fab.abb.run</span></code>. There are some flags that can be set
+when running this command:</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span>$ python -m rapid_clay_formations_fab.abb.run --help
+usage: run.py [-h] [-t {real,virtual}] [-q] [--debug] [--skip-logfile]
+           [--skip-progress-file]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t {real,virtual}, --target {real,virtual}
+                        Set fabrication runner target.
+  -q, --quiet           Don&#39;t print logging messages to console.
+  --debug               Log DEBUG level messages.
+  --skip-logfile        Don&#39;t send log messages to file.
+  --skip-progress-file  Skip writing progress to json during run.
+</code></pre></div>
+</div>
+<div class="section" id="run-setup">
+<h3>Run setup</h3>
+<p>Select target (real or virtual controller) and configuration file.</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span>$ python -m rapid_clay_formations_fab.abb.run
+{{timestamp}}:INFO:&lt;module&gt;:rapid_clay_formations_fab version: {{version}}
+? Load config or use default?  (Use arrow keys)
+» Default.
+  Load.
+? Load config or use default?  Default.
+{{timestamp}}:INFO:interactive_conf_setup:Default configuration loaded from package
+? Target?  (Use arrow keys)
+» Virtual robot
+  Real robot
+? Target?  Virtual robot
+{{timestamp}}:INFO:interactive_conf_setup:Target is VIRTUAL controller.
+[...]
+</code></pre></div>
+</div>
+<p>Next <code class="docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">up</span></code> runs to make sure these three containers are running:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ros-master</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ros-bridge</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abb-driver</span></code></p></li>
+</ul>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">ros</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">driver</span> <span class="ow">is</span> <span class="n">up</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">date</span>
+<span class="n">ros</span><span class="o">-</span><span class="n">bridge</span><span class="o">-</span><span class="n">driver</span> <span class="ow">is</span> <span class="n">up</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">date</span>
+<span class="n">abb</span><span class="o">-</span><span class="n">driver</span> <span class="ow">is</span> <span class="n">up</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">date</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<p>Next, select fabrication file using the open file dialog.</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">{{</span><span class="n">timestamp</span><span class="p">}}:</span><span class="n">INFO</span><span class="p">:</span><span class="n">main</span><span class="p">:</span><span class="n">Fabrication</span> <span class="n">data</span> <span class="n">read</span> <span class="n">from</span><span class="p">:</span> <span class="p">{{</span><span class="n">path</span> <span class="n">to</span> <span class="n">json</span><span class="o">-</span><span class="n">file</span><span class="p">}}</span>
+<span class="p">{{</span><span class="n">timestamp</span><span class="p">}}:</span><span class="n">INFO</span><span class="p">:</span><span class="n">main</span><span class="p">:</span><span class="n">x</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">clay_bullets</span><span class="o">.</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<p>Now the connection to ROS is set up, and the script tries to ping the
+controller. If there is no response, the docker container <code class="docutils literal notranslate"><span class="pre">abb-driver</span></code> is
+restarted. This is because of some issues with reconnecting with ROS to the
+controller.</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">{{</span><span class="n">timestamp</span><span class="p">}}:</span><span class="n">INFO</span><span class="p">:</span><span class="n">onOpen</span><span class="p">:</span><span class="n">Connection</span> <span class="n">to</span> <span class="n">ROS</span> <span class="n">MASTER</span> <span class="n">ready</span><span class="o">.</span>
+<span class="p">{{</span><span class="n">timestamp</span><span class="p">}}:</span><span class="n">INFO</span><span class="p">:</span><span class="n">check_reconnect</span><span class="p">:</span><span class="n">No</span> <span class="n">response</span> <span class="kn">from</span> <span class="nn">controller</span><span class="p">,</span> <span class="n">restarting</span> <span class="n">abb</span><span class="o">-</span><span class="n">driver</span> <span class="n">service</span><span class="o">.</span>
+<span class="n">Recreating</span> <span class="n">abb</span><span class="o">-</span><span class="n">driver</span> <span class="o">...</span> <span class="n">done</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<p>After the connection is set up the fabrication data is checked for
+<code class="docutils literal notranslate"><span class="pre">ClayBullets</span></code> with the attribute <code class="docutils literal notranslate"><span class="pre">placed</span></code>, if found the scripts
+prompts the user if they want to skip <code class="docutils literal notranslate"><span class="pre">ClayBullets</span></code>.</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span>[...]
+? Some or all bullet seems to have been placed already.  (Use arrow keys)
+» Skip all bullet marked as placed in JSON file.
+  Place all anyways.
+  ---------------
+  Place some of the bullets.
+[...]
+</code></pre></div>
+</div>
+<p>Finally, there is a last confirmation before the robot starts moving.</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span>[...]
+? Ready to start program?  (Y/n)
+[...]
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="during-the-run">
+<h3>During the run</h3>
+<p>The script then goes through the list and sends commands to pick and place
+clay cylinders. There’s timers set for the pick and place procedures which
+is used to calculate cycle time for every bullet. This together with the time
+of placement is stored in the <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code> in the attributes <code class="docutils literal notranslate"><span class="pre">cycle_time</span></code> and
+<code class="docutils literal notranslate"><span class="pre">placed</span></code>.</p>
+<p>The list of <code class="docutils literal notranslate"><span class="pre">ClayBullets</span></code> is continually written to a file in the
+same directory as the original fabrication data file, but with “IN_PROGRESS”
+prepended to the file name.</p>
+<p>This is to record the cycle time and time of placement, but also to create a file
+that an interrupted run can use as a start point. This makes resuming a
+fabrication run after an interruption easy.</p>
+<p>The progress of the fabrication run is printed in the terminal as well as on
+the flexpendant:</p>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">{{</span><span class="n">timestamp</span><span class="p">}}:</span><span class="n">INFO</span><span class="p">:</span><span class="n">main</span><span class="p">:</span><span class="n">Bullet</span> <span class="mi">000</span><span class="o">/</span><span class="mi">1827</span> <span class="k">with</span> <span class="nb">id</span> <span class="mf">18280.</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="end-of-run">
+<h3>End of run</h3>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">{{</span><span class="n">timestamp</span><span class="p">}}:</span><span class="n">INFO</span><span class="p">:</span><span class="n">main</span><span class="p">:</span><span class="n">Finished</span> <span class="n">program</span> <span class="k">with</span> <span class="n">x</span> <span class="n">bullets</span><span class="o">.</span>
+</code></pre></div>
+</div>
+<p>When all <code class="docutils literal notranslate"><span class="pre">ClayBullets</span></code> are placed the <code class="docutils literal notranslate"><span class="pre">&quot;IN-PROGRESS&quot;</span></code> file is moved to
+<code class="docutils literal notranslate"><span class="pre">00_done</span></code>, in the same directory as the original fabrication file.</p>
+</div>
+</div>
+</div>
+
+        
+      </main>
+      <!-- content -->
+      <!-- sidebar -->
+      <div class="col-12 col-md-3 compas-sidebar" role="navigation">
+        <form id="search" class="d-flex align-items-center compas-searchbox" action="../search.html" method="get">
+          <input class="form-control" type="text" name="q" placeholder="Search docs" />
+          <input type="hidden" name="check_keywords" value="yes" />
+          <input type="hidden" name="area" value="default" />
+          <button class="navbar-toggler d-md-none" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </form>
+        
+        
+          <div id="compas-navigation" class="collapse compas-navigation">
+          <ul class="nav flex-column active">
+<li class="nav-item"><a class="nav-link reference internal" href="../installation.html">Installation</a></li>
+<li class="nav-item active"><a class="nav-link reference internal" href="../usage.html">Usage</a><ul class="nav flex-column active">
+<li class="nav-item active"><a class="nav-link active current reference internal" href="#">ABB fabrication runner</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="grasshopper-examples.html">Grasshopper files</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="../known_issues.html">Known issues</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../contributing.html">Contributing</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../reference.html">API reference</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../changelog.html">Changelog</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../authors.html">Authors</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../license.html">License</a></li>
+</ul>
+
+          </div>
+        
+      </div>
+      <!-- sidebar -->
+      <!-- toc -->
+      <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+        
+        <ul class="nav flex-column" id="compas-toc">
+<li class="nav-item"><a class="nav-link reference internal" href="#">ABB fabrication runner</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#requirements">Requirements</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#fabrication-data">Fabrication data</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#fabrication-configuration">Fabrication configuration</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#fabrication-run">Fabrication run</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#run-setup">Run setup</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#during-the-run">During the run</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#end-of-run">End of run</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      </div>
+      <!-- toc -->
+    </div>
+  </div>
+  <!-- main -->
+  <!-- footer -->
+  <!-- footer -->
+  <div class="below py-5" style="background-color: #222;">
+    <div class="container">
+      <div class="row flex-column">
+      <div class="col-12 col-md-6 mx-md-auto text-center">
+        <h4 class="pb-3 footer-text">COMPAS</h4>
+        <p class="footer-text">
+          A computational framework for collaboration and research
+          in Architecture, Engineering, Fabrication, and Construction.
+        </p>
+        <nav class="nav justify-content-center pb-3">
+          <a class="nav-link mx-2 px-0 footer-link" href="http://github.com/compas-dev" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="https://pypi.org/project/COMPAS/" target="_blank">
+            <span class="fab fa-python fa-1x"></span>
+          </a>
+        </nav>
+      </div>
+      </div>
+      <div class="row">
+      <div class="col text-center">
+        <p class="p-0 m-0 footer-text">Copyright &copy; 2017-2020 compas-dev</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+  URL_ROOT          : '',
+  VERSION           : '',
+  COLLAPSE_INDEX    : false,
+  FILE_SUFFIX       : '.html',
+  HAS_SOURCE        : 'false',
+  SOURCELINK_SUFFIX : '.txt'
+  };
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+
+  <script src="../_static/underscore.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/js/searchtools_.js"></script>
+
+  <script>
+  $(document).ready(function() {
+    $(".language-default code").addClass("python");
+    $(".language-python code").addClass("python");
+    $(".language-bash code").addClass("bash");
+    $(".language-cpp code").addClass("cpp");
+    $(".language-json code").addClass("json");
+    $(".language-none code").addClass("plaintext");
+
+    hljs.initHighlighting();
+    anchors.add();
+
+    $('.nav-versions .dropdown-item').filter(function(i, ver) {
+      return window.location.href.startsWith(ver.href);
+    }).addClass("active");
+
+  });
+
+
+  var url = $("#doc_versions").data("url");
+  var docs_site = $("#doc_versions").data("docs");
+
+  if (url) {
+    $.get(url, res=>{
+      var lines = res.match(/[^\r\n]+/g);
+      lines.forEach(version => {
+        $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
+      });
+    })
+  }
+
+  </script>
+  
+  
+</body>
+</html>

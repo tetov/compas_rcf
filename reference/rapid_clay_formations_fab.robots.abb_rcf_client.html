@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>rapid_clay_formations_fab - &lt;no title&gt;</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <meta name="author" content="" />
+  <meta name="description" content="" />
+
+  <link rel="shortcut icon" href="../_static/images/compas.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/default.min.css">
+  <link rel="stylesheet" type="text/css" href="../_static/css/compas.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/compas-reference.css" />
+
+  
+    <link rel="next" title="&lt;no title&gt;" href="rapid_clay_formations_fab.robots.abb_standalone_move_to_frame.html" />
+  
+
+  
+    <link rel="prev" title="&lt;no title&gt;" href="rapid_clay_formations_fab.robots.abb_rapid_tooldata.html" />
+  
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  <style>
+    .footer-text,
+    .footer-link,
+    .footer-title {
+      color: rgba(255, 255, 255, 0.25);
+    }
+    .footer-link:hover {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target="#compas-toc">
+  <!-- header -->
+  <header id="header" class="compas-header d-flex align-items-center">
+    <nav class="navbar navbar-expand navbar-dark col flex-column flex-md-row text-center">
+      <!-- brand -->
+      <a class="navbar-brand" href="">
+        <img src="../_static/images/compas_icon_white.png" alt="Rapid Clay Formations Fabrication" width="48px" height="48px" />
+      </a>
+      <!-- brand -->
+      <!-- primary -->
+      <ul class="navbar-nav">
+        <li class="nav-item active"><a class="nav-link" href="">Rapid Clay Formations Fabrication</a></li>
+      </ul>
+      <!-- primary -->
+      <ul class="navbar-nav d-none d-md-flex ml-md-auto">
+        <!-- version -->
+        
+        <!-- version -->
+        <!-- social -->
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/gramaziokohler/rapid_clay_formations_fab" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+        </li>
+        <!-- social -->
+      </ul>
+    </nav>
+  </header>
+  <!-- header -->
+  <!-- main -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- main -->
+      <main class="col-12 col-md-9 col-xl-7 px-2 px-md-5 py-5 compas-content" role="main">
+        
+        
+        <span class="target" id="module-rapid_clay_formations_fab.robots.abb_rcf_client"></span><p>Module for class AbbRcfClient, a client object made for the RCF fab process.</p>
+<dl class="py class">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient">
+<em class="property">class </em><code class="sig-prename descclassname">rapid_clay_formations_fab.robots.abb_rcf_client.</code><code class="sig-name descname">AbbRcfClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ros_port</span><span class="o">=</span><span class="default_value">9090</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfClient"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">compas_rrc.client.AbbClient</span></code></p>
+<p>Robot communication client for RCF.</p>
+<p>Subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">compas_rrc.AbbClient</span></code> with some utility methods added.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ros_port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – ROS client port for communcation with ABB controller, defaults to 9090.</p></li>
+<li><p><strong>Class attributes</strong></p></li>
+<li><p><strong>—————-</strong></p></li>
+<li><p><strong>EXTERNAL_AXES_DUMMY</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">compas_rrc.ExternalAxes</span></code>) – Dummy object used for <code class="xref py py-class docutils literal notranslate"><span class="pre">compas_rrc.MoveToRobtarget</span></code> and
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MoveToJoints</span></code> objects.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.TIMEOUT_SHORT">
+<code class="sig-name descname">TIMEOUT_SHORT</code><em class="property"> = 10</em></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.TIMEOUT_LONG">
+<code class="sig-name descname">TIMEOUT_LONG</code><em class="property"> = 30</em></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.EXTERNAL_AXES_DUMMY">
+<code class="sig-name descname">EXTERNAL_AXES_DUMMY</code><em class="property"> = ExternalAxes([])</em></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ros_port</span><span class="o">=</span><span class="default_value">9090</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfClient.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.confirm_start">
+<code class="sig-name descname">confirm_start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfClient.confirm_start"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Stop program and prompt user to press play on pendant to resume.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.ping">
+<code class="sig-name descname">ping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfClient.ping"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Ping ABB robot controller.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>timeout</strong> – Timeout for reply. Defaults to <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>compas_rrc.TimeoutError</strong> – If no reply is returned before timeout.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient.ensure_connection">
+<code class="sig-name descname">ensure_connection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout_ping</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">wait_after_up</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">tries</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfClient.ensure_connection"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Check connection to ABB controller and restart abb-driver if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timeout_ping</strong> – Timeout for ping response.</p></li>
+<li><p><strong>wait_after_up</strong> – Time to wait to ping after <cite>abb-driver</cite> container started.</p></li>
+<li><p><strong>tries</strong> – How many times to ping before raising error.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>compas_rrc.TimeoutException</strong> – If no reply is returned to second ping before timeout.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient">
+<em class="property">class </em><code class="sig-prename descclassname">rapid_clay_formations_fab.robots.abb_rcf_client.</code><code class="sig-name descname">AbbRcfFabricationClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rob_conf</span></em>, <em class="sig-param"><span class="n">pick_station</span></em>, <em class="sig-param"><span class="n">ros_port</span><span class="o">=</span><span class="default_value">9090</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient" title="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient</span></code></a></p>
+<p>Robot communication client for RCF fabrication process.</p>
+<p>Subclass of <a class="reference internal" href="#rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient" title="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbbRcfClient</span></code></a> with fabrication specific methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ros</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">compas_fab.backends.ros.RosClient</span></code>) – ROS client for communcation with ABB controller.</p></li>
+<li><p><strong>rob_conf</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">confuse.AttrDict</span></code>) – Configuration namespace created from configuration file and command line
+arguments.</p></li>
+<li><p><strong>pick_station</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.fab_data.PickStation</span></code>) – Pick station for fabrication elements.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rob_conf</span></em>, <em class="sig-param"><span class="n">pick_station</span></em>, <em class="sig-param"><span class="n">ros_port</span><span class="o">=</span><span class="default_value">9090</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.ensure_connection">
+<code class="sig-name descname">ensure_connection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout_ping</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">wait_after_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tries</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.ensure_connection"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Check connection to ABB controller and restart abb-driver if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tries</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – Connection tries, defaults to 3.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError" title="(in Python v3.9)"><strong>TimeoutError</strong></a> – If no reply is returned before timeout.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.pre_procedure">
+<code class="sig-name descname">pre_procedure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.pre_procedure"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Pre fabrication setup, speed, acceleration and initial pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.post_procedure">
+<code class="sig-name descname">post_procedure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.post_procedure"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Post fabrication procedure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.pick_element">
+<code class="sig-name descname">pick_element</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.pick_element"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Send movement and IO instructions to pick up fabrication element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.place_element">
+<code class="sig-name descname">place_element</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.place_element"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Send movement and IO instructions to place a fabrication element.</p>
+<p>Uses <cite>fab_conf</cite> set up with command line arguments and configuration
+file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>element</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.fab_data.PlaceElement</span></code>) – Element to place.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">compas_rrc.FutureResult</span></code> – Object which blocks while waiting for feedback from robot. Calling result on
+this object will return the time the procedure took.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">FutureResult</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.execute_trajectory">
+<code class="sig-name descname">execute_trajectory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trajectory</span></em>, <em class="sig-param"><span class="n">speed</span></em>, <em class="sig-param"><span class="n">zone</span></em>, <em class="sig-param"><span class="n">blocking</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">stop_at_last</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">motion_type</span><span class="o">=</span><span class="default_value">'J'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.execute_trajectory"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Execute a <code class="xref py py-class docutils literal notranslate"><span class="pre">JointTrajectory</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectory</strong> – Trajectory defined by frames or configurations.</p></li>
+<li><p><strong>speed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>) – Speed in mm/s.</p></li>
+<li><p><strong>zone</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Zone defined either in millimeters or using
+<code class="xref py py-class docutils literal notranslate"><span class="pre">compas_rrc.ZoneData</span></code> names.</p></li>
+<li><p><strong>blocking</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – If execution should be blocked while waiting for the robot to reach
+last trajectory point. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>stop_at_last</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – If last trajectory point should be sent as a non fly-by point, i.e.
+should the last trajectory points zone be set to <cite>compas_rrc.Zone.FINE</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">FutureResult</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.retract_needles">
+<code class="sig-name descname">retract_needles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.retract_needles"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Send signal to retract needles on pick and place tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rapid_clay_formations_fab.robots.abb_rcf_client.AbbRcfFabricationClient.extend_needles">
+<code class="sig-name descname">extend_needles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rapid_clay_formations_fab/robots/abb_rcf_client.html#AbbRcfFabricationClient.extend_needles"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Send signal to extend needles on pick and place tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+
+        
+      </main>
+      <!-- content -->
+      <!-- sidebar -->
+      <div class="col-12 col-md-3 compas-sidebar" role="navigation">
+        <form id="search" class="d-flex align-items-center compas-searchbox" action="../search.html" method="get">
+          <input class="form-control" type="text" name="q" placeholder="Search docs" />
+          <input type="hidden" name="check_keywords" value="yes" />
+          <input type="hidden" name="area" value="default" />
+          <button class="navbar-toggler d-md-none" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </form>
+        
+        
+          <div id="compas-navigation" class="collapse compas-navigation">
+          <ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="../installation.html">Installation</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../usage.html">Usage</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../known_issues.html">Known issues</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../contributing.html">Contributing</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../reference.html">API reference</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../changelog.html">Changelog</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../authors.html">Authors</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../license.html">License</a></li>
+</ul>
+
+          </div>
+        
+      </div>
+      <!-- sidebar -->
+      <!-- toc -->
+      <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+        
+        <ul class="simple">
+</ul>
+
+      </div>
+      <!-- toc -->
+    </div>
+  </div>
+  <!-- main -->
+  <!-- footer -->
+  <!-- footer -->
+  <div class="below py-5" style="background-color: #222;">
+    <div class="container">
+      <div class="row flex-column">
+      <div class="col-12 col-md-6 mx-md-auto text-center">
+        <h4 class="pb-3 footer-text">COMPAS</h4>
+        <p class="footer-text">
+          A computational framework for collaboration and research
+          in Architecture, Engineering, Fabrication, and Construction.
+        </p>
+        <nav class="nav justify-content-center pb-3">
+          <a class="nav-link mx-2 px-0 footer-link" href="http://github.com/compas-dev" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="https://pypi.org/project/COMPAS/" target="_blank">
+            <span class="fab fa-python fa-1x"></span>
+          </a>
+        </nav>
+      </div>
+      </div>
+      <div class="row">
+      <div class="col text-center">
+        <p class="p-0 m-0 footer-text">Copyright &copy; 2017-2020 compas-dev</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+  URL_ROOT          : '',
+  VERSION           : '',
+  COLLAPSE_INDEX    : false,
+  FILE_SUFFIX       : '.html',
+  HAS_SOURCE        : 'false',
+  SOURCELINK_SUFFIX : '.txt'
+  };
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+
+  <script src="../_static/underscore.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/js/searchtools_.js"></script>
+
+  <script>
+  $(document).ready(function() {
+    $(".language-default code").addClass("python");
+    $(".language-python code").addClass("python");
+    $(".language-bash code").addClass("bash");
+    $(".language-cpp code").addClass("cpp");
+    $(".language-json code").addClass("json");
+    $(".language-none code").addClass("plaintext");
+
+    hljs.initHighlighting();
+    anchors.add();
+
+    $('.nav-versions .dropdown-item').filter(function(i, ver) {
+      return window.location.href.startsWith(ver.href);
+    }).addClass("active");
+
+  });
+
+
+  var url = $("#doc_versions").data("url");
+  var docs_site = $("#doc_versions").data("docs");
+
+  if (url) {
+    $.get(url, res=>{
+      var lines = res.match(/[^\r\n]+/g);
+      lines.forEach(version => {
+        $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
+      });
+    })
+  }
+
+  </script>
+  
+  
+</body>
+</html>

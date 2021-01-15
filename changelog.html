@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>rapid_clay_formations_fab - Changelog</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <meta name="author" content="" />
+  <meta name="description" content="" />
+
+  <link rel="shortcut icon" href="_static/images/compas.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/default.min.css">
+  <link rel="stylesheet" type="text/css" href="_static/css/compas.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/compas-reference.css" />
+
+  
+    <link rel="next" title="Authors" href="authors.html" />
+  
+
+  
+    <link rel="prev" title="rapid_clay_formations_fab.utils" href="reference/rapid_clay_formations_fab.utils.html" />
+  
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  <style>
+    .footer-text,
+    .footer-link,
+    .footer-title {
+      color: rgba(255, 255, 255, 0.25);
+    }
+    .footer-link:hover {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target="#compas-toc">
+  <!-- header -->
+  <header id="header" class="compas-header d-flex align-items-center">
+    <nav class="navbar navbar-expand navbar-dark col flex-column flex-md-row text-center">
+      <!-- brand -->
+      <a class="navbar-brand" href="">
+        <img src="_static/images/compas_icon_white.png" alt="Rapid Clay Formations Fabrication" width="48px" height="48px" />
+      </a>
+      <!-- brand -->
+      <!-- primary -->
+      <ul class="navbar-nav">
+        <li class="nav-item active"><a class="nav-link" href="">Rapid Clay Formations Fabrication</a></li>
+      </ul>
+      <!-- primary -->
+      <ul class="navbar-nav d-none d-md-flex ml-md-auto">
+        <!-- version -->
+        
+        <!-- version -->
+        <!-- social -->
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/gramaziokohler/rapid_clay_formations_fab" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+        </li>
+        <!-- social -->
+      </ul>
+    </nav>
+  </header>
+  <!-- header -->
+  <!-- main -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- main -->
+      <main class="col-12 col-md-9 col-xl-7 px-2 px-md-5 py-5 compas-content" role="main">
+        
+        
+        <div class="section" id="changelog">
+<h1 class="display-4 p-0 mb-5">Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<div class="section" id="id1">
+<h2>[0.7.0] [2020-12-18]</h2>
+<div class="section" id="added">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Dependency <code class="docutils literal notranslate"><span class="pre">compas_mobile_robot_reloc</span></code> added as it is the broken out <code class="docutils literal notranslate"><span class="pre">localization</span></code>
+module.</p></li>
+</ul>
+</div>
+<div class="section" id="changed">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Bumped <code class="docutils literal notranslate"><span class="pre">compas_fab</span></code> to <code class="docutils literal notranslate"><span class="pre">v0.15.0</span></code>.</p></li>
+<li><p>Added attribute <code class="docutils literal notranslate"><span class="pre">skip</span></code> to <code class="docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.fab_data.PlaceElement</span></code> to
+replace use of attribute <code class="docutils literal notranslate"><span class="pre">placed</span></code>. <code class="docutils literal notranslate"><span class="pre">skip</span></code> is meant to be set for current run only.</p></li>
+</ul>
+</div>
+<div class="section" id="removed">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.localization</span></code> removed from package since it is now</p></li>
+<li><p>Removed <code class="docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.utils.temp_change_compas_precision</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>[0.5.4] [2020-11-16]</h2>
+<div class="section" id="id3">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">rhino_install</span></code> and <code class="docutils literal notranslate"><span class="pre">proxy</span></code> subcommands to command <code class="docutils literal notranslate"><span class="pre">rcf</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.robots.AbbRcfClient.check_reconnect</span></code> renamed to
+<code class="docutils literal notranslate"><span class="pre">ensure_connection</span></code>. <code class="docutils literal notranslate"><span class="pre">ensure_connection</span></code> only restarts docker container once,
+after that it tries pinging multiple times.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fab_conf.robot_client.speed.pick_place</span></code> split into two different key-values
+pairs.</p></li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p>Removed kwarg <code class="docutils literal notranslate"><span class="pre">station_egress</span> <span class="pre">distance</span></code> and corresponding property
+<code class="docutils literal notranslate"><span class="pre">station_egress_frame</span></code> from <code class="docutils literal notranslate"><span class="pre">rapid_clay_formations_fab.robots.PickStation</span></code></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>[0.3.0] [2020-03-22]</h2>
+<div class="section" id="id7">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>ABB robot control example added to grasshopper examples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.run</span></code> documented under Usage in docs.</p></li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Second level imports implemented. So <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.clay_objs.ClayBullet</span></code> can be imported as <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.ClayBullet</span></code>.</p></li>
+<li><p>Examples renamed to Usage in documentation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.clay_obj</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.clay_objs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.clay_objs.ClayBulletEncoder</span></code> now moved to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.tools</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.json_</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.csv_reports</span></code> merged and moved to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.tools</span></code>. <code class="docutils literal notranslate"><span class="pre">csv_reports</span></code> can be run using <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.csv_report</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.network</span></code> merged with <code class="docutils literal notranslate"><span class="pre">compas_rcf.fab_data.clay_objs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.abb_rcf_runner</span></code> moved to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.run</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.procedure</span></code>.</p></li>
+<li><p>Renamed <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.connectivity.check_connection</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.connectivity.check_reconnect</span></code></p></li>
+<li><p>Merged <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.connectivity</span></code> to <code class="docutils literal notranslate"><span class="pre">helpers</span></code>. So <code class="docutils literal notranslate"><span class="pre">DOCKER_COMPOSE_PATHS</span></code>, <code class="docutils literal notranslate"><span class="pre">ROBOT_IPS</span></code>, <code class="docutils literal notranslate"><span class="pre">ping</span></code> and <code class="docutils literal notranslate"><span class="pre">check_reconnect</span></code> can now be found in <code class="docutils literal notranslate"><span class="pre">helpers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf.ZONE_DICT</span></code> moved to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers.ZONE_DICT</span></code></p></li>
+<li><p>A lot of changes to package structure. Might be documented here more later.</p></li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx_autodoc_typehints</span></code> plugin since not all of the code has type hints, but there’s annotations in docstrings for most.</p></li>
+<li><p>Unused functions in <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.util_funcs</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id10">
+<h2>[0.2.4] [2020-03-13]</h2>
+<div class="section" id="id11">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Draft of grasshopper example showcasing robot control using <code class="docutils literal notranslate"><span class="pre">compas_rrc</span></code>.</p></li>
+<li><p>Command line argument to skip writing progress while running <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb_runner</span></code>: <code class="docutils literal notranslate"><span class="pre">--skip-progress-file</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Replaced <code class="docutils literal notranslate"><span class="pre">pathlib</span></code> with <code class="docutils literal notranslate"><span class="pre">os.path</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.connectivity</span></code> for Python 2 compatibility.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.abb_runner</span></code> now writes progress to json while waiting for robot, to make sure the robot isn’t idle between loops.</p></li>
+<li><p>Some improvements to the <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.csv_reports</span></code> module, more data points and more informative headers.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id13">
+<h2>[0.2.3] [2020-03-11]</h2>
+<div class="section" id="id14">
+<h3>Added</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers.RapidToolData</span></code> now takes optional tolerance for tooldata values.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.docker.docker_cmds._run</span></code> is a new helper function for docker commands that works in both Python 2 and 3.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compose_up</span></code> has a new keyword <code class="docutils literal notranslate"><span class="pre">check_output</span></code> that toggles return code check of <code class="docutils literal notranslate"><span class="pre">subprocess</span></code> call.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compose_down</span></code> added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.docker</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="id15">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">base-docker-compose.yml</span></code> in <code class="docutils literal notranslate"><span class="pre">src/compas_rcf/docker/compose_files/abb</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">master-bridge-docker-compose.yml</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dict</span></code> key <code class="docutils literal notranslate"><span class="pre">abb_driver</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.connectivity.DOCKER_COMPOSE_PATHS</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">driver</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">env_vars</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.connectivity.connection_check</span></code> is now a stand alone keyword argument instead of being picked up from <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RapidTooldata.from_plane_point</span></code> creates a <code class="docutils literal notranslate"><span class="pre">RapidTooldata</span></code> object without using <code class="docutils literal notranslate"><span class="pre">from_frame_point</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id16">
+<h2>[0.2.2] [2020-03-06]</h2>
+<div class="section" id="id17">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Class <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers.RapidToolData</span></code> added to create Rapid tooldata from compas and Rhino geometries.</p></li>
+<li><p>Class property <code class="docutils literal notranslate"><span class="pre">weight</span></code> added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.ClayBullet</span></code>.</p></li>
+<li><p>MyPy configuration so Mypy can find imports when running from Vim + Ale. Libraries without typehints set to <code class="docutils literal notranslate"><span class="pre">ignore_missing_imports</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id18">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code> split into <code class="docutils literal notranslate"><span class="pre">helpers</span></code> and <code class="docutils literal notranslate"><span class="pre">connectivity</span></code> make <code class="docutils literal notranslate"><span class="pre">helpers</span></code> importable from IronPython.</p></li>
+<li><p>Robot instruction in <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs.pick_bullet</span></code> to go to picking_frame now specifies <code class="docutils literal notranslate"><span class="pre">zone_pick</span></code> instead of <code class="docutils literal notranslate"><span class="pre">zone_travel</span></code> to make sure that the tool actuators activate at the correct time.</p></li>
+<li><p>Module <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.csv_reports</span></code> now adds more data from <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code> instances.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.install_rhino</span></code>, <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.compas_to_rhino</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_rcf.rhino_to_compas</span></code> now moved to new package <code class="docutils literal notranslate"><span class="pre">compas_rcf.rhino</span></code> to more clearly show where an environment with Rhino is necessary. <code class="docutils literal notranslate"><span class="pre">install_rhino</span></code> is however still available from <code class="docutils literal notranslate"><span class="pre">compas_rcf.install_rhino</span></code>.</p></li>
+<li><p>Renamed <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.util_funcs.list_elem_w_index_wrap</span></code> to <code class="docutils literal notranslate"><span class="pre">wrap_list</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id19">
+<h2>[0.2.1] [2020-03-04]</h2>
+<div class="section" id="id20">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> moved to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb_runner</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id21">
+<h2>[0.2.0] [2020-03-02]</h2>
+<div class="section" id="id22">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Prompt to confirm start of fabrication added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.abb_run</span></code>, replacing confirmation in <code class="docutils literal notranslate"><span class="pre">get_settings</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id23">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Docstring changes in <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.compas_to_rhino</span></code> and <code class="docutils literal notranslate"><span class="pre">rhino_to_compas</span></code>.</p></li>
+<li><p>Redone the reference pages in the docs and fixed import problems.</p></li>
+<li><p>Replaced usage of <code class="docutils literal notranslate"><span class="pre">AttrDict</span></code> from <code class="docutils literal notranslate"><span class="pre">confuse.Configuration</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> to use the original <code class="docutils literal notranslate"><span class="pre">confuse.Configuration</span></code> object. E.g. <code class="docutils literal notranslate"><span class="pre">fab_conf[&quot;target&quot;].get()</span></code> instead of <code class="docutils literal notranslate"><span class="pre">fab_conf.target</span></code>. This is to make the use of the <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> object uniform across modules.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ZONE_DICT</span></code> moved from <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf</span></code>, mainly due to weird import errors.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confuse.Template</span></code> object <code class="docutils literal notranslate"><span class="pre">confuse.Path</span></code> vendorised from upstream master and put in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf</span></code>.</p></li>
+<li><p>Renamed <code class="docutils literal notranslate"><span class="pre">logging</span></code> to <code class="docutils literal notranslate"><span class="pre">log</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> to make usage of the <code class="docutils literal notranslate"><span class="pre">logging</span></code> object uniform across modules.</p></li>
+<li><p>Added logging to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code>, <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf</span></code>, <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs</span></code>,</p></li>
+<li><p>Directories set up previously by globals in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> is now accessible using the configuration file. The old globals are now the default value in the configuration.</p></li>
+<li><p>Moved submodule <code class="docutils literal notranslate"><span class="pre">docker</span></code> from <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.docker</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf.docker</span></code> including its submodules and Docker-Compose files.</p></li>
+<li><p>Refactored connection check from <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> to its own function: <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers.connection_check</span></code>.</p></li>
+<li><p>Refactored logging setup from <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.abb_runner</span></code> to it’s own function: <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.logging_setup</span></code>.</p></li>
+<li><p>Refactored fabrication data analysis and prompts for skipping or placing bullets in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.abb_runner</span></code> to its own function: <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.setup_fab_data</span></code>.</p></li>
+<li><p>Refactored <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.get_setup</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf.interactive_conf_setup</span></code>.</p></li>
+<li><p>Moved <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.initial_setup</span></code> to: <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs.pre_procedure</span></code>.</p></li>
+<li><p>Moved <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.shutdown_procedure</span></code> to: <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs.post_procedure</span></code>.</p></li>
+<li><p>Moved <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.send_picking</span></code> to: <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs.pick_bullet</span></code>.</p></li>
+<li><p>Moved <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.send_placing</span></code> to: <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs.place_bullet</span></code>.</p></li>
+<li><p>Moved <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.send_grip_release</span></code> to: <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.programs.grip_and_release</span></code>.</p></li>
+<li><p>Logging setup is now run in the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">=</span> <span class="pre">&quot;__main__&quot;</span></code> part of <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id24">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p>Prompt to confirm settings removed in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner.get_settings&quot;</span> <span class="pre">in</span> <span class="pre">favour</span> <span class="pre">of</span> <span class="pre">a</span> <span class="pre">later</span> <span class="pre">confirmation</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">whole</span> <span class="pre">setup</span> <span class="pre">in</span></code>abb_run`.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id25">
+<h2>[0.1.22] [2020-02-28]</h2>
+<div class="section" id="id26">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Configuration option for timeout and wait times for docker commands in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.runner</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id27">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Skip and/or place logic reworked in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> is now verbose by default, <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> is removed in favour of <code class="docutils literal notranslate"><span class="pre">--quiet</span></code>.</p></li>
+<li><p>Removed print statements from <code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> and replaced them with <code class="docutils literal notranslate"><span class="pre">logging.info</span></code> calls.</p></li>
+<li><p>Fixed <code class="docutils literal notranslate"><span class="pre">id</span></code> attribute logic and renamed it to <code class="docutils literal notranslate"><span class="pre">bullet_id</span></code>. classmethod <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.clay_objs.ClayBullet.from_data</span></code> is backwards compatible.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id28">
+<h2>[0.1.21] [2020-02-26]</h2>
+<div class="section" id="id29">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> now prints progress updates to Flex pendant.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> now dumps list of <code class="docutils literal notranslate"><span class="pre">ClayBullets</span></code> for every bullet into file with same filename as input JSON but with IN_PROGRESS added to start.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> now checks if attribute <code class="docutils literal notranslate"><span class="pre">placed</span></code> is set on <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code> and if so asks user if it should be skipped or placed (with the option to set skip and place for all future bullets with <code class="docutils literal notranslate"><span class="pre">placed</span></code> attribute). This file is deleted when script exits cleanly.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.csv_</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">csv_reports</span></code>. Instead of a conversion tool it now creates an opinionated report from JSON file. It can also handle directories and multiple files as inputs.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id30">
+<h2>[0.1.20] [2020-02-25]</h2>
+<div class="section" id="id31">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Settings regarding picking grid added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id32">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Function <code class="docutils literal notranslate"><span class="pre">get_picking_frame</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> reworked into <code class="docutils literal notranslate"><span class="pre">pick_frame_from_grid</span></code> which reads settings from conf to return frames from a grid of picking points.</p></li>
+<li><p>JSON dump after end of <code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> now dumps original list (<code class="docutils literal notranslate"><span class="pre">clay_bullets</span></code>) instead of a new.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id33">
+<h2>[0.1.18] [2020-02-20]</h2>
+</div>
+<div class="section" id="id34">
+<h2>[0.1.19] [2020-20-22]</h2>
+<div class="section" id="id35">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Reworded note in method <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.rhino_to_compas.rgplane_to_cgplane</span></code> to fix encoding error in Grasshopper.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id36">
+<h2>[0.1.18] [2020-02-20]</h2>
+<div class="section" id="id37">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Dependency <code class="docutils literal notranslate"><span class="pre">prompt-toolkit</span></code> and <code class="docutils literal notranslate"><span class="pre">Pygments</span></code>.</p></li>
+<li><p>Logging to <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.docker.docker_cmds</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> now dumps placed <code class="docutils literal notranslate"><span class="pre">ClayBullets</span></code> after completed run, together with attribute <code class="docutils literal notranslate"><span class="pre">placed</span></code> with time of placement in UNIX epoch.</p></li>
+<li><p>Functions <code class="docutils literal notranslate"><span class="pre">send_picking</span></code> &amp; <code class="docutils literal notranslate"><span class="pre">send_placing</span></code> in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> are now timed using Watch from compas_rrc and the sum of their durations are stored as <code class="docutils literal notranslate"><span class="pre">ClayBullet.cycle_time</span></code>.</p></li>
+<li><p>Added command line argument to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code>: <code class="docutils literal notranslate"><span class="pre">--skip-logfile</span></code>.</p></li>
+<li><p>Module for converting JSON to CSV: <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.csv_</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="id38">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Replaced function <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.ui.print_conf_w_colors</span></code> with <code class="docutils literal notranslate"><span class="pre">pygment_yaml</span></code>, pretty printing yaml config using prompt_toolkit and pygments.</p></li>
+<li><p>Added check of Exception message in <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code> to narrow error catching.</p></li>
+<li><p>Paths in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code> are changed to be pathlib.Path objects.</p></li>
+<li><p>Changed <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.rhino_to_compas.rgplane_to_cgframe</span></code> to correctly inherit X and Y axis from Rhino plane.</p></li>
+<li><p>Added a note to <code class="docutils literal notranslate"><span class="pre">rgplane_to_cgplane</span></code> to clarify that X and Y axises are note stored in compas planes.</p></li>
+</ul>
+</div>
+<div class="section" id="id39">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p>Unused functions in <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.docker.docker_cmds</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id40">
+<h2>[0.1.17] [2020-02-18]</h2>
+<div class="section" id="id41">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Docker compose integration via <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.docker</span></code> to set up needed services for <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code>.</p></li>
+<li><p>Added ping function to <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code>, sends NoOp to controller and waits for feedback.</p></li>
+</ul>
+</div>
+<div class="section" id="id42">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Reordered functions in <code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> and added comments to section of the functions.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id43">
+<h2>[0.1.16] [2020-02-18]</h2>
+<div class="section" id="id44">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Grasshopper example file <code class="docutils literal notranslate"><span class="pre">create_bullets_read_write_json</span></code> updated to handle Grasshopper trees and take vkeys as an attribute.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.clay_obj.ClayBullet</span></code> property setter <code class="docutils literal notranslate"><span class="pre">trajectory_to</span></code> and <code class="docutils literal notranslate"><span class="pre">trajectory_from</span></code> updated to handle list of planes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.util_funcs.ensure_frame</span></code> updated to convert point to Frame with given point and flipped XY plane.</p></li>
+<li><p>Updated config for black to also target py2.7 so it doesn’t add trailing commas to lists. (Which IronPy 2.7 can’t handle)</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id45">
+<h2>[0.1.15] [2020-02-15]</h2>
+<div class="section" id="id46">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Attribute dictionary added to class <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.clay_obj.ClayBullet</span></code></p></li>
+<li><p>Attribute <code class="docutils literal notranslate"><span class="pre">vkey</span></code> added to <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code> to store vertex key from <code class="docutils literal notranslate"><span class="pre">compas.datastructures.Network</span></code></p></li>
+<li><p>Simple import tests added</p></li>
+</ul>
+</div>
+<div class="section" id="id47">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Property <code class="docutils literal notranslate"><span class="pre">Vector</span></code> in <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code> changed to represent the bullets center as a line.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id48">
+<h2>[0.1.14] [2020-02-14]</h2>
+<div class="section" id="id49">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>API docs. Some modules have issues but a lot of them works.</p></li>
+</ul>
+</div>
+<div class="section" id="id50">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>More fixes of imports.</p></li>
+<li><p>Split of Rhino dependent functions from <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.util_funcs</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.util_funcs_rhino</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id51">
+<h2>[0.1.13] [2020-02-14]</h2>
+<div class="section" id="id52">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Properties <code class="docutils literal notranslate"><span class="pre">centroid_frame</span></code>, <code class="docutils literal notranslate"><span class="pre">compressed_centroid_frame</span></code>, <code class="docutils literal notranslate"><span class="pre">centroid_plane</span></code> added <code class="docutils literal notranslate"><span class="pre">compressed_centroid_plane</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.clay_objs.ClayBullet</span></code>.</p></li>
+<li><p>Classmethod <code class="docutils literal notranslate"><span class="pre">from_compressed_centroid_frame_like</span></code> added to <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id53">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_rcf_runner</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_runner</span></code>.</p></li>
+<li><p>Typos in <code class="docutils literal notranslate"><span class="pre">abb_runner</span></code> fixed.</p></li>
+<li><p>Trying to set up imports better between modules</p></li>
+<li><p>Fixes for tkinter file dialog in <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.ui</span></code>.</p></li>
+<li><p>Property <code class="docutils literal notranslate"><span class="pre">post_planes</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">trajectory_from</span></code> in <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id54">
+<h2>[0.1.12] [2020-02-13]</h2>
+<div class="section" id="id55">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Logging added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_rcf_runner</span></code>.</p></li>
+<li><p>Makes sure needles are retracted at start and end of <code class="docutils literal notranslate"><span class="pre">abb_rcf_runner</span></code>.</p></li>
+<li><p>Hardcoded compression at pickup in <code class="docutils literal notranslate"><span class="pre">abb_rcf_runner</span></code>. Needs to be removed.</p></li>
+<li><p>Added note about compas to <code class="docutils literal notranslate"><span class="pre">README.md</span></code></p></li>
+<li><p>Added note about compatibility with Python 2 and &lt; 3.6.</p></li>
+</ul>
+</div>
+<div class="section" id="id56">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Whole package has had its imports sorted</p></li>
+<li><p>Set up black formatting and formatted everything</p></li>
+<li><p>Travis now handles build and releasing of tagged commit, using <code class="docutils literal notranslate"><span class="pre">setuptools_scm</span></code> to handle version setup.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setuptools_scm</span></code> replaces <code class="docutils literal notranslate"><span class="pre">MANIFEST.in</span></code> in handling what to include when building.</p></li>
+<li><p>Package now requires Python &gt;= 3.6 for installation.</p></li>
+</ul>
+</div>
+<div class="section" id="id57">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p>Lots of dev deps</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id58">
+<h2>[0.1.10] [2020-02-11]</h2>
+<div class="section" id="id59">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Module <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.conf</span></code> added. Reads yaml files for fabrication settings. Provides template to validate files.</p></li>
+<li><p>Package <code class="docutils literal notranslate"><span class="pre">confuse</span></code> new dependecy, (“painless YAML config files for Python”)</p></li>
+<li><p>Default config file (in YAML) added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication</span></code></p></li>
+<li><p>Module <code class="docutils literal notranslate"><span class="pre">compas_rcf.abb.helpers</span></code> added, for now only a dict mapping Zone data names to absolute value</p></li>
+</ul>
+</div>
+<div class="section" id="id60">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_rcf_runner</span></code> updated to use YAML configs.</p></li>
+<li><p>docker compose dirs moved from <code class="docutils literal notranslate"><span class="pre">./docker</span></code> to <code class="docutils literal notranslate"><span class="pre">.data/docker-compose</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="id61">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p>Hard-coded fabrication configuration removed from <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_rcf_runner</span></code>. Default values now stored in <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.default_config.yaml</span></code></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id62">
+<h2>[0.1.9] [2020-02-09]</h2>
+<div class="section" id="id63">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Print colored dict function added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.ui</span></code>.</p></li>
+<li><p>Packages Colorama and Questionary added to to requirements. They are used for CLI runner.</p></li>
+</ul>
+</div>
+<div class="section" id="id64">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_fabrication_non_interactive</span></code> refactored</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_fabrication_non_interactive</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">abb_rcf_runner</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_rcf_runner</span></code> now takes args and can edit conf setup during runtime.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas.rcf.fabrication.ClayBullet</span></code> property <code class="docutils literal notranslate"><span class="pre">placement_frame</span></code> changed to be where the tool should stop while placing. New property <code class="docutils literal notranslate"><span class="pre">location</span></code> is the new required argument for the object and defines the clay bullets lowest point. <code class="docutils literal notranslate"><span class="pre">placement_frame</span></code> is derived from <code class="docutils literal notranslate"><span class="pre">location</span></code> and <code class="docutils literal notranslate"><span class="pre">compressed</span> <span class="pre">height</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ClayBulley</span></code> attributes <code class="docutils literal notranslate"><span class="pre">pre_frames</span></code> and <code class="docutils literal notranslate"><span class="pre">post_frames</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">trajectory_to</span></code> and <code class="docutils literal notranslate"><span class="pre">trajectory_from</span></code> to be more descriptive.</p></li>
+<li><p>Fixes to docs: In Updating section of <code class="docutils literal notranslate"><span class="pre">getting_started.rst</span></code> python was changed to pip. Inline comments removed from installation instructions.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id65">
+<h2>[0.1.8] [2020-02-07]</h2>
+<div class="section" id="id66">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>After some testing to find the best way to distribute this package given the dependency on private repository <code class="docutils literal notranslate"><span class="pre">compas_rrc</span></code> I’ve concluded to keep uploading to PyPi. This means that compas_rrc will need to be installed manually before this package, since PyPi does not allow giving a “direct dependency`.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id67">
+<h2>[0.1.6] 2020-02-06</h2>
+<div class="section" id="id68">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Set up sphinx docs</p></li>
+<li><p>Added deploy job for travis</p></li>
+<li><p>Open file dialog function added to new module <code class="docutils literal notranslate"><span class="pre">compas_rcf.util.ui</span></code></p></li>
+<li><p>Open file dialog implemented in ABB fabrication runner</p></li>
+</ul>
+</div>
+<div class="section" id="id69">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Travis Python 3 version bumped up to 3.7</p></li>
+<li><p>docs moved from docsource to docs</p></li>
+<li><p>sphinx target directory now dist/docs</p></li>
+<li><p>Corrected compas_fab version range (from <code class="docutils literal notranslate"><span class="pre">&lt;0.12</span></code> to <code class="docutils literal notranslate"><span class="pre">&lt;0.11</span></code>)</p></li>
+<li><p>Fixed compas_rrc requirement syntax given it’s installed from git repository</p></li>
+<li><p>Added compas_rrc to installable packages for <code class="docutils literal notranslate"><span class="pre">compas_rcf.install_rhino</span></code></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id70">
+<h2>[0.1.5] 2020-02-05</h2>
+<div class="section" id="id71">
+<h3>Added</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ClayBulletEncoder</span></code> to serialize <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code> added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.clay_obj</span></code></p></li>
+<li><p>Frames before and after placement added to <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">from_data</span></code> constructor added to <code class="docutils literal notranslate"><span class="pre">ClayBullet</span></code></p></li>
+<li><p>Function to parse list of ClayBullet instances from JSON added in new module <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.json_</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ensure_frame</span></code> function added to <code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.util_funcs</span></code> to convert <code class="docutils literal notranslate"><span class="pre">Planes</span></code> to <code class="docutils literal notranslate"><span class="pre">Frames</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.IPY</span></code> global boolean that uses <code class="docutils literal notranslate"><span class="pre">compas</span></code> function to check if IronPython is running the code.</p></li>
+</ul>
+</div>
+<div class="section" id="id72">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Rhino</span></code> modules are only loaded if IronPython is running the code</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.fabrication.abb_fabrication_non_interactive</span></code> now reads JSON to load ClayBullets and extracts <code class="docutils literal notranslate"><span class="pre">Frames</span></code> from them</p></li>
+<li><p>Most settings in <code class="docutils literal notranslate"><span class="pre">abb_fabrication_non_interactive</span></code> are moved to top and set as globals.</p></li>
+</ul>
+</div>
+<div class="section" id="id73">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compas_rcf.utils.databases</span></code> mock module removed in favor of <code class="docutils literal notranslate"><span class="pre">json_</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id74">
+<h2>[0.1.4] 2020-02-05</h2>
+<div class="section" id="id75">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Added abb non-interactive fabrication script</p></li>
+<li><p>Added docker-compose files for ABB ROS setup</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id76">
+<h2>[0.1.3] 2020-02-04</h2>
+<div class="section" id="id77">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>Example file <code class="docutils literal notranslate"><span class="pre">grasshopper_non_interactive</span></code> setup in docs</p></li>
+<li><p>Partly finished structure for future ur online fabrication procedure</p></li>
+</ul>
+</div>
+<div class="section" id="id78">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> now divided into multiple modules</p></li>
+<li><p>Other renames and moves</p></li>
+</ul>
+</div>
+<div class="section" id="id79">
+<h3>Removed</h3>
+</div>
+</div>
+<div class="section" id="id80">
+<h2>[0.1.2] 2020-02-03</h2>
+<div class="section" id="id81">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p>Name change from <code class="docutils literal notranslate"><span class="pre">rcf</span></code> to <code class="docutils literal notranslate"><span class="pre">compas_rcf</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id82">
+<h2>[0.1.1] 2020-02-03</h2>
+<div class="section" id="id83">
+<h3>Added</h3>
+<ul class="simple">
+<li><p>First release, package setup by applying <a class="reference external" href="https://github.com/compas-dev/cookiecutter-pypackage">compas-dev/cookiecutter-pypackage</a> on small library of modules from previous phase of project</p></li>
+</ul>
+</div>
+<div class="section" id="id84">
+<h3>Changed</h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rcf/ur</span></code> renamed to <code class="docutils literal notranslate"><span class="pre">rcf/ur_control</span></code></p></li>
+<li><p>Fabrication related functions moved from <code class="docutils literal notranslate"><span class="pre">rcf/ur</span></code> to <code class="docutils literal notranslate"><span class="pre">rcf/fabrication</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="id85">
+<h3>Removed</h3>
+<ul class="simple">
+<li><p>Unused code in <code class="docutils literal notranslate"><span class="pre">rcf/ur_control</span></code></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id86">
+<h2>[0.1.0]</h2>
+<ul class="simple">
+<li><p>Start value for version</p></li>
+</ul>
+</div>
+</div>
+
+        
+      </main>
+      <!-- content -->
+      <!-- sidebar -->
+      <div class="col-12 col-md-3 compas-sidebar" role="navigation">
+        <form id="search" class="d-flex align-items-center compas-searchbox" action="search.html" method="get">
+          <input class="form-control" type="text" name="q" placeholder="Search docs" />
+          <input type="hidden" name="check_keywords" value="yes" />
+          <input type="hidden" name="area" value="default" />
+          <button class="navbar-toggler d-md-none" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </form>
+        
+        
+          <div id="compas-navigation" class="collapse compas-navigation">
+          <ul class="nav flex-column active">
+<li class="nav-item"><a class="nav-link reference internal" href="installation.html">Installation</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="usage.html">Usage</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="known_issues.html">Known issues</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="contributing.html">Contributing</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="reference.html">API reference</a></li>
+<li class="nav-item active"><a class="nav-link active current reference internal" href="#">Changelog</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="authors.html">Authors</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="license.html">License</a></li>
+</ul>
+
+          </div>
+        
+      </div>
+      <!-- sidebar -->
+      <!-- toc -->
+      <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+        
+        <ul class="nav flex-column" id="compas-toc">
+<li class="nav-item"><a class="nav-link reference internal" href="#">Changelog</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id1">[0.7.0] [2020-12-18]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#added">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#changed">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#removed">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id2">[0.5.4] [2020-11-16]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id3">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id4">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id5">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id6">[0.3.0] [2020-03-22]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id7">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id8">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id9">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id10">[0.2.4] [2020-03-13]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id11">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id12">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id13">[0.2.3] [2020-03-11]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id14">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id15">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id16">[0.2.2] [2020-03-06]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id17">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id18">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id19">[0.2.1] [2020-03-04]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id20">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id21">[0.2.0] [2020-03-02]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id22">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id23">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id24">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id25">[0.1.22] [2020-02-28]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id26">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id27">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id28">[0.1.21] [2020-02-26]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id29">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id30">[0.1.20] [2020-02-25]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id31">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id32">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id33">[0.1.18] [2020-02-20]</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id34">[0.1.19] [2020-20-22]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id35">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id36">[0.1.18] [2020-02-20]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id37">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id38">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id39">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id40">[0.1.17] [2020-02-18]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id41">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id42">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id43">[0.1.16] [2020-02-18]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id44">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id45">[0.1.15] [2020-02-15]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id46">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id47">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id48">[0.1.14] [2020-02-14]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id49">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id50">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id51">[0.1.13] [2020-02-14]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id52">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id53">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id54">[0.1.12] [2020-02-13]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id55">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id56">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id57">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id58">[0.1.10] [2020-02-11]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id59">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id60">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id61">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id62">[0.1.9] [2020-02-09]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id63">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id64">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id65">[0.1.8] [2020-02-07]</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id66">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id67">[0.1.6] 2020-02-06</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id68">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id69">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id70">[0.1.5] 2020-02-05</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id71">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id72">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id73">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id74">[0.1.4] 2020-02-05</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id75">Added</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id76">[0.1.3] 2020-02-04</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id77">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id78">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id79">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id80">[0.1.2] 2020-02-03</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id81">Changed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id82">[0.1.1] 2020-02-03</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#id83">Added</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id84">Changed</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id85">Removed</a></li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#id86">[0.1.0]</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+      <!-- toc -->
+    </div>
+  </div>
+  <!-- main -->
+  <!-- footer -->
+  <!-- footer -->
+  <div class="below py-5" style="background-color: #222;">
+    <div class="container">
+      <div class="row flex-column">
+      <div class="col-12 col-md-6 mx-md-auto text-center">
+        <h4 class="pb-3 footer-text">COMPAS</h4>
+        <p class="footer-text">
+          A computational framework for collaboration and research
+          in Architecture, Engineering, Fabrication, and Construction.
+        </p>
+        <nav class="nav justify-content-center pb-3">
+          <a class="nav-link mx-2 px-0 footer-link" href="http://github.com/compas-dev" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="https://pypi.org/project/COMPAS/" target="_blank">
+            <span class="fab fa-python fa-1x"></span>
+          </a>
+        </nav>
+      </div>
+      </div>
+      <div class="row">
+      <div class="col text-center">
+        <p class="p-0 m-0 footer-text">Copyright &copy; 2017-2020 compas-dev</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+  URL_ROOT          : '',
+  VERSION           : '',
+  COLLAPSE_INDEX    : false,
+  FILE_SUFFIX       : '.html',
+  HAS_SOURCE        : 'false',
+  SOURCELINK_SUFFIX : '.txt'
+  };
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+
+  <script src="_static/underscore.js"></script>
+  <script src="_static/doctools.js"></script>
+  <script src="_static/js/searchtools_.js"></script>
+
+  <script>
+  $(document).ready(function() {
+    $(".language-default code").addClass("python");
+    $(".language-python code").addClass("python");
+    $(".language-bash code").addClass("bash");
+    $(".language-cpp code").addClass("cpp");
+    $(".language-json code").addClass("json");
+    $(".language-none code").addClass("plaintext");
+
+    hljs.initHighlighting();
+    anchors.add();
+
+    $('.nav-versions .dropdown-item').filter(function(i, ver) {
+      return window.location.href.startsWith(ver.href);
+    }).addClass("active");
+
+  });
+
+
+  var url = $("#doc_versions").data("url");
+  var docs_site = $("#doc_versions").data("docs");
+
+  if (url) {
+    $.get(url, res=>{
+      var lines = res.match(/[^\r\n]+/g);
+      lines.forEach(version => {
+        $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
+      });
+    })
+  }
+
+  </script>
+  
+  
+</body>
+</html>

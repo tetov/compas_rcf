@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>rapid_clay_formations_fab - rapid_clay_formations_fab.robots.abb_standalone_move_to_frame</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <meta name="author" content="" />
+  <meta name="description" content="" />
+
+  <link rel="shortcut icon" href="../../../_static/images/compas.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/default.min.css">
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/compas.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/compas-reference.css" />
+
+  
+
+  
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  <style>
+    .footer-text,
+    .footer-link,
+    .footer-title {
+      color: rgba(255, 255, 255, 0.25);
+    }
+    .footer-link:hover {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target="#compas-toc">
+  <!-- header -->
+  <header id="header" class="compas-header d-flex align-items-center">
+    <nav class="navbar navbar-expand navbar-dark col flex-column flex-md-row text-center">
+      <!-- brand -->
+      <a class="navbar-brand" href="">
+        <img src="../../../_static/images/compas_icon_white.png" alt="Rapid Clay Formations Fabrication" width="48px" height="48px" />
+      </a>
+      <!-- brand -->
+      <!-- primary -->
+      <ul class="navbar-nav">
+        <li class="nav-item active"><a class="nav-link" href="">Rapid Clay Formations Fabrication</a></li>
+      </ul>
+      <!-- primary -->
+      <ul class="navbar-nav d-none d-md-flex ml-md-auto">
+        <!-- version -->
+        
+        <!-- version -->
+        <!-- social -->
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/gramaziokohler/rapid_clay_formations_fab" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+        </li>
+        <!-- social -->
+      </ul>
+    </nav>
+  </header>
+  <!-- header -->
+  <!-- main -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- main -->
+      <main class="col-12 col-md-9 col-xl-7 px-2 px-md-5 py-5 compas-content" role="main">
+        
+        
+        <h1 class="display-4 p-0 mb-5">Source code for rapid_clay_formations_fab.robots.abb_standalone_move_to_frame</h1><div class="highlight"><pre><code>
+<span></span><span class="sd">&quot;&quot;&quot;Standalone move to frame function using compas_rrc.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">compas_fab.backends</span> <span class="kn">import</span> <span class="n">RosClient</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">AbbClient</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">Motion</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">MoveToFrame</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">Noop</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">PrintText</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">SetAcceleration</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">SetMaxSpeed</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">SetTool</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">SetWorkObject</span>
+<span class="kn">from</span> <span class="nn">compas_rrc</span> <span class="kn">import</span> <span class="n">Zone</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Sequence</span>
+
+
+<div class="viewcode-block" id="standalone_move_to_frame"><a class="viewcode-back" href="../../../reference/rapid_clay_formations_fab.robots.abb_standalone_move_to_frame.html#rapid_clay_formations_fab.robots.abb_standalone_move_to_frame.standalone_move_to_frame">[docs]</a><span class="k">def</span> <span class="nf">standalone_move_to_frame</span><span class="p">(</span>
+    <span class="n">frame</span><span class="p">,</span>
+    <span class="n">tool</span><span class="o">=</span><span class="s2">&quot;tool0&quot;</span><span class="p">,</span>
+    <span class="n">wobj</span><span class="o">=</span><span class="s2">&quot;wobj0&quot;</span><span class="p">,</span>
+    <span class="n">motion_type</span><span class="o">=</span><span class="n">Motion</span><span class="o">.</span><span class="n">LINEAR</span><span class="p">,</span>
+    <span class="n">speed</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">accel</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">zone</span><span class="o">=</span><span class="n">Zone</span><span class="o">.</span><span class="n">FINE</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Move robot arm to frame or frames in one single function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frame : :class:`compas.geometry.Frame` or :obj:`list` of :class:`compas.geometry.Frame`</span>
+<span class="sd">        Target frame or frames.</span>
+<span class="sd">    tool : :obj:`str`</span>
+<span class="sd">        Name of tool as named in RAPID code on controller to use for TCP data.</span>
+<span class="sd">    wobj : :obj:`str`</span>
+<span class="sd">        Name of work object as named in RAPID code on controller to use for</span>
+<span class="sd">        coordinate system.</span>
+<span class="sd">    motion_type : :class:`compas_rrc.Motion`</span>
+<span class="sd">        Motion type, either linear (:class:`~compas_rrc.Motion.LINEAR`) or</span>
+<span class="sd">        joint (:class:`~compas_rrc.Motion.JOINT`).</span>
+<span class="sd">    speed : :obj:`float`</span>
+<span class="sd">        TCP speed in mm/s. Limited by hard coded max speed in this function as</span>
+<span class="sd">        well as safety systems on controller.</span>
+<span class="sd">    accel : :obj:`float`</span>
+<span class="sd">        Acceleration in percentage of standard acceleration.</span>
+<span class="sd">    zone : :class:`compas_rrc.Zone`</span>
+<span class="sd">        Set zone value of movement, (acceptable deviation from target).</span>
+<span class="sd">    timeout : :obj:`float`</span>
+<span class="sd">        Time to wait for indication of finished movement. If not defined no</span>
+<span class="sd">        feedback will be requested.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="n">frame</span>
+
+    <span class="k">with</span> <span class="n">RosClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">ros</span><span class="p">:</span>
+        <span class="c1"># Create ABB Client</span>
+        <span class="n">abb</span> <span class="o">=</span> <span class="n">AbbClient</span><span class="p">(</span><span class="n">ros</span><span class="p">)</span>
+        <span class="n">abb</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="n">abb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetTool</span><span class="p">(</span><span class="n">tool</span><span class="p">))</span>
+        <span class="n">abb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetWorkObject</span><span class="p">(</span><span class="n">wobj</span><span class="p">))</span>
+
+        <span class="c1"># Set acceleration data</span>
+        <span class="n">ramp</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># % Higher values makes the acceleration ramp longer</span>
+        <span class="n">abb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetAcceleration</span><span class="p">(</span><span class="n">accel</span><span class="p">,</span> <span class="n">ramp</span><span class="p">))</span>
+
+        <span class="c1"># Set speed override and max speed</span>
+        <span class="n">speed_override</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># %</span>
+        <span class="n">max_tcp_speed</span> <span class="o">=</span> <span class="mi">500</span>  <span class="c1"># mm/s</span>
+        <span class="n">abb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetMaxSpeed</span><span class="p">(</span><span class="n">speed_override</span><span class="p">,</span> <span class="n">max_tcp_speed</span><span class="p">))</span>
+
+        <span class="c1"># Move to Frame</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+            <span class="n">abb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+                <span class="n">PrintText</span><span class="p">(</span><span class="s2">&quot; Moving to </span><span class="si">{:.3f}</span><span class="s2">, </span><span class="si">{:.3f}</span><span class="s2">, </span><span class="si">{:.3f}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">f</span><span class="o">.</span><span class="n">point</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">abb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">MoveToFrame</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">zone</span><span class="p">,</span> <span class="n">motion_type</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">timeout</span><span class="p">:</span>
+            <span class="n">abb</span><span class="o">.</span><span class="n">send_and_wait</span><span class="p">(</span><span class="n">Noop</span><span class="p">(),</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+</code></pre></div>
+        
+      </main>
+      <!-- content -->
+      <!-- sidebar -->
+      <div class="col-12 col-md-3 compas-sidebar" role="navigation">
+        <form id="search" class="d-flex align-items-center compas-searchbox" action="../../../search.html" method="get">
+          <input class="form-control" type="text" name="q" placeholder="Search docs" />
+          <input type="hidden" name="check_keywords" value="yes" />
+          <input type="hidden" name="area" value="default" />
+          <button class="navbar-toggler d-md-none" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </form>
+        
+        
+          <div id="compas-navigation" class="collapse compas-navigation">
+          <ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="../../../installation.html">Installation</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../usage.html">Usage</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../known_issues.html">Known issues</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../reference.html">API reference</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../authors.html">Authors</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+          </div>
+        
+      </div>
+      <!-- sidebar -->
+      <!-- toc -->
+      <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+        
+        
+      </div>
+      <!-- toc -->
+    </div>
+  </div>
+  <!-- main -->
+  <!-- footer -->
+  <!-- footer -->
+  <div class="below py-5" style="background-color: #222;">
+    <div class="container">
+      <div class="row flex-column">
+      <div class="col-12 col-md-6 mx-md-auto text-center">
+        <h4 class="pb-3 footer-text">COMPAS</h4>
+        <p class="footer-text">
+          A computational framework for collaboration and research
+          in Architecture, Engineering, Fabrication, and Construction.
+        </p>
+        <nav class="nav justify-content-center pb-3">
+          <a class="nav-link mx-2 px-0 footer-link" href="http://github.com/compas-dev" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+          <a class="nav-link mx-2 px-0 footer-link" href="https://pypi.org/project/COMPAS/" target="_blank">
+            <span class="fab fa-python fa-1x"></span>
+          </a>
+        </nav>
+      </div>
+      </div>
+      <div class="row">
+      <div class="col text-center">
+        <p class="p-0 m-0 footer-text">Copyright &copy; 2017-2020 compas-dev</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+  URL_ROOT          : '',
+  VERSION           : '',
+  COLLAPSE_INDEX    : false,
+  FILE_SUFFIX       : '.html',
+  HAS_SOURCE        : 'false',
+  SOURCELINK_SUFFIX : '.txt'
+  };
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+
+  <script src="../../../_static/underscore.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/js/searchtools_.js"></script>
+
+  <script>
+  $(document).ready(function() {
+    $(".language-default code").addClass("python");
+    $(".language-python code").addClass("python");
+    $(".language-bash code").addClass("bash");
+    $(".language-cpp code").addClass("cpp");
+    $(".language-json code").addClass("json");
+    $(".language-none code").addClass("plaintext");
+
+    hljs.initHighlighting();
+    anchors.add();
+
+    $('.nav-versions .dropdown-item').filter(function(i, ver) {
+      return window.location.href.startsWith(ver.href);
+    }).addClass("active");
+
+  });
+
+
+  var url = $("#doc_versions").data("url");
+  var docs_site = $("#doc_versions").data("docs");
+
+  if (url) {
+    $.get(url, res=>{
+      var lines = res.match(/[^\r\n]+/g);
+      lines.forEach(version => {
+        $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
+      });
+    })
+  }
+
+  </script>
+  
+  
+</body>
+</html>
