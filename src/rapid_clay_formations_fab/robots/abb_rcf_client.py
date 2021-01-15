@@ -348,7 +348,6 @@ class AbbRcfFabricationClient(AbbRcfClient):
             )
 
         place_trajectories = self._get_place_trajectories(element)
-        # Execute trajectories in place motion until the last
 
         # Go to egress frame
         self.execute_trajectory(
